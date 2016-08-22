@@ -1,0 +1,7 @@
+base   pubmed
+author Ikuo Obataya, Eric Maeker
+email  i.obataya[at]gmail_com / eric@maeker.fr
+date   2016-08-22
+name   Pubmed plugin
+desc   PubMed information integrator for Dokuwiki
+url    http://www.dokuwiki.org/plugin:pubmed

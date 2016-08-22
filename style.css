@@ -1,0 +1,46 @@
+/*div.dokuwiki div.pubmed{
+  border-bottom:solid 1px #CCCCCC;
+}
+*/
+div.pubmed span.etal{
+  font-style:italic;
+  font-size:90%;
+  margin-left:10px;
+}
+div.pubmed span.jrnl,
+div.pubmed span.volume,
+div.pubmed span.pages,
+div.pubmed span.date{
+  margin-left:5px;
+  margin-right:5px;
+}
+
+div.pubmed span.jrnl{
+  font-style:italic;
+}
+div.pubmed span.authors{
+  font-weight: bold;
+}
+div.pubmed span.title{
+  font-weight: bold;
+}
+div.pubmed span.volume{
+  font-weight:bold;
+}
+div.pubmed a {
+  background-image:url(images/pubmed_icon.png);
+  background-repeat:no-repeat;
+  background-position:left bottom;
+  padding-left:48px;
+}
+div.pubmed span.pmid {
+  font-size:80%;
+}
+div.pubmed span.abstract{
+  font-size:80%;
+  padding-left:20px;
+  display:block;
+  margin-top:10px;
+  margin-bottom:10px;
+}
+
