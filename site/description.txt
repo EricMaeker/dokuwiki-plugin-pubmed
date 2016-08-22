@@ -2,8 +2,8 @@
 
 ---- plugin ----
 description: Plugin that integrates informations of scientific journals articles from PubMed with PMID.
-author     : Ikuo Obataya, Eric Maeker
-email      : I.Obataya[at]gmail.com, eric[at]maeker.fr
+author     : Eric Maeker and Ikuo Obataya
+email      : eric[at]maeker.fr
 type       : syntax
 lastupdate : 2016-08-22
 compatible : 2016-06-26 "Elenor Of Tsort", 2015-08-10a "Detritus"
@@ -15,11 +15,12 @@ downloadurl: https://github.com/EricMaeker/dokuwiki-plugin-pubmed/archive/master
 bugtracker : https://github.com/EricMaeker/dokuwiki-plugin-pubmed/issues
 sourcerepo : https://github.com/EricMaeker/dokuwiki-plugin-pubmed/
 
-screenshot_img : https://raw.githubusercontent.com/EricMaeker/dokuwiki-plugin-pubmed/master/dokuwiki-web-site/long_abstract.png
+screenshot_img : https://github.com/EricMaeker/dokuwiki-plugin-pubmed/raw/dokuwiki-web-site/site/pubmed_long_abstract.png
 ----
 
 ======Functions======
-This is a plugin for DokuWiki that integrates informations scientific journal articles from PubMed using its PubMed identifiant: //PMID//. The plugin downloads and stores the summary of each articles in an XML file in // /data/media/ncbi_esummary // directory.
+
+This plugin is based on the Ikuo Obataya <I.Obataya@gmail.com> code base (from 2013). It integrates informations scientific journal articles from PubMed using its PubMed identifiant: //PMID//. The plugin downloads and stores the summary of each articles in an XML file in // /data/media/ncbi_esummary // directory.
 
 **%%{{pubmed>[Command]:[PubMed ID]}}%%**
 
@@ -30,7 +31,7 @@ This is a plugin for DokuWiki that integrates informations scientific journal ar
 ^[[#search]]       |link |Create a link to a search query over PubMed (you can use MeSH terms, wildcards...)|
 ^summaryXML        |xml  |Show the XML data retreived from the NCBI database (usefull for debugging)|
 ^clear_summary     |  -  |Clear cached XML files in /data/media/ncbi_esummary|
-^removre_dir       |  -  |Remove the XML output dir: /data/media/ncbi_esummary (by default)|
+^remove_dir       |  -  |Remove the XML output dir: /data/media/ncbi_esummary (by default)|
 
 ======Examples======
 =====short=====
@@ -38,21 +39,21 @@ This is a plugin for DokuWiki that integrates informations scientific journal ar
   {{pubmed>short:9039911}}
 
 **Result**\\ 
-{{https://raw.githubusercontent.com/EricMaeker/dokuwiki-plugin-pubmed/master/dokuwiki-web-site/short.png}}
+{{https://github.com/EricMaeker/dokuwiki-plugin-pubmed/raw/dokuwiki-web-site/site/pubmed_short.png}}
 
 =====long=====
 **code**\\ 
   {{pubmed>long:9039911}}
 
 **Result**\\ 
-{{https://raw.githubusercontent.com/EricMaeker/dokuwiki-plugin-pubmed/master/dokuwiki-web-site/long.png}}
+{{https://github.com/EricMaeker/dokuwiki-plugin-pubmed/raw/dokuwiki-web-site/site/pubmed_long.png}}
 
 =====long_abstract=====
 **code**\\ 
   {{pubmed>long_abstract:9039911}}
 
 **Result**\\ 
-{{https://raw.githubusercontent.com/EricMaeker/dokuwiki-plugin-pubmed/master/dokuwiki-web-site/long_abstract.png}}
+{{https://github.com/EricMaeker/dokuwiki-plugin-pubmed/raw/dokuwiki-web-site/site/pubmed_long_abstract.png}}
 
 ======search======
 
@@ -60,7 +61,7 @@ This is a plugin for DokuWiki that integrates informations scientific journal ar
   {{pubmed>search:"Empathy"[Mesh] AND "Communication"[Mesh] AND "Aged"[Mesh]}}
 
 **Result**\\ 
-{{https://raw.githubusercontent.com/EricMaeker/dokuwiki-plugin-pubmed/dokuwiki-web-site/dokuwiki-web-site/search.png}}
+{{https://github.com/EricMaeker/dokuwiki-plugin-pubmed/raw/dokuwiki-web-site/site/search.png}}
 
 
 ====== History ======
