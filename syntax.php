@@ -82,7 +82,7 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
       // Construct reference to article (author.title.rev.year..) according to command
       if ($cmd=='long'||$cmd=='short'||$cmd=='long_abstract') {
         $renderer->doc.='<div class="pubmed">';
-        if ($cmd=='long'||$cmd='long_abstract') {
+        if ($cmd=='long' || $cmd=='long_abstract') {
           $renderer->doc.= '<span class="authors">'.implode(', ',$refs["authors"]).'.</span> ';
           $renderer->doc.= '<span class="title">'.$refs["title"].'</span> ';
         }  else if ($cmd=='short') {
