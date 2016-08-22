@@ -1,0 +1,82 @@
+====== Pubmed Plugin ======
+
+---- plugin ----
+description: Plugin that integrates informations of scientific journals articles from PubMed with PMID.
+author     : Ikuo Obataya, Eric Maeker
+email      : I.Obataya[at]gmail.com, eric[at]maeker.fr
+type       : syntax
+lastupdate : 2016-08-22
+compatible : 2016-06-26 "Elenor Of Tsort", 2015-08-10a "Detritus"
+depends    : 
+conflicts  : 
+similar    : 
+tags       : biology chemistry medical science references
+downloadurl: https://github.com/EricMaeker/dokuwiki-plugin-pubmed/archive/master.zip
+bugtracker : https://github.com/EricMaeker/dokuwiki-plugin-pubmed/issues
+sourcerepo : https://github.com/EricMaeker/dokuwiki-plugin-pubmed/
+
+screenshot_img : https://raw.githubusercontent.com/EricMaeker/dokuwiki-plugin-pubmed/master/dokuwiki-web-site/long_abstract.png
+----
+
+======Functions======
+This is a plugin for DokuWiki that integrates informations scientific journal articles from PubMed using its PubMed identifiant: //PMID//. The plugin downloads and stores the summary of each articles in an XML file in // /data/media/ncbi_esummary // directory.
+
+**%%{{pubmed>[Command]:[PubMed ID]}}%%**
+
+^  Command        ^  item  ^  function  |
+^[[#short]]        |link |Show a short pubmed link|
+^[[#long]]         |link |Show a detailed pubmed link|
+^[[#long_abstract]]|link |Show a detailed pubmed link and the complete abstract of the article (if available)|
+^[[#search]]       |link |Create a link to a search query over PubMed (you can use MeSH terms, wildcards...)|
+^summaryXML        |xml  |Show the XML data retreived from the NCBI database (usefull for debugging)|
+^clear_summary     |  -  |Clear cached XML files in /data/media/ncbi_esummary|
+^removre_dir       |  -  |Remove the XML output dir: /data/media/ncbi_esummary (by default)|
+
+======Examples======
+=====short=====
+**code**\\ 
+  {{pubmed>short:9039911}}
+
+**Result**\\ 
+{{https://raw.githubusercontent.com/EricMaeker/dokuwiki-plugin-pubmed/master/dokuwiki-web-site/short.png}}
+
+=====long=====
+**code**\\ 
+  {{pubmed>long:9039911}}
+
+**Result**\\ 
+{{https://raw.githubusercontent.com/EricMaeker/dokuwiki-plugin-pubmed/master/dokuwiki-web-site/long.png}}
+
+=====long_abstract=====
+**code**\\ 
+  {{pubmed>long_abstract:9039911}}
+
+**Result**\\ 
+{{https://raw.githubusercontent.com/EricMaeker/dokuwiki-plugin-pubmed/master/dokuwiki-web-site/long_abstract.png}}
+
+======search======
+
+**code**\\ 
+  {{pubmed>search:"Empathy"[Mesh] AND "Communication"[Mesh] AND "Aged"[Mesh]}}
+
+**Result**\\ 
+{{https://raw.githubusercontent.com/EricMaeker/dokuwiki-plugin-pubmed/dokuwiki-web-site/dokuwiki-web-site/search.png}}
+
+
+====== History ======
+
+  * 2016/08/22 (Eric Maeker)
+    * Updated the plugins to use the XML format of the PubMed exportation
+    * Improved HTML output code
+  *2013/01/30 (Ikuo Obataya)
+    *This plugin became independent on other helper plugins. You don't need bio plugin nor cache plugin.
+  *2008/03/22 (Ikuo Obataya)
+    *Some functions were parted into [[bio]] plugin and [[cache]] plugin.
+  *2008/02/26 (Ikuo Obataya)
+    *Cache ESummary XML file in /data/media/ncbi_esummary directory
+  *2007/12/08 (Ikuo Obataya)
+    *Fix around directory creation & ACL
+    *Append an icon image
+
+====== Discussion ======
+
