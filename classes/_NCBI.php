@@ -38,7 +38,7 @@ class ncbi {
     // Get it
     $summary = $this->HttpClient->get($url);
     // Check error
-    if (preg_match("/<pre><\/pre>/i",$summary)) {
+    if (preg_match("/<pre>\s+<\/pre>/i",$summary)) {
       if ($this->debugUsingEchoing)
         echo PHP_EOL.">> PUBMED: Error while retrieving URL: ".$url.PHP_EOL;
       return NULL; 
