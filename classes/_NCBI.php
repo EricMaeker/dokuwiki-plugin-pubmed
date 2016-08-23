@@ -98,7 +98,7 @@ class ncbi {
     $dom->loadXML($xml);
     if (!$dom) {
       echo '<p>Erreur lors de l\'analyse du document</p>'; // TODO translate this
-      exit;
+      return array();
     }
     $content = simplexml_import_dom($dom);
     $authors = array();
