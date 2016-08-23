@@ -30,7 +30,10 @@ class ncbi {
    * Retrieve Summary XML
    */
   function SummaryXml($db,$id) {
+    // Prepare pubmed URL using the XML text abstract
     $url = sprintf($this->pubmedXmlURL, urlencode($id));
+    if ($this->debugUsingEchoing)
+      echo PHP_EOL.">> PUBMED: getting URL: ".$url.PHP_EOL;
 
     // Get it
     $summary = $this->HttpClient->get($url);
