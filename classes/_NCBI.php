@@ -31,8 +31,16 @@ class ncbi {
    */
   function SummaryXml($db,$id) {
     $url = sprintf($this->pubmedXmlURL, urlencode($id));
+
+    // Get it
     $summary = $this->HttpClient->get($url);
-    if (preg_match("/error/i",$summary)) { return NULL; }
+    // Check error
+    if (preg_match("/<pre><\/pre>/i",$summary)) {
+      if ($this->debugUsingEchoing)
+        echo PHP_EOL.">> PUBMED: Error while retrieving URL: ".$url.PHP_EOL;
+      return NULL; 
+    }
+
     $pattern = "#<\s*?$tagname\b[^>]*>(.*?)</$tagname\b[^>]*>#s";
     preg_match($pattern, $summary, $matches);
     $summary = '<?xml version="1.0" standalone="yes"?>'.htmlspecialchars_decode($matches[1]);
