@@ -75,14 +75,29 @@ class ncbi {
   }
 
   /*
-   * Handle XML elements
+   * Get full abstract of the article stored in an Array where
+   *      "pmid"          -> PMID 
+   *      "url"           -> URL to PubMed site
+   *      "authors"       -> Array of authors
+   *      "title"         -> Full title
+   *      "lang"          -> language of the article
+   *      "journal_iso"   -> Journal ISO Abbreviation
+   *      "journal_title" -> Journal full title
+   *      "iso"           -> ISO citation of the article
+   *      "vol"           -> Journal Volume
+   *      "issue"         -> Journal Issue
+   *      "year"          -> Journal Year of publication
+   *      "month"         -> Journal Month of publication
+   *      "pages"         -> Journal pagination
+   *      "abstract"      -> Complete abstract
+   *      "doi"           -> doi references when available
    */
-
   function getAbstract($xml) {
+    // Use DOM php reader
     $dom = new DOMDocument;
     $dom->loadXML($xml);
     if (!$dom) {
-      echo '<p>Erreur lors de l\'analyse du document</p>';
+      echo '<p>Erreur lors de l\'analyse du document</p>'; // TODO translate this
       exit;
     }
     $content = simplexml_import_dom($dom);
