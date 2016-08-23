@@ -132,11 +132,22 @@ class ncbi {
       "abstract" => $abstract,
       "doi" => $doi
       );
-    $ret["iso"] = $ret["journal_iso"].'. '.$ret["year"];
-    if (!empty($refs["month"]))
-      $ret["iso"] .= ' '.$ret["month"];
-    $ret["iso"] .= ';'.$ret["vol"];
-    if (!empty($refs["issue"]))
+
+    // Remove points from the journal_iso string (as we now it is an abbrev
+    $ret["journal_iso"] = str_replace(".", "", $ret["journal_iso"]);
+
+    // Construct iso citation of this article
+    $ym = "";
+    $ret["iso"] = $ret["journal_iso"].'. ';
+    if (!empty($ret["year"]) && !empty(rel["month"]))
+      $ym = $ret["year"]." ".$ret["month"];
+    else
+      $ym = $ret["year"].$ret["month"];
+    if (!empty($ym))
+      $ret["iso"] .= $ym.';';
+    if (!empty($ret["vol"]))
+      $ret["iso"] .= $ret["vol"];
+    if (!empty($ret["issue"]))
       $ret["iso"] .= '('.$ret["issue"].')';
     $ret["iso"] .= ':'.$ret["pages"];
     if (!empty($ret["doi"]))
