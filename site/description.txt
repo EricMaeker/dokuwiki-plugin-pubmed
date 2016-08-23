@@ -33,34 +33,25 @@ This plugin is based on the Ikuo Obataya <I.Obataya@gmail.com> code base (from 2
 ^clear_summary     |  -  |Clear cached XML files in /data/media/ncbi_esummary|
 ^remove_dir       |  -  |Remove the XML output dir: /data/media/ncbi_esummary (by default)|
 
-======Examples======
+======Examples (code followed by a screenshot of the result)======
 =====short=====
-**code**\\ 
-  {{pubmed>short:9039911}}
 
-**Result**\\ 
+  {{pubmed>short:9039911}}
 {{https://github.com/EricMaeker/dokuwiki-plugin-pubmed/raw/dokuwiki-web-site/site/pubmed_short.png}}
 
 =====long=====
-**code**\\ 
-  {{pubmed>long:9039911}}
 
-**Result**\\ 
+  {{pubmed>long:9039911}}
 {{https://github.com/EricMaeker/dokuwiki-plugin-pubmed/raw/dokuwiki-web-site/site/pubmed_long.png}}
 
 =====long_abstract=====
-**code**\\ 
-  {{pubmed>long_abstract:9039911}}
 
-**Result**\\ 
+  {{pubmed>long_abstract:9039911}}
 {{https://github.com/EricMaeker/dokuwiki-plugin-pubmed/raw/dokuwiki-web-site/site/pubmed_long_abstract.png}}
 
 ======search======
 
-**code**\\ 
   {{pubmed>search:"Empathy"[Mesh] AND "Communication"[Mesh] AND "Aged"[Mesh]}}
-
-**Result**\\ 
 {{https://github.com/EricMaeker/dokuwiki-plugin-pubmed/raw/dokuwiki-web-site/site/search.png}}
 
 
