@@ -78,26 +78,6 @@ class ncbi {
    * Handle XML elements
    */
 
-  function GetSummaryItem($item,&$xml){
-    preg_match('/"'.$item.'"[^>]*>([^<]+)/',$xml,$m);
-    return $m[1];
-  }
-
-  function GetSummaryItems($item,&$xml){
-    preg_match_all('/"'.$item.'"[^>]*>([^<]+)/',$xml,$m);
-    return $m[1];
-  }
-
-  function GetSearchItem($item,&$xml){
-     preg_match("/<".$item.">([^<]+?)</",$xml,$m);
-     return $m[1];
-  }
-
-  function GetSearchItems($item,&$xml){
-     preg_match_all("/<".$item.">([^<]+?)</",$xml,$m);
-     return $m[1];
-  }
-
   function getAbstract($xml) {
     $dom = new DOMDocument;
     $dom->loadXML($xml);
