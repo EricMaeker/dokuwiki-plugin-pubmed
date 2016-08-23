@@ -14,6 +14,9 @@ class ncbi {
   var $pubmedURL   = '';
   var $pubmedXmlURL = '';
   var $pubmedSearchURL  = '';
+  
+  // Set this to true to get debugging page output when retrieving and processing pubmed URL
+  var $debugUsingEchoing = false; 
 
   function ncbi()
   {
