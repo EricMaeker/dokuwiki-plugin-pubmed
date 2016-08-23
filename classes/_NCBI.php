@@ -107,6 +107,7 @@ class ncbi {
       "authors" => $authors,
       "title" => $content->MedlineCitation[0]->Article[0]->ArticleTitle[0],
       "journal_iso" => $content->MedlineCitation[0]->Article[0]->Journal[0]->ISOAbbreviation,
+      "journal_title" => $content->MedlineCitation[0]->Article[0]->Journal[0]->Title,
       "lang" => $content->MedlineCitation[0]->Article[0]->Language,
       "vol" => $content->MedlineCitation[0]->Article[0]->Journal[0]->JournalIssue[0]->Volume[0],
       "issue" => $content->MedlineCitation[0]->Article[0]->Journal[0]->JournalIssue[0]->Issue[0],
