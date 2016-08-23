@@ -11,15 +11,13 @@ if(!defined('DOKU_INC')) die();
 
 class ncbi {
   var $HttpClient;
-  var $eSummaryURL = '';
-  var $eSearchURL  = '';
   var $pubmedURL   = '';
+  var $pubmedXmlURL = '';
+  var $pubmedSearchURL  = '';
 
   function ncbi()
   {
     $this->HttpClient   = new DokuHTTPClient();
-    $this->eSummaryURL  = 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=%s&retmode=xml&id=%s';
-    $this->eSearchURL   = 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=%s&term=%s';
     $this->pubmedURL    = 'http://www.ncbi.nlm.nih.gov/pubmed/%s';
     $this->pubmedXmlURL = 'http://www.ncbi.nlm.nih.gov/pubmed/%s?report=xml&format=text';
     $this->pubmedSearchURL = 'http://www.ncbi.nlm.nih.gov/pubmed/?term=%s';
