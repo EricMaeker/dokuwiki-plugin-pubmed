@@ -44,12 +44,20 @@ class ncbi {
       return NULL; 
     }
 
+    // Extract everything inside the PubmedArticle tagname
+    if ($this->debugUsingEchoing)
+      echo PHP_EOL.">> PUBMED: retrieved from the URL: ".PHP_EOL.$summary.PHP_EOL;
+      
+    // Now extract the requiered XML code from what we got from the pubmed website
+    // The code lies inside the unique <pre></pre> HTML block of this page
+    $tagname = "pre";
     $pattern = "#<\s*?$tagname\b[^>]*>(.*?)</$tagname\b[^>]*>#s";
     preg_match($pattern, $summary, $matches);
-    $summary = '<?xml version="1.0" standalone="yes"?>'.htmlspecialchars_decode($matches[1]);
-    return $summary;
+    if ($this->debugUsingEchoing)
+      echo PHP_EOL.">> PUBMED: processed: ".PHP_EOL.htmlspecialchars_decode($matches[1]).PHP_EOL;
+    return '<?xml version="1.0" standalone="yes"?>'.htmlspecialchars_decode($matches[1]);
   } // Ok, checked
-  
+
   /*
    * Retrieve Search result
    */
