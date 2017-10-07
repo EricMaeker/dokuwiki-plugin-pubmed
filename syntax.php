@@ -3,7 +3,7 @@
 description : Syntax plugin, PubMed article references integrator
 author      : Ikuo Obataya, Eric Maeker
 email       : i.obataya[at]gmail_com, eric[at]maeker.fr
-lastupdate  : 2016-08-22
+lastupdate  : 2017-10-07
 license     : GPL 2 (http://www.gnu.org/licenses/gpl.html)
 */
 
@@ -59,13 +59,19 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
 
     // Get the command and its arg(s) 
     list($state, $query) = $data;
-    list($cmd,$pmid)= $query;
+    list($cmd,$pmid) = $query;
 
     // Lowering command string
     $cmd = strtolower($cmd);
 
+    // If command is empty (in this case, command is the numeric pmid), catch prefs of the plugin
+    if (is_numeric($cmd)) {
+      $pmid = $cmd;
+      $cmd = $this->getConf('default_command');
+    }
+
     // Manage the article reference commands (short, long, long_abstract)
-    if ($cmd=='long' || $cmd=='short'||$cmd=='long_abstract') {
+    if ($cmd=='long' || $cmd=='short' || $cmd=='long_abstract') {
       // Check PMID format
       if (!is_numeric($pmid)) {
         $renderer->doc.=sprintf($this->getLang('pubmed_wrong_format'));
@@ -78,7 +84,7 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
         return false;
       }
       // Get the abstract of the article
-      $refs = $this->ncbi->getAbstract($xml);
+      $refs = $this->ncbi->getAbstract($xml, $this);
       // Construct reference to article (author.title.rev.year..) according to command
       if ($cmd=='long'||$cmd=='short'||$cmd=='long_abstract') {
         $renderer->doc.='<div class="pubmed">';

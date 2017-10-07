@@ -91,8 +91,9 @@ class ncbi {
    *      "pages"         -> Journal pagination
    *      "abstract"      -> Complete abstract
    *      "doi"           -> doi references when available
+   * $pluginObject must be accessible for translations ($this->getLang())
    */
-  function getAbstract($xml) {
+  function getAbstract($xml, $pluginObject) {
     // Use DOM php reader
     $dom = new DOMDocument;
     $dom->loadXML($xml);
@@ -101,21 +102,34 @@ class ncbi {
       return array();
     }
     $content = simplexml_import_dom($dom);
+
+    // Catch authors
     $authors = array();
-    foreach ($content->MedlineCitation[0]->Article[0]->AuthorList[0]->Author as $author) {
+    foreach($content->MedlineCitation[0]->Article[0]->AuthorList[0]->Author as $author) {
       array_push($authors, $author->LastName.' '.$author->ForeName);
     }
+
+    // Catch Abstract if exists
     $abstract = "";
-    foreach ($content->MedlineCitation[0]->Article[0]->Abstract[0]->AbstractText as $part) {
-      if (!empty($part["Label"]))
-        $abstract .= $part["Label"].": ";
-      $abstract .= $part.'<br>';
+    $part = array();
+    // If article has an Abstract catch it
+    if (!empty($content->MedlineCitation[0]->Article[0]->Abstract[0]->AbstractText)) {
+      foreach($content->MedlineCitation[0]->Article[0]->Abstract[0]->AbstractText as $part) {
+        if (!empty($part["Label"]))
+          $abstract .= $part["Label"].": ";
+        $abstract .= $part.'<br>';
+      }
+    } else {
+        $abstract = $pluginObject->getLang('no_abstract_available').'<br>';
     }
+
+    // Catch doi
     $doi = "";
-    foreach ($content->PubmedData[0]->ArticleIdList[0]->ArticleId as $part) {
+    foreach($content->PubmedData[0]->ArticleIdList[0]->ArticleId as $part) {
       if($part["IdType"]=="doi") $doi = $part;
     }
-        
+
+    // Create the object to return
     $ret = array(
       "pmid" => $content->MedlineCitation[0]->PMID[0],
       "url" => sprintf($this->pubmedURL, urlencode($content->MedlineCitation[0]->PMID[0])),
@@ -139,7 +153,7 @@ class ncbi {
     // Construct iso citation of this article
     $ym = "";
     $ret["iso"] = $ret["journal_iso"].'. ';
-    if (!empty($ret["year"]) && !empty(rel["month"]))
+    if (!empty($ret["year"]) && !empty($ret["month"]))
       $ym = $ret["year"]." ".$ret["month"];
     else
       $ym = $ret["year"].$ret["month"];
