@@ -77,31 +77,46 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
         $renderer->doc.=sprintf($this->getLang('pubmed_wrong_format'));
         return false;
       }
+
       // Get article summary (from cache or web)
       $xml = $this->getSummaryXML($pmid);
-      if(empty($xml)){
+      if (empty($xml)) {
         $renderer->doc .= sprintf($this->getLang('pubmed_not_found'),$pmid);
         return false;
       }
+
       // Get the abstract of the article
       $refs = $this->ncbi->getAbstract($xml, $this);
+
+      // Create output template
+      $out = array();
+      $out['short'] = '%first_author%. %iso%. %pmid%';
+      $out['long'] = '%authors%. %title%. %iso%. %pmid%';
+      $out['long_abstract'] = '%authors%. %title%. %iso%. %pmid%. abstract';
+
       // Construct reference to article (author.title.rev.year..) according to command
-      if ($cmd=='long'||$cmd=='short'||$cmd=='long_abstract') {
-        $renderer->doc.='<div class="pubmed">';
-        if ($cmd=='long' || $cmd=='long_abstract') {
-          $renderer->doc.= '<span class="authors">'.implode(', ',$refs["authors"]).'.</span> ';
-          $renderer->doc.= '<span class="title">'.$refs["title"].'</span> ';
-        }  else if ($cmd=='short') {
-          if (count($authors)>1) $etal = '<span class="etal">et al.</span>';
-          $renderer->doc .= $refs["authors"][0].$etal.' ';
-          $renderer->doc .= '<span class="jrnl">'.$refs["journal_iso"].'</span></a> ';
-        }
-        $renderer->doc .= '<span class="so">'.$refs["iso"].'</span> ';
-        $renderer->doc .= '<a href="'.$refs["url"].'"><span class="pmid">PMID: '.$refs["pmid"].'</span></a>';
-        if ($cmd == "long_abstract")
-          $renderer->doc .= '<br><span class="abstract">'.$refs["abstract"].'</span>'; 
-        $renderer->doc .= "</div>";
+      foreach($out as &$outputString) {
+        $outputString = str_replace("%authors%",      '<span class="authors">'.implode(', ',$refs["authors"]).'</span>', $outputString);
+        $outputString = str_replace("%first_author%", '<span class="authors">'.$refs["first_author"].'</span>', $outputString);
+        $outputString = str_replace("%pmid%",         '<a href="'.$refs["url"].'" class="pmid" target="_blank" title="PMID: '.$refs["pmid"].'"></a>', $outputString);
+        $outputString = str_replace("%title%",        '<span class="title">'.$refs["title"].'</span>', $outputString);
+        $outputString = str_replace("%lang%",         '<span class="lang">'.$refs["lang"].'</span>', $outputString);
+        $outputString = str_replace("%journal_iso%",  '<span class="journal_iso">'.$refs["journal_iso"].'</span>', $outputString);
+        $outputString = str_replace("%journal_title%", '<span class="journal_title">'.$refs["journal_title"].'</span>', $outputString);
+        $outputString = str_replace("%iso%",          '<span class="iso">'.$refs["iso"].'</span>', $outputString);
+        $outputString = str_replace("%vol%",          '<span class="vol">'.$refs["vol"].'</span>', $outputString);
+        $outputString = str_replace("%issue%",        '<span class="issue">'.$refs["issue"].'</span>', $outputString);
+        $outputString = str_replace("%year%",         '<span class="year">'.$refs["year"].'</span>', $outputString);
+        $outputString = str_replace("%month%",        '<span class="month">'.$refs["month"].'</span>', $outputString);
+        $outputString = str_replace("%pages%",        '<span class="pages">'.$refs["pages"].'</span>', $outputString);
+        $outputString = str_replace("%abstract%",     '<br/><span class="abstract">'.$refs["abstract"].'</span>', $outputString);
+        $outputString = str_replace("%doi%",          '<span class="doi">'.$refs["doi"].'</span>', $outputString);
+        // Remove ..
+        $outputString = str_replace(".</span>.",  '.', $outputString);
       }
+      $renderer->doc .= '<div class="pubmed"><div class="'.$cmd.'">';
+      $renderer->doc .= $out[$cmd];
+      $renderer->doc .= "</div></div>";
     } else {
       // Manage all other commands (summaryxml, clear_summary, remove_dir, search)
       switch($cmd) {

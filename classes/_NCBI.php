@@ -79,6 +79,7 @@ class ncbi {
    *      "pmid"          -> PMID 
    *      "url"           -> URL to PubMed site
    *      "authors"       -> Array of authors
+   *      "first_author"  -> First author + "et al." if other authors are listed
    *      "title"         -> Full title
    *      "lang"          -> language of the article
    *      "journal_iso"   -> Journal ISO Abbreviation
@@ -147,6 +148,13 @@ class ncbi {
       "doi" => $doi
       );
 
+    // Create first author for short output
+    if (count($authors)>1) {
+        $ret['first_author'] = $authors[0].' <span class="etal">et al</span>';
+    } else {
+        $ret['first_author'] = $authors;
+    }
+
     // Remove points from the journal_iso string (as we now it is an abbrev
     $ret["journal_iso"] = str_replace(".", "", $ret["journal_iso"]);
 
@@ -164,8 +172,8 @@ class ncbi {
     if (!empty($ret["issue"]))
       $ret["iso"] .= '('.$ret["issue"].')';
     $ret["iso"] .= ':'.$ret["pages"];
-    if (!empty($ret["doi"]))
-      $ret["iso"] .= ". doi: ".$ret["doi"];
+//    if (!empty($ret["doi"]))
+//      $ret["iso"] .= ". doi: ".$ret["doi"];
     return $ret;
   }
 

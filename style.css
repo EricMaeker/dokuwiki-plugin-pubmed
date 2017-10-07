@@ -2,12 +2,23 @@
   border-bottom:solid 1px #CCCCCC;
 }
 */
-div.pubmed span.etal{
-  font-style:italic;
-  font-size:90%;
-  margin-left:10px;
+
+div.pubmed div.long span.authors,
+div.pubmed div.long_abstract span.authors{
+  font-weight: bold;
 }
-div.pubmed span.jrnl,
+
+div.pubmed div.short span.authors{
+  font-weight: normal;
+  font-style: italic;
+}
+
+div.pubmed div.short span.etal{ /* always in short output */
+  font-style: inherit;
+}
+
+div.pubmed span.journal_iso,
+div.pubmed span.journal_title,
 div.pubmed span.volume,
 div.pubmed span.pages,
 div.pubmed span.date{
@@ -15,18 +26,23 @@ div.pubmed span.date{
   margin-right:5px;
 }
 
-div.pubmed span.jrnl{
+div.pubmed span.journal_title{
   font-style:italic;
 }
-div.pubmed span.authors{
+
+div.pubmed span.journal_iso{
+  font-style:italic;
+}
+
+div.pubmed div.long span.title,
+div.pubmed div.long_abstract span.title, {
   font-weight: bold;
 }
-div.pubmed span.title{
-  font-weight: bold;
-}
+
 div.pubmed span.volume{
   font-weight:bold;
 }
+
 div.pubmed a {
   background-image:url(images/pubmed_icon.png);
   background-repeat:no-repeat;
@@ -36,6 +52,9 @@ div.pubmed a {
 div.pubmed span.pmid {
   font-size:80%;
 }
+div.pubmed span.iso {
+}
+
 div.pubmed span.abstract{
   font-size:80%;
   padding-left:20px;
