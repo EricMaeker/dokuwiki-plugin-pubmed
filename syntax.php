@@ -44,10 +44,36 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
   * - clear_summary: clear all cached summary of the selected PMID. No args required
   * - remove_dir: clear all cache dir. No args required
   * - search: Create a pubmed search query using the arg. Arg must be a valid pubmed search (including MeSH terms)
+  * - user: using plugin configuration, you can define a user specific tokened string output format
   */
   function handle($match, $state, $pos, &$handler){
     $match = substr($match,9,-2);
     return array($state,explode(':', $match, 2));
+  }
+
+  /**
+   * Replace tokens in the string \e $outputString using the array $refs.
+   * \returns Replaced string content.
+   */
+  function replaceTokens($outputString, $refs) {
+      $outputString = str_replace("%authors%",      '<span class="authors">'.implode(', ',$refs["authors"]).'</span>', $outputString);
+      $outputString = str_replace("%first_author%", '<span class="authors">'.$refs["first_author"].'</span>', $outputString);
+      $outputString = str_replace("%pmid%",         '<a href="'.$refs["url"].'" class="pmid" target="_blank" title="PMID: '.$refs["pmid"].'"></a>', $outputString);
+      $outputString = str_replace("%title%",        '<span class="title">'.$refs["title"].'</span>', $outputString);
+      $outputString = str_replace("%lang%",         '<span class="lang">'.$refs["lang"].'</span>', $outputString);
+      $outputString = str_replace("%journal_iso%",  '<span class="journal_iso">'.$refs["journal_iso"].'</span>', $outputString);
+      $outputString = str_replace("%journal_title%", '<span class="journal_title">'.$refs["journal_title"].'</span>', $outputString);
+      $outputString = str_replace("%iso%",          '<span class="iso">'.$refs["iso"].'</span>', $outputString);
+      $outputString = str_replace("%vol%",          '<span class="vol">'.$refs["vol"].'</span>', $outputString);
+      $outputString = str_replace("%issue%",        '<span class="issue">'.$refs["issue"].'</span>', $outputString);
+      $outputString = str_replace("%year%",         '<span class="year">'.$refs["year"].'</span>', $outputString);
+      $outputString = str_replace("%month%",        '<span class="month">'.$refs["month"].'</span>', $outputString);
+      $outputString = str_replace("%pages%",        '<span class="pages">'.$refs["pages"].'</span>', $outputString);
+      $outputString = str_replace("%abstract%",     '<br/><span class="abstract">'.$refs["abstract"].'</span>', $outputString);
+      $outputString = str_replace("%doi%",          '<span class="doi">'.$refs["doi"].'</span>', $outputString);
+      // Remove ..
+      $outputString = str_replace(".</span>.",  '.', $outputString);
+      return $outputString;
   }
 
  /**
@@ -71,7 +97,7 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
     }
 
     // Manage the article reference commands (short, long, long_abstract)
-    if ($cmd=='long' || $cmd=='short' || $cmd=='long_abstract') {
+    if ($cmd=='long' || $cmd=='short' || $cmd=='long_abstract' || $cmd=='user') {
       // Check PMID format
       if (!is_numeric($pmid)) {
         $renderer->doc.=sprintf($this->getLang('pubmed_wrong_format'));
@@ -92,30 +118,12 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
       $out = array();
       $out['short'] = '%first_author%. %iso%. %pmid%';
       $out['long'] = '%authors%. %title%. %iso%. %pmid%';
-      $out['long_abstract'] = '%authors%. %title%. %iso%. %pmid%. abstract';
+      $out['long_abstract'] = '%authors%. %title%. %iso%. %pmid%. %abstract%';
+      $out['user'] = $this->getConf('user_defined_output');
 
       // Construct reference to article (author.title.rev.year..) according to command
-      foreach($out as &$outputString) {
-        $outputString = str_replace("%authors%",      '<span class="authors">'.implode(', ',$refs["authors"]).'</span>', $outputString);
-        $outputString = str_replace("%first_author%", '<span class="authors">'.$refs["first_author"].'</span>', $outputString);
-        $outputString = str_replace("%pmid%",         '<a href="'.$refs["url"].'" class="pmid" target="_blank" title="PMID: '.$refs["pmid"].'"></a>', $outputString);
-        $outputString = str_replace("%title%",        '<span class="title">'.$refs["title"].'</span>', $outputString);
-        $outputString = str_replace("%lang%",         '<span class="lang">'.$refs["lang"].'</span>', $outputString);
-        $outputString = str_replace("%journal_iso%",  '<span class="journal_iso">'.$refs["journal_iso"].'</span>', $outputString);
-        $outputString = str_replace("%journal_title%", '<span class="journal_title">'.$refs["journal_title"].'</span>', $outputString);
-        $outputString = str_replace("%iso%",          '<span class="iso">'.$refs["iso"].'</span>', $outputString);
-        $outputString = str_replace("%vol%",          '<span class="vol">'.$refs["vol"].'</span>', $outputString);
-        $outputString = str_replace("%issue%",        '<span class="issue">'.$refs["issue"].'</span>', $outputString);
-        $outputString = str_replace("%year%",         '<span class="year">'.$refs["year"].'</span>', $outputString);
-        $outputString = str_replace("%month%",        '<span class="month">'.$refs["month"].'</span>', $outputString);
-        $outputString = str_replace("%pages%",        '<span class="pages">'.$refs["pages"].'</span>', $outputString);
-        $outputString = str_replace("%abstract%",     '<br/><span class="abstract">'.$refs["abstract"].'</span>', $outputString);
-        $outputString = str_replace("%doi%",          '<span class="doi">'.$refs["doi"].'</span>', $outputString);
-        // Remove ..
-        $outputString = str_replace(".</span>.",  '.', $outputString);
-      }
       $renderer->doc .= '<div class="pubmed"><div class="'.$cmd.'">';
-      $renderer->doc .= $out[$cmd];
+      $renderer->doc .= $this->replaceTokens($out[$cmd], $refs);
       $renderer->doc .= "</div></div>";
     } else {
       // Manage all other commands (summaryxml, clear_summary, remove_dir, search)
