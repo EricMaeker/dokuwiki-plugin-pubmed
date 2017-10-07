@@ -107,7 +107,8 @@ class ncbi {
     // Catch authors
     $authors = array();
     foreach($content->MedlineCitation[0]->Article[0]->AuthorList[0]->Author as $author) {
-      array_push($authors, $author->LastName.' '.$author->ForeName);
+      if (!empty($author->LastName) || !empty($author->ForeName))
+        array_push($authors, $author->LastName.' '.$author->ForeName);
     }
 
     // Catch Abstract if exists
