@@ -14,6 +14,7 @@ class ncbi {
   var $pubmedURL   = '';
   var $pubmedXmlURL = '';
   var $pubmedSearchURL  = '';
+  var $xmlStartPattern = '<?xml version="1.0" standalone="yes"?>';
   
   // Set this to true to get debugging page output when retrieving and processing pubmed URL
   var $debugUsingEchoing = false; 
@@ -55,7 +56,7 @@ class ncbi {
     preg_match($pattern, $summary, $matches);
     if ($this->debugUsingEchoing)
       echo PHP_EOL.">> PUBMED: processed: ".PHP_EOL.htmlspecialchars_decode($matches[1]).PHP_EOL;
-    return '<?xml version="1.0" standalone="yes"?>'.htmlspecialchars_decode($matches[1]);
+    return $this->xmlStartPattern.htmlspecialchars_decode($matches[1]);
   } // Ok, checked
 
   /*
@@ -95,8 +96,14 @@ class ncbi {
    * $pluginObject must be accessible for translations ($this->getLang())
    */
   function getAbstract($xml, $pluginObject) {
+    // No XML return empty array
+    if (empty($xml) || $xml === $this->xmlStartPattern)
+      return array();
+
     // Use DOM php reader
     $dom = new DOMDocument;
+
+    // Load XML document
     $dom->loadXML($xml);
     if (!$dom) {
       echo '<p>Erreur lors de l\'analyse du document</p>'; // TODO translate this

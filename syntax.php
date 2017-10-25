@@ -56,6 +56,9 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
    * \returns Replaced string content.
    */
   function replaceTokens($outputString, $refs) {
+      // Empty array -> exit
+      if (count($refs) < 1)
+        return $outputString;
       $outputString = str_replace("%authors%",      '<span class="authors">'.implode(', ',$refs["authors"]).'</span>', $outputString);
       $outputString = str_replace("%first_author%", '<span class="authors">'.$refs["first_author"].'</span>', $outputString);
       $outputString = str_replace("%pmid%",         '<a href="'.$refs["url"].'" class="pmid" target="_blank" title="PMID: '.$refs["pmid"].'"></a>', $outputString);
