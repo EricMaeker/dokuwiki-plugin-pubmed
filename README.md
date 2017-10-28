@@ -5,41 +5,43 @@ See http://www.dokuwiki.org/plugin:pubmed
 
 ## Authors and licence
 
-Ikuo Obataya wrote this plugin (2007-now)
-Eric Maeker improved this plugins (2016-now)
-
-Licence : GPLv2
+- Ikuo Obataya wrote this plugin (2007-now)
+- Eric Maeker improved this plugins (2016-now)
+- Licence : GPLv2
 
 ## How does it work
 
 ### Getting informations
+
 This plugin retrieves the XML description of articles from NCBI [pubmed] and allow users to easily include article citation into their DokuWiki pages.
 XML content is cached in the media directory of your wiki.
+
 This plugin is perfectly adapted to dokuwiki farms.
 
 ### Including article citation into your pages
 
-The syntax is quite easy.
-`{{pubmed>pmid}}`
-or
-`{{pubmed>command:pmid}}`
+The syntax is quite easy:
+- `{{pubmed>pmid}}`
+- or `{{pubmed>command:pmid}}`
 
 - Using the default options:
-`{{pubmed>24073682}}` where 24073682 is the PMID of the article as notified by pubmed.
-`{{pubmed>user:24073682}}` where 24073682 is the PMID of the article as notified by pubmed and the default *user* parameter will be used to create the article citation.
+  - `{{pubmed>24073682}}` where 24073682 is the PMID of the article as notified by pubmed.
+  - `{{pubmed>user:24073682}}` where 24073682 is the PMID of the article as notified by pubmed and the default *user* parameter will be used to create the article citation.
 
 - Using specific formula:
-`{{pubmed>long:24073682}}` where 24073682 is the PMID of the article as notified by pubmed and *long* is the selected article citation formula.
+  - `{{pubmed>long:24073682}}` where 24073682 is the PMID of the article as notified by pubmed and *long* is the selected article citation formula.
 
 ### Including links to pubmed search page
+
 You can also use this plugin to create [pubmed] search URL.
-`{{pubmed>search:"Inappropriate Prescribing"[Mesh]}}`
-`{{pubmed>search:"Drug-Related Side Effects and Adverse Reactions"[Mesh] AND (Review[ptyp] AND "loattrfree full text"[sb])}}`
+- `{{pubmed>search:"Inappropriate Prescribing"[Mesh]}}`
+- `{{pubmed>search:"Drug-Related Side Effects and Adverse Reactions"[Mesh] AND (Review[ptyp] AND "loattrfree full text"[sb])}}`
 
 
 ## Options
 
 ### Citation formula
+
 The article citation can be automatically included using pre-formatted outputs:
 - *short* : ISO citation in a short way.
 - *long* : full ISO citation including all authors, article title, journal title, volume, year, month, pages.
@@ -47,11 +49,13 @@ The article citation can be automatically included using pre-formatted outputs:
 - or *user* defined : you can define you own citation formula (see below).
 
 ### Plugin parameters
+
 This plugin comes with some configuration parameters:
 - *Default citation formula*.
 - *Default user defined formula*.
 
 ## Specific commands
+
 Some more commands are available:
 - *summaryxml* show the retrieved XML code.
 `{{pubmed>summaryxml:24073682}}`
