@@ -14,8 +14,10 @@ require_once(DOKU_PLUGIN.'syntax.php');
 class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
   var $ncbi;
   var $xmlCache;
-  // Constructor
+  var $doiUrl = 'http://dx.doi.org/'; //+doi
+  var $pmcUrl = 'https://www.ncbi.nlm.nih.gov/pmc/articles/'; //+pmc
 
+  // Constructor
   function syntax_plugin_pubmed(){
     if (!class_exists('plugin_cache'))
       @require_once(DOKU_PLUGIN.'pubmed/classes/cache.php');
@@ -73,15 +75,26 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
       $outputString = str_replace("%month%",        '<span class="month">'.$refs["month"].'</span>', $outputString);
       $outputString = str_replace("%pages%",        '<span class="pages">'.$refs["pages"].'</span>', $outputString);
       $outputString = str_replace("%abstract%",     '<br/><span class="abstract">'.$refs["abstract"].'</span>', $outputString);
-      $outputString = str_replace("%doi%",          '<span class="doi">'.$refs["doi"].'</span>', $outputString);
+      if (empty($refs["doi"])) {
+        $outputString = str_replace("%doi%", "", $outputString);
+        $outputString = str_replace("%journal_url%",  "", $outputString);
+      } else {
+        $outputString = str_replace("%doi%",          '<span class="doi">'.$refs["doi"].'</span>', $outputString);
+        $outputString = str_replace("%journal_url%",  '<a href="'.$this->doiUrl.$refs["doi"].'" class="journal_url" target="_blank" title="'.$refs["iso"].'"></a>', $outputString);
+      }
+      if (empty($refs["pmc"]))
+        $outputString = str_replace("%pmc_url%", "", $outputString);
+      else
+        $outputString = str_replace("%pmc_url%",      '<a href="'.$this->pmcUrl.$refs["pmc"].'" class="pmc_url" target="_blank" title="'.$refs["pmc"].'"></a>', $outputString);
+
       // Remove ..
-      $outputString = str_replace(".</span>.",  '.', $outputString);
+      $outputString = str_replace(".</span>.",  '.</span>', $outputString);
       return $outputString;
   }
 
- /**
-  * Create output
-  */
+  /**
+   * Create output
+   */
   function render($mode, &$renderer, $data) {
     if ($mode!='xhtml')
       return false;
@@ -119,9 +132,9 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
 
       // Create output template
       $out = array();
-      $out['short'] = '%first_author%. %iso%. %pmid%';
-      $out['long'] = '%authors%. %title%. %iso%. %pmid%';
-      $out['long_abstract'] = '%authors%. %title%. %iso%. %pmid%. %abstract%';
+      $out['short'] = '%first_author%. %iso%. %pmid%. %journal_url% %pmc_url%';
+      $out['long'] = '%authors%. %title%. %iso%. %pmid%. %journal_url% %pmc_url%';
+      $out['long_abstract'] = '%authors%. %title%. %iso%. %pmid%. %journal_url% %pmc_url% %abstract%';
       $out['user'] = $this->getConf('user_defined_output');
 
       // Construct reference to article (author.title.rev.year..) according to command
