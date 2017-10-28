@@ -194,7 +194,7 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
           
         case 'search':
           $renderer->doc.='<div class="pubmed">';
-          $renderer->doc.= '<a href="'.$this->ncbi->getPubmedSearchURL($pmid).'">'.$pmid.'</a>';
+          $renderer->doc.= '<a class="pmid" href="'.$this->ncbi->getPubmedSearchURL($pmid).'">'.$pmid.'</a>';
           $renderer->doc.='</div>';
           return true;
 

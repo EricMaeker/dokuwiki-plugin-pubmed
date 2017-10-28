@@ -43,11 +43,25 @@ div.pubmed span.volume{
   font-weight:bold;
 }
 
-div.pubmed a {
+div.pubmed a.pmid  {
   background-image:url(images/pubmed_icon.png);
   background-repeat:no-repeat;
-  background-position:left bottom;
+  background-position:left center;
   padding-left:48px;
+}
+div.pubmed a.journal_url {
+  background-image:url(images/magazine100.png);
+  background-repeat:no-repeat;
+  background-position:left center;
+  background-size: contain;
+  padding-left:1em;
+}
+div.pubmed a.pmc_url {
+  background-image:url(images/pmc.png);
+  background-repeat:no-repeat;
+  background-position:left center;
+  background-size: contain;
+  padding-left:1em;
 }
 div.pubmed span.pmid {
   font-size:80%;
