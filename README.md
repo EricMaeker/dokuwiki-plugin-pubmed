@@ -1,6 +1,7 @@
 # PubMed plugin for DokuWiki
 
 Retrieves information from NCBI [PubMed]
+
 See http://www.dokuwiki.org/plugin:pubmed
 
 ## Authors and licence
