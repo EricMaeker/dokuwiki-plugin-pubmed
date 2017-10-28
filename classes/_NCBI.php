@@ -132,10 +132,11 @@ class ncbi {
         $abstract = $pluginObject->getLang('no_abstract_available').'<br>';
     }
 
-    // Catch doi
+    // Catch doi, pmc
     $doi = "";
     foreach($content->PubmedData[0]->ArticleIdList[0]->ArticleId as $part) {
-      if($part["IdType"]=="doi") $doi = $part;
+      if ($part["IdType"]=="doi") $doi = $part;
+      if ($part["IdType"]=="pmc") $pmc = $part;
     }
 
     // Create the object to return
@@ -153,7 +154,8 @@ class ncbi {
       "month" => $content->MedlineCitation[0]->Article[0]->Journal[0]->JournalIssue[0]->PubDate[0]->Month[0],
       "pages" => $content->MedlineCitation[0]->Article[0]->Pagination[0]->MedlinePgn[0],
       "abstract" => $abstract,
-      "doi" => $doi
+      "doi" => $doi,
+      "pmc" => $pmc
       );
 
     // Create first author for short output
