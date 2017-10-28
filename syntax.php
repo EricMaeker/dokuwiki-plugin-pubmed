@@ -61,6 +61,31 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
       // Empty array -> exit
       if (count($refs) < 1)
         return $outputString;
+      /*
+      // May be it will be easier to code using arrays...
+      $content = array();
+        $content = array(
+          "%pmid%" =>           '<a href="'.$refs["url"].'" class="pmid" target="_blank" title="PMID: '.$refs["pmid"].'"></a>',
+          "%url%" => sprintf($this->pubmedURL, urlencode($content->MedlineCitation[0]->PMID[0])),
+          "%authors%" =>        '<span class="authors">'.implode(', ',$refs["authors"]).'</span>',
+          "%first_author%" =>   '<span class="authors">'.$refs["first_author"].'</span>',
+          "%title%" =>          '<span class="title">'.$refs["title"].'</span>',
+          "%journal_iso%" =>    '<span class="journal_iso">'.$refs["journal_iso"].'</span>',
+          "%journal_title%" =>  '<span class="journal_title">'.$refs["journal_title"].'</span>',
+          "%lang%" =>           '<span class="lang">'.$refs["lang"].'</span>',
+          "%vol%" =>            '<span class="vol">'.$refs["vol"].'</span>',
+          "%issue%" =>          '<span class="issue">'.$refs["issue"].'</span>',
+          "%year%" =>           '<span class="year">'.$refs["year"].'</span>',
+          "%month%" =>          '<span class="month">'.$refs["month"].'</span>',
+          "%pages%" =>          '<span class="pages">'.$refs["pages"].'</span>',
+          "%abstract%" =>       '<br/><span class="abstract">'.$refs["abstract"].'</span>',
+          "%doi%" =>            '<span class="doi">'.$refs["doi"].'</span>',
+          "%pmc%" =>            '<span class="pmc">'.$refs["pmc"].'</span>',,
+          "%iso%" =>            '<span class="iso">'.$refs["iso"].'</span>'
+          );
+      '<a href="'.$this->pmcUrl.$refs["pmc"].'" class="pmc_url" target="_blank" title="'.$refs["pmc"].'"></a>';
+      */
+
       $outputString = str_replace("%authors%",      '<span class="authors">'.implode(', ',$refs["authors"]).'</span>', $outputString);
       $outputString = str_replace("%first_author%", '<span class="authors">'.$refs["first_author"].'</span>', $outputString);
       $outputString = str_replace("%pmid%",         '<a href="'.$refs["url"].'" class="pmid" target="_blank" title="PMID: '.$refs["pmid"].'"></a>', $outputString);
