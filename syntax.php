@@ -157,9 +157,9 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
 
       // Create output template
       $out = array();
-      $out['short'] = '%first_author%. %iso%. %pmid%. %journal_url% %pmc_url%';
-      $out['long'] = '%authors%. %title%. %iso%. %pmid%. %journal_url% %pmc_url%';
-      $out['long_abstract'] = '%authors%. %title%. %iso%. %pmid%. %journal_url% %pmc_url% %abstract%';
+      $out['short'] = '%first_author%. %iso%. %pmid% %journal_url% %pmc_url%';
+      $out['long'] = '%authors%. %title%. %iso%. %pmid% %journal_url% %pmc_url%';
+      $out['long_abstract'] = '%authors%. %title%. %iso%. %pmid% %journal_url% %pmc_url% %abstract%';
       $out['user'] = $this->getConf('user_defined_output');
 
       // Construct reference to article (author.title.rev.year..) according to command
