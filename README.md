@@ -12,7 +12,7 @@ See http://www.dokuwiki.org/plugin:pubmed
 
 ## How does it work
 
-(See in action)[http://localhost/eric/farm/eric/doku.php?id=fr:medical:cours:part:iatrogenese:references&purge=true]
+See [in action]
 
 ### Getting informations
 
@@ -106,3 +106,4 @@ Please use [github] repository to adress any comments, issues or wishes.
 
 [pubmed]: https://www.ncbi.nlm.nih.gov/pubmed
 [github]: https://github.com/EricMaeker/dokuwiki-plugin-pubmed/tree/dokuwiki-web-site
+[in action]: https://www.maeker.fr/eric/wiki/fr:medical:cours:part:iatrogenese:references
