@@ -59,8 +59,10 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
    */
   function replaceTokens($outputString, $refs) {
       // Empty array -> exit
-      if (count($refs) < 1)
-        return $outputString;
+      if (count($refs) < 2) { // PMID is always included
+        return sprintf($this->getLang('pubmed_not_found'),$refs["pmid"]);
+      }
+
       /*
       // May be it will be easier to code using arrays...
       $content = array();
@@ -153,7 +155,7 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
       }
 
       // Get the abstract of the article
-      $refs = $this->ncbi->getAbstract($xml, $this);
+      $refs = $this->ncbi->getAbstract($xml, $pmid, $this);
 
       // Create output template
       $out = array();

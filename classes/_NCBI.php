@@ -75,7 +75,7 @@ class ncbi {
     return sprintf($this->pubmedSearchURL, urlencode($searchTerms));
   }
 
-  /*
+  /**
    * Get full abstract of the article stored in an Array where
    *      "pmid"          -> PMID 
    *      "url"           -> URL to PubMed site
@@ -94,11 +94,12 @@ class ncbi {
    *      "abstract"      -> Complete abstract
    *      "doi"           -> doi references when available
    * $pluginObject must be accessible for translations ($this->getLang())
+   * $pmid is used for error message
    */
-  function getAbstract($xml, $pluginObject) {
+  function getAbstract($xml, $pmid, $pluginObject) {
     // No XML return empty array
     if (empty($xml) || $xml === $this->xmlStartPattern)
-      return array();
+      return array("pmid" => $pmid);
 
     // Use DOM php reader
     $dom = new DOMDocument;
