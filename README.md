@@ -12,6 +12,8 @@ See http://www.dokuwiki.org/plugin:pubmed
 
 ## How does it work
 
+(See in action)[http://localhost/eric/farm/eric/doku.php?id=fr:medical:cours:part:iatrogenese:references&purge=true]
+
 ### Getting informations
 
 This plugin retrieves the XML description of articles from NCBI [pubmed] and allow users to easily include article citation into their DokuWiki pages.
