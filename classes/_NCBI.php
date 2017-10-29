@@ -114,9 +114,13 @@ class ncbi {
 
     // Catch authors
     $authors = array();
-    foreach($content->MedlineCitation[0]->Article[0]->AuthorList[0]->Author as $author) {
-      if (!empty($author->LastName) || !empty($author->ForeName))
-        array_push($authors, $author->LastName.' '.$author->ForeName);
+    if (!empty($content->MedlineCitation[0]->Article[0]->AuthorList)) {
+      foreach($content->MedlineCitation[0]->Article[0]->AuthorList[0]->Author as $author) {
+        if (!empty($author->LastName) || !empty($author->ForeName))
+          array_push($authors, $author->LastName.' '.$author->ForeName);
+      }
+    } else {
+      array_push($authors, $pluginObject->getLang('no_author_listed'));
     }
 
     // Catch Abstract if exists
@@ -163,7 +167,7 @@ class ncbi {
     if (count($authors)>1) {
         $ret['first_author'] = $authors[0].' <span class="etal">et al</span>';
     } else {
-        $ret['first_author'] = $authors;
+        $ret['first_author'] = $authors[0];
     }
 
     // Remove points from the journal_iso string (as we now it is an abbrev

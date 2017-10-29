@@ -4,4 +4,5 @@
   $lang['pubmed_available_cmd']='[使用できるコマンド]: long, short, summaryXML, clear_summary, remove_dir, search';
   $lang['plugin_cmd_not_found']="コマンド '%s' は見つかりませんでした。";
   $lang['no_abstract_available'] ="No abstract available.";
+  $lang['no_author_listed'] ="No author listed.";
 ?>
