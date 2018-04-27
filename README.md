@@ -14,6 +14,10 @@ See http://www.dokuwiki.org/plugin:pubmed
 
 See [in action]
 
+### Requirements
+
+This plugins requires PHP 5+ and the php-dom extension to be installed on your server.
+
 ### Getting informations
 
 This plugin retrieves the XML description of articles from NCBI [pubmed] and allow users to easily include article citation into their DokuWiki pages.
