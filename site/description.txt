@@ -57,7 +57,7 @@ This plugin is based on the Ikuo Obataya <I.Obataya@gmail.com> code base (from 2
 
 ====== History ======
 
-  * See [[https://github.com/EricMaeker/dokuwiki-plugin-pubmed/commits/master]]
+  * See [[https://github.com/EricMaeker/dokuwiki-plugin-pubmed/commits/dokuwiki-web-site]]
 
 ====== Discussion ======
 
