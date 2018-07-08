@@ -142,8 +142,8 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
     // Manage the article reference commands (short, long, long_abstract)
     if ($cmd=='long' || $cmd=='short' || $cmd=='long_abstract' || $cmd=='user') {
       // Check PMID format
-      if (!is_numeric($pmid)) {
-        $renderer->doc.=sprintf($this->getLang('pubmed_wrong_format'));
+      if (!is_numeric($pmid) || (strlen($pmid)<8)) {
+        $renderer->doc .= sprintf($this->getLang('pubmed_wrong_format'));
         return false;
       }
 
