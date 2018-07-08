@@ -118,9 +118,127 @@ class ncbi {
       return array();
     }
     $content = simplexml_import_dom($dom);
+    $authors = array();
+    $abstract = "";
+    $part = array();
+
+    if (!empty($content->BookDocument)) {
+      // Catch book references
+			/*
+			<PubmedBookArticle>
+				<BookDocument>
+					<PMID Version="1">28876803</PMID>
+					<ArticleIdList>
+						<ArticleId IdType="bookaccession">...</ArticleId>
+					</ArticleIdList>
+					<Book>
+						<Publisher>
+							<PublisherName>...</PublisherName>
+							<PublisherLocation>...</PublisherLocation>
+						</Publisher>
+						<BookTitle book="sbu0010">...</BookTitle>
+						<PubDate>
+							<Year>...</Year>
+							<Month>...</Month>
+						</PubDate>
+						<AuthorList Type="authors">
+							<Author>
+								<CollectiveName>...</CollectiveName>
+							</Author>
+						</AuthorList>
+						<CollectionTitle book="sbumr">...</CollectionTitle>
+						<Medium>...</Medium>
+						<ReportNumber>...</ReportNumber>
+					</Book>
+					<Language>...</Language>
+					<Abstract>
+						<AbstractText>...</AbstractText>
+						<CopyrightInformation...</CopyrightInformation>
+					</Abstract>
+				</BookDocument>
+				<PubmedBookData>
+					<History>
+						<PubMedPubDate PubStatus="pubmed">
+							<Year>2017</Year>
+							<Month>9</Month>
+							<Day>7</Day>
+							<Hour>6</Hour>
+							<Minute>1</Minute>
+						</PubMedPubDate>
+						<PubMedPubDate PubStatus="medline">
+							<Year>2017</Year>
+							<Month>9</Month>
+							<Day>7</Day>
+							<Hour>6</Hour>
+							<Minute>1</Minute>
+						</PubMedPubDate>
+						<PubMedPubDate PubStatus="entrez">
+							<Year>2017</Year>
+							<Month>9</Month>
+							<Day>7</Day>
+							<Hour>6</Hour>
+							<Minute>1</Minute>
+						</PubMedPubDate>
+					</History>
+					<PublicationStatus>ppublish</PublicationStatus>
+					<ArticleIdList>
+						<ArticleId IdType="pubmed">28876803</ArticleId>
+					</ArticleIdList>
+				</PubmedBookData>
+			</PubmedBookArticle>
+			*/
+
+      // Catch authors
+      if (!empty($content->BookDocument[0]->Book[0]->AuthorList)) {
+        if (!empty($content->BookDocument[0]->Book[0]->AuthorList->Author[0]->CollectiveName)) {
+          array_push($authors, $content->BookDocument[0]->Book[0]->AuthorList->Author[0]->CollectiveName);
+        } else if (!empty($content->BookDocument[0]->Book[0]->AuthorList)) {
+          foreach($content->BookDocument[0]->Book[0]->AuthorList[0]->Author as $author) {
+            if (!empty($author->LastName) || !empty($author->ForeName))
+              array_push($authors, $author->LastName.' '.$author->ForeName);
+          } // foreach
+        } else {
+          array_push($authors, $pluginObject->getLang('no_author_listed'));
+        }
+      }
+
+	  $ret = array(
+		  "type" => "book",
+		  "pmid" => $content->BookDocument[0]->PMID[0],
+		  "url" => sprintf($this->pubmedURL, urlencode($content->BookDocument[0]->PMID[0])),
+		  "authors" => $authors,
+		  "title" => $content->BookDocument[0]->Book[0]->BookTitle[0],
+		  "lang" => $content->BookDocument[0]->Language,
+		  "year" => $content->BookDocument[0]->Book[0]->PubDate[0]->Year[0],
+		  "month" => $content->BookDocument[0]->Book[0]->PubDate[0]->Month[0],
+		  "abstract" => $content->BookDocument[0]->Abstract[0]->AbstractText[0],
+		  "publisherName" => $content->BookDocument[0]->Book[0]->Publisher[0]->PublisherName[0],
+		  "publisherLocation" => $content->BookDocument[0]->Book[0]->Publisher[0]->PublisherLocation[0],
+		  "collectionTitle" => $content->BookDocument[0]->Book[0]->CollectionTitle[0],
+		  "copyright" => $content->BookDocument[0]->Abstract[0]->CopyrightInformation[0],
+		  );
+		  
+		// Construct iso citation of this book
+		$ym = "";
+		$ret["iso"] = "";
+		  
+		if (!empty($ret["publisherName"]))
+		  $ret["iso"] .= " ".$ret["publisherName"].". ";
+		if (!empty($ret["publisherLocation"]))
+		  $ret["iso"] .= ' '.$ret["publisherLocation"].'. ';
+
+        if (!empty($ret["year"]) && !empty($ret["month"]))
+		  $ym = $ret["year"].", ".$ret["month"];
+		else
+		  $ym = $ret["year"].$ret["month"];
+		if (!empty($ym))
+		  $ret["iso"] .= $ym.'. ';
+
+		$ret["iso"] .= $ret["copyright"];
+        return $ret;
+    }
 
     // Catch authors
-    $authors = array();
     if (!empty($content->MedlineCitation[0]->Article[0]->AuthorList)) {
       foreach($content->MedlineCitation[0]->Article[0]->AuthorList[0]->Author as $author) {
         if (!empty($author->LastName) || !empty($author->ForeName))
@@ -130,9 +248,6 @@ class ncbi {
       array_push($authors, $pluginObject->getLang('no_author_listed'));
     }
 
-    // Catch Abstract if exists
-    $abstract = "";
-    $part = array();
     // If article has an Abstract catch it
     if (!empty($content->MedlineCitation[0]->Article[0]->Abstract[0]->AbstractText)) {
       foreach($content->MedlineCitation[0]->Article[0]->Abstract[0]->AbstractText as $part) {
@@ -146,13 +261,16 @@ class ncbi {
 
     // Catch doi, pmc
     $doi = "";
-    foreach($content->PubmedData[0]->ArticleIdList[0]->ArticleId as $part) {
-      if ($part["IdType"]=="doi") $doi = $part;
-      if ($part["IdType"]=="pmc") $pmc = $part;
+    if (!empty($content->PubmedData[0]->ArticleIdList[0]->ArticleId)) {
+      foreach($content->PubmedData[0]->ArticleIdList[0]->ArticleId as $part) {
+        if ($part["IdType"]=="doi") $doi = $part;
+        if ($part["IdType"]=="pmc") $pmc = $part;
+      }
     }
 
     // Create the object to return
     $ret = array(
+	  "type" => "article",
       "pmid" => $content->MedlineCitation[0]->PMID[0],
       "url" => sprintf($this->pubmedURL, urlencode($content->MedlineCitation[0]->PMID[0])),
       "authors" => $authors,

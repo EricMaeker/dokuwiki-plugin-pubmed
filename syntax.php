@@ -1,11 +1,13 @@
 <?php
 /*
 description : Syntax plugin, PubMed article references integrator
-author      : Ikuo Obataya, Eric Maeker
-email       : i.obataya[at]gmail_com, eric[at]maeker.fr
-lastupdate  : 2017-10-07
+author      : Eric Maeker (based on Ikuo Obataya work)
+email       : eric[at]maeker.fr
+lastupdate  : 2018-07-08
 license     : GPL 2 (http://www.gnu.org/licenses/gpl.html)
 */
+
+// TODO Add Vancouver citation formatting
 
 if(!defined('DOKU_INC')) die();
 if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
@@ -84,6 +86,13 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
           "%doi%" =>            '<span class="doi">'.$refs["doi"].'</span>',
           "%pmc%" =>            '<span class="pmc">'.$refs["pmc"].'</span>',,
           "%iso%" =>            '<span class="iso">'.$refs["iso"].'</span>'
+
+		  "type" => "book", "article"
+		  "publisherName" => $content->BookDocument[0]->Book[0]->Publisher[0]->PublisherName[0],
+		  "publisherLocation" => $content->BookDocument[0]->Book[0]->Publisher[0]->PublisherLocation[0],
+		  "collectionTitle" => $content->BookDocument[0]->Book[0]->CollectionTitle[0],
+		  "copyright" => $content->BookDocument[0]->Abstract[0]->CopyrightInformation[0],
+
           );
       '<a href="'.$this->pmcUrl.$refs["pmc"].'" class="pmc_url" target="_blank" title="'.$refs["pmc"].'"></a>';
       */
