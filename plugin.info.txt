@@ -1,7 +1,7 @@
 base   pubmed
 author Eric Maeker
 email  eric.maeker[at]gmail_com
-date   2017-10-07
+date   2018-07-08
 name   Pubmed plugin (based on Ikuo Obataya pubmed plugin)
 desc   Creates PubMed info
 url    http://www.dokuwiki.org/plugin:pubmed
