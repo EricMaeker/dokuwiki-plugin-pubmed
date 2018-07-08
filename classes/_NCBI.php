@@ -38,7 +38,14 @@ class ncbi {
 
     // Get it
     $summary = $this->HttpClient->get($url);
-    // Check error
+    // Check length of the returned HTTP content, make a second try if necessary
+    if (strlen($summary) < 500) {
+      $summary = $this->HttpClient->get($url);
+      if ($this->debugUsingEchoing)
+        echo PHP_EOL.">> PUBMED: Second try: ".strlen($summary)." ".$url."<BR>".PHP_EOL;
+    }
+    
+    // Check error in the content (no <pre></pre>)
     if (preg_match("/<pre>\s+<\/pre>/i",$summary)) {
       if ($this->debugUsingEchoing)
         echo PHP_EOL.">> PUBMED: Error while retrieving URL: ".$url.PHP_EOL;
