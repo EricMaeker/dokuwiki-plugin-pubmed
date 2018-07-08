@@ -57,18 +57,7 @@ This plugin is based on the Ikuo Obataya <I.Obataya@gmail.com> code base (from 2
 
 ====== History ======
 
-  * 2016/08/22 (Eric Maeker)
-    * Updated the plugins to use the XML format of the PubMed exportation
-    * Improved HTML output code
-  *2013/01/30 (Ikuo Obataya)
-    *This plugin became independent on other helper plugins. You don't need bio plugin nor cache plugin.
-  *2008/03/22 (Ikuo Obataya)
-    *Some functions were parted into [[bio]] plugin and [[cache]] plugin.
-  *2008/02/26 (Ikuo Obataya)
-    *Cache ESummary XML file in /data/media/ncbi_esummary directory
-  *2007/12/08 (Ikuo Obataya)
-    *Fix around directory creation & ACL
-    *Append an icon image
+  * See [[https://github.com/EricMaeker/dokuwiki-plugin-pubmed/commits/master]]
 
 ====== Discussion ======
 
