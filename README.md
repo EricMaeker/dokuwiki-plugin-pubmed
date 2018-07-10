@@ -77,7 +77,7 @@ Token    | Content
 %authors% | All authors (complete lastname)
 %authorsVancouver% | All authors (initials lastname)
 %first_author% | Only first author +/- "*et al*"
-%collectif% | Collectif d'auteurs
+%collectif% | Author collective
 %title% | Title of the article
 %lang% | Language of the article
 %journal_iso% | ISO Journal title (abbrev)
