@@ -6,8 +6,8 @@ See http://www.dokuwiki.org/plugin:pubmed
 
 ## Authors and licence
 
-- Ikuo Obataya wrote this plugin (2007-now)
-- Eric Maeker improved this plugins (2016-now)
+- Ikuo Obataya wrote this plugin (2007-2016)
+- Eric Maeker improved this plugins (without integrating new Ikuo code) from 2016 to 2018
 - Licence : GPLv2
 
 ## How does it work
@@ -46,6 +46,7 @@ You can also use this plugin to create [pubmed] search URL.
 ### Citation formula
 
 The article citation can be automatically included using pre-formatted outputs:
+- *vancouver* : Full Vancouver citation see [Vancouver].
 - *short* : ISO citation in a short way.
 - *long* : full ISO citation including all authors, article title, journal title, volume, year, month, pages.
 - *long_abstract* : append the full abstract to the *long* citation. The abstract can toggled and is hidden by default.
@@ -110,3 +111,4 @@ Please use [github] repository to adress any comments, issues or wishes.
 [pubmed]: https://www.ncbi.nlm.nih.gov/pubmed
 [github]: https://github.com/EricMaeker/dokuwiki-plugin-pubmed/tree/dokuwiki-web-site
 [in action]: https://www.maeker.fr/eric/wiki/fr:medical:cours:part:iatrogenese:references
+[Vancouver]: https://www.nlm.nih.gov/bsd/uniform_requirements.html
