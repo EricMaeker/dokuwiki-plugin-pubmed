@@ -18,6 +18,12 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
   var $xmlCache;
   var $doiUrl = 'http://dx.doi.org/'; //+doi
   var $pmcUrl = 'https://www.ncbi.nlm.nih.gov/pmc/articles/'; //+pmc
+  var $outputTpl = array(
+      "short" => '%first_author%. %iso%. %pmid% %journal_url% %pmc_url%',
+      "long" => '%authors%. %title%. %iso%. %pmid% %journal_url% %pmc_url%',
+      "long_abstract" => '%authors%. %title%. %iso%. %pmid% %journal_url% %pmc_url% %abstract%',
+      "vancouver" => '%vancouver%',
+      );
 
   // Constructor
   function syntax_plugin_pubmed(){
@@ -66,40 +72,24 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
       }
 
       /*
-      // May be it will be easier to code using arrays...
-      $content = array();
-        $content = array(
-          "%pmid%" =>           '<a href="'.$refs["url"].'" class="pmid" target="_blank" title="PMID: '.$refs["pmid"].'"></a>',
-          "%url%" => sprintf($this->pubmedURL, urlencode($content->MedlineCitation[0]->PMID[0])),
-          "%authors%" =>        '<span class="authors">'.implode(', ',$refs["authors"]).'</span>',
-          "%first_author%" =>   '<span class="authors">'.$refs["first_author"].'</span>',
-          "%title%" =>          '<span class="title">'.$refs["title"].'</span>',
-          "%journal_iso%" =>    '<span class="journal_iso">'.$refs["journal_iso"].'</span>',
-          "%journal_title%" =>  '<span class="journal_title">'.$refs["journal_title"].'</span>',
-          "%lang%" =>           '<span class="lang">'.$refs["lang"].'</span>',
-          "%vol%" =>            '<span class="vol">'.$refs["vol"].'</span>',
-          "%issue%" =>          '<span class="issue">'.$refs["issue"].'</span>',
-          "%year%" =>           '<span class="year">'.$refs["year"].'</span>',
-          "%month%" =>          '<span class="month">'.$refs["month"].'</span>',
-          "%pages%" =>          '<span class="pages">'.$refs["pages"].'</span>',
-          "%abstract%" =>       '<br/><span class="abstract">'.$refs["abstract"].'</span>',
-          "%doi%" =>            '<span class="doi">'.$refs["doi"].'</span>',
-          "%pmc%" =>            '<span class="pmc">'.$refs["pmc"].'</span>',,
-          "%iso%" =>            '<span class="iso">'.$refs["iso"].'</span>'
-
 		  "type" => "book", "article"
-		  "publisherName" => $content->BookDocument[0]->Book[0]->Publisher[0]->PublisherName[0],
-		  "publisherLocation" => $content->BookDocument[0]->Book[0]->Publisher[0]->PublisherLocation[0],
-		  "collectionTitle" => $content->BookDocument[0]->Book[0]->CollectionTitle[0],
-		  "copyright" => $content->BookDocument[0]->Abstract[0]->CopyrightInformation[0],
-
-          );
-      '<a href="'.$this->pmcUrl.$refs["pmc"].'" class="pmc_url" target="_blank" title="'.$refs["pmc"].'"></a>';
+		  "publisherName" (book)
+		  "publisherLocation" (book)
+		  "collectionTitle" (book)
+		  "copyright" (book)
+		  "authorsVancouver" (article)
+		  "vancouver"
       */
 
       $outputString = str_replace("%authors%",      '<span class="authors">'.implode(', ',$refs["authors"]).'</span>', $outputString);
       $outputString = str_replace("%first_author%", '<span class="authors">'.$refs["first_author"].'</span>', $outputString);
+      if (count($refs["authorsVancouver"]) > 0)
+        $outputString = str_replace("%authorsVancouver%",      '<span class="vancouver authors">'.implode(', ',$refs["authorsVancouver"]).'</span>', $outputString);
+      $outputString = str_replace("%collectif%", '<span class="authors">'.$refs["collectif"].'</span>', $outputString);
+      
       $outputString = str_replace("%pmid%",         '<a href="'.$refs["url"].'" class="pmid" target="_blank" title="PMID: '.$refs["pmid"].'"></a>', $outputString);
+      $outputString = str_replace("%type%",      '<span class="type">'.$refs["type"].'</span>', $outputString);
+
       $outputString = str_replace("%title%",        '<span class="title">'.$refs["title"].'</span>', $outputString);
       $outputString = str_replace("%lang%",         '<span class="lang">'.$refs["lang"].'</span>', $outputString);
       $outputString = str_replace("%journal_iso%",  '<span class="journal_iso">'.$refs["journal_iso"].'</span>', $outputString);
@@ -122,6 +112,8 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
         $outputString = str_replace("%pmc_url%", "", $outputString);
       else
         $outputString = str_replace("%pmc_url%",      '<a href="'.$this->pmcUrl.$refs["pmc"].'" class="pmc_url" target="_blank" title="'.$refs["pmc"].'"></a>', $outputString);
+
+      $outputString = str_replace("%vancouver%",          '<span class="vancouver">'.$refs["vancouver"].'</span>', $outputString);
 
       // Remove ..
       $outputString = str_replace(".</span>.",  '.</span>', $outputString);
@@ -148,8 +140,13 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
       $cmd = $this->getConf('default_command');
     }
 
-    // Manage the article reference commands (short, long, long_abstract)
-    if ($cmd=='long' || $cmd=='short' || $cmd=='long_abstract' || $cmd=='user') {
+    // Manage the article reference commands in :
+    //   short, 
+    //   long,
+    //   long_abstract, 
+    //   vancouver,
+    //   user
+    if ($cmd=='long' || $cmd=='short' || $cmd=='long_abstract' || $cmd=="vancouver" || $cmd=='user') {
       // Check PMID format
       if (!is_numeric($pmid) || (strlen($pmid)<8)) {
         $renderer->doc .= sprintf($this->getLang('pubmed_wrong_format'));
@@ -166,16 +163,12 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
       // Get the abstract of the article
       $refs = $this->ncbi->getAbstract($xml, $pmid, $this);
 
-      // Create output template
-      $out = array();
-      $out['short'] = '%first_author%. %iso%. %pmid% %journal_url% %pmc_url%';
-      $out['long'] = '%authors%. %title%. %iso%. %pmid% %journal_url% %pmc_url%';
-      $out['long_abstract'] = '%authors%. %title%. %iso%. %pmid% %journal_url% %pmc_url% %abstract%';
-      $out['user'] = $this->getConf('user_defined_output');
+      // Catch updated user output template
+      $outputTpl['user'] = $this->getConf('user_defined_output');
 
       // Construct reference to article (author.title.rev.year..) according to command
       $renderer->doc .= '<div class="pubmed"><div class="'.$cmd.'">';
-      $renderer->doc .= $this->replaceTokens($out[$cmd], $refs);
+      $renderer->doc .= $this->replaceTokens($this->outputTpl[$cmd], $refs);
       $renderer->doc .= "</div></div>";
     } else {
       // Manage all other commands (summaryxml, clear_summary, remove_dir, search)

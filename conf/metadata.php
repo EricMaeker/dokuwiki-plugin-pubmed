@@ -6,7 +6,8 @@
  * @author  Eric Maeker, MD (fr) <eric.maeker@gmail.com>
  */
 
-$meta['default_command'] = array('multichoice', '_choices' => array('short','long','long_abstract','summaryxml','search'));
+$meta['default_command'] = array('multichoice', '_choices' => array('short','long','vancouver','long_abstract','summaryxml','search','user'));
+$meta['user_defined_output'] = array('string');
 
 
 //Setup VIM: ex: et ts=2 enc=utf-8 :

@@ -119,10 +119,15 @@ class ncbi {
     }
     $content = simplexml_import_dom($dom);
     $authors = array();
+    $authorsVancouver = array();
     $abstract = "";
     $part = array();
 
+    // Manage Book references
     if (!empty($content->BookDocument)) {
+      $content = $content->BookDocument[0];
+      $book = $content->Book[0];
+    
       // Catch book references
 			/*
 			<PubmedBookArticle>
@@ -189,11 +194,11 @@ class ncbi {
 			*/
 
       // Catch authors
-      if (!empty($content->BookDocument[0]->Book[0]->AuthorList)) {
-        if (!empty($content->BookDocument[0]->Book[0]->AuthorList->Author[0]->CollectiveName)) {
-          array_push($authors, $content->BookDocument[0]->Book[0]->AuthorList->Author[0]->CollectiveName);
-        } else if (!empty($content->BookDocument[0]->Book[0]->AuthorList)) {
-          foreach($content->BookDocument[0]->Book[0]->AuthorList[0]->Author as $author) {
+      if (!empty($book->AuthorList)) {
+        if (!empty($book->AuthorList->Author[0]->CollectiveName)) {
+          array_push($authors, $book->AuthorList->Author[0]->CollectiveName);
+        } else if (!empty($book->AuthorList)) {
+          foreach($book->AuthorList[0]->Author as $author) {
             if (!empty($author->LastName) || !empty($author->ForeName))
               array_push($authors, $author->LastName.' '.$author->ForeName);
           } // foreach
@@ -204,18 +209,18 @@ class ncbi {
 
 	  $ret = array(
 		  "type" => "book",
-		  "pmid" => $content->BookDocument[0]->PMID[0],
-		  "url" => sprintf($this->pubmedURL, urlencode($content->BookDocument[0]->PMID[0])),
+		  "pmid" => $content->PMID[0],
+		  "url" => sprintf($this->pubmedURL, urlencode($content->PMID[0])),
 		  "authors" => $authors,
-		  "title" => $content->BookDocument[0]->Book[0]->BookTitle[0],
-		  "lang" => $content->BookDocument[0]->Language,
-		  "year" => $content->BookDocument[0]->Book[0]->PubDate[0]->Year[0],
-		  "month" => $content->BookDocument[0]->Book[0]->PubDate[0]->Month[0],
-		  "abstract" => $content->BookDocument[0]->Abstract[0]->AbstractText[0],
-		  "publisherName" => $content->BookDocument[0]->Book[0]->Publisher[0]->PublisherName[0],
-		  "publisherLocation" => $content->BookDocument[0]->Book[0]->Publisher[0]->PublisherLocation[0],
-		  "collectionTitle" => $content->BookDocument[0]->Book[0]->CollectionTitle[0],
-		  "copyright" => $content->BookDocument[0]->Abstract[0]->CopyrightInformation[0],
+		  "title" => $book->BookTitle[0],
+		  "lang" => $content->Language,
+		  "year" => $book->PubDate[0]->Year[0],
+		  "month" => $book->PubDate[0]->Month[0],
+		  "abstract" => $content->Abstract[0]->AbstractText[0],
+		  "publisherName" => $book->Publisher[0]->PublisherName[0],
+		  "publisherLocation" => $cbook->Publisher[0]->PublisherLocation[0],
+		  "collectionTitle" => $book->CollectionTitle[0],
+		  "copyright" => $content->Abstract[0]->CopyrightInformation[0],
 		  );
 		  
 		// Construct iso citation of this book
@@ -236,21 +241,35 @@ class ncbi {
 
 		$ret["iso"] .= $ret["copyright"];
         return $ret;
+        
+        // TODO : Manage VANCOUVER CITATION
     }
 
+	// Manage Article references
+    $content = $content->MedlineCitation[0];
+    $article = $content->Article[0];
+    $journal = $article->Journal[0];
+    $collectif = "";
+    
     // Catch authors
-    if (!empty($content->MedlineCitation[0]->Article[0]->AuthorList)) {
-      foreach($content->MedlineCitation[0]->Article[0]->AuthorList[0]->Author as $author) {
-        if (!empty($author->LastName) || !empty($author->ForeName))
+    if (!empty($article->AuthorList)) {
+      foreach($article->AuthorList[0]->Author as $author) {
+        if (!empty($author->LastName) || !empty($author->ForeName)) {
           array_push($authors, $author->LastName.' '.$author->ForeName);
-      }
+        }
+        if (!empty($author->LastName) || !empty($author->Initials)) {
+          array_push($authorsVancouver, $author->LastName.' '.$author->Initials);
+        }
+        if (!empty($author->CollectiveName))
+          $collectif = $author->CollectiveName;
+      } // foreach authors
     } else {
       array_push($authors, $pluginObject->getLang('no_author_listed'));
     }
 
     // If article has an Abstract catch it
-    if (!empty($content->MedlineCitation[0]->Article[0]->Abstract[0]->AbstractText)) {
-      foreach($content->MedlineCitation[0]->Article[0]->Abstract[0]->AbstractText as $part) {
+    if (!empty($article->Abstract[0]->AbstractText)) {
+      foreach($article->Abstract[0]->AbstractText as $part) {
         if (!empty($part["Label"]))
           $abstract .= $part["Label"].": ";
         $abstract .= $part.'<br>';
@@ -271,22 +290,25 @@ class ncbi {
     // Create the object to return
     $ret = array(
 	  "type" => "article",
-      "pmid" => $content->MedlineCitation[0]->PMID[0],
-      "url" => sprintf($this->pubmedURL, urlencode($content->MedlineCitation[0]->PMID[0])),
+      "pmid" => $content->PMID[0],
+      "url" => sprintf($this->pubmedURL, urlencode($content->PMID[0])),
       "authors" => $authors,
-      "title" => $content->MedlineCitation[0]->Article[0]->ArticleTitle[0],
-      "journal_iso" => $content->MedlineCitation[0]->Article[0]->Journal[0]->ISOAbbreviation,
-      "journal_title" => $content->MedlineCitation[0]->Article[0]->Journal[0]->Title,
-      "lang" => $content->MedlineCitation[0]->Article[0]->Language,
-      "vol" => $content->MedlineCitation[0]->Article[0]->Journal[0]->JournalIssue[0]->Volume[0],
-      "issue" => $content->MedlineCitation[0]->Article[0]->Journal[0]->JournalIssue[0]->Issue[0],
-      "year" => $content->MedlineCitation[0]->Article[0]->Journal[0]->JournalIssue[0]->PubDate[0]->Year[0],
-      "month" => $content->MedlineCitation[0]->Article[0]->Journal[0]->JournalIssue[0]->PubDate[0]->Month[0],
-      "pages" => $content->MedlineCitation[0]->Article[0]->Pagination[0]->MedlinePgn[0],
+      "authorsVancouver" => $authorsVancouver,
+      "collectif" => $collectif,
+      "title" => $article->ArticleTitle[0],
+      "journal_iso" => $journal->ISOAbbreviation,
+      "journal_title" => $journal->Title,
+      "lang" => $article->Language,
+      "vol" => $journal->JournalIssue[0]->Volume[0],
+      "issue" => $journal->JournalIssue[0]->Issue[0],
+      "year" => $journal->JournalIssue[0]->PubDate[0]->Year[0],
+      "month" => $journal->JournalIssue[0]->PubDate[0]->Month[0], // Month English  Abbrev
+      "day" => $journal->JournalIssue[0]->PubDate[0]->Day[0],
+      "pages" => $article->Pagination[0]->MedlinePgn[0],
       "abstract" => $abstract,
       "doi" => $doi,
       "pmc" => $pmc
-      );
+    );
 
     // Create first author for short output
     if (count($authors)>1) {
@@ -295,25 +317,54 @@ class ncbi {
         $ret['first_author'] = $authors[0];
     }
 
-    // Remove points from the journal_iso string (as we now it is an abbrev
+    // Remove points from the journal_iso string (as we now it is an abbrev)
     $ret["journal_iso"] = str_replace(".", "", $ret["journal_iso"]);
 
     // Construct iso citation of this article
-    $ym = "";
+    $pubDate = $ret["year"]." ".$ret["month"]." ".$ret["day"];
+    $pubDate = trim(str_replace("  ", " ", $pubDate));
+
     $ret["iso"] = $ret["journal_iso"].'. ';
-    if (!empty($ret["year"]) && !empty($ret["month"]))
-      $ym = $ret["year"]." ".$ret["month"];
-    else
-      $ym = $ret["year"].$ret["month"];
-    if (!empty($ym))
-      $ret["iso"] .= $ym.';';
+    $ret["iso"] .= $pubDate.";";
     if (!empty($ret["vol"]))
       $ret["iso"] .= $ret["vol"];
     if (!empty($ret["issue"]))
       $ret["iso"] .= '('.$ret["issue"].')';
     $ret["iso"] .= ':'.$ret["pages"];
-//    if (!empty($ret["doi"]))
-//      $ret["iso"] .= ". doi: ".$ret["doi"];
+
+    // Construct Vancouver citation of this article
+    // See https://www.nlm.nih.gov/bsd/uniform_requirements.html
+    $vancouver = "";
+
+    // Collectif d'auteurs eg: pmid 19171717
+    // <Author ValidYN="Y">
+    //   <CollectiveName>Diabetes Prevention Program Research Group</CollectiveName>
+    // </Author>
+    if (!empty($collectif)) {
+        $vancouver = $collectif.". ";
+    } else {
+      if (count($ret["authorsVancouver"])>0) {
+        $vancouver = implode(', ',$ret["authorsVancouver"]).". ";
+      } 
+      // no authors -> nothing to add  Eg: pmid 12142303
+    }
+    
+    // Supplément de périodique
+    //    eg : pmid 12028325  nothing to do Suppl et S sont inclus dans le XML
+    // Numéro à supplément
+    //    eg : pmid 12084862
+    // TODO : Références de nature particulière
+    //    eg : pmid 12166575 15857727
+
+    $vancouver .= $ret["title"];
+    $vancouver .= " ".$ret["journal_iso"].".";
+    $vancouver .= " ".$pubDate;
+    $vancouver .= ";".$ret["vol"];
+    if (!empty($ret["issue"]))
+      $vancouver .= "(".$ret["issue"].")";
+    $vancouver .= ":".$ret["pages"];
+
+    $ret["vancouver"] = $vancouver;
     return $ret;
   }
 

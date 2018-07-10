@@ -6,4 +6,5 @@
  * @author  Eric Maeker, MD (fr) <eric.maeker@gmail.com>
  */
 
-$conf['default_command'] = "long";
+$conf['default_command'] = "vancouver";
+$conf['user_defined_output'] = "";

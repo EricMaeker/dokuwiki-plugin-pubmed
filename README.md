@@ -14,10 +14,6 @@ See http://www.dokuwiki.org/plugin:pubmed
 
 See [in action]
 
-### Requirements
-
-This plugins requires PHP 5+ and the php-dom extension to be installed on your server.
-
 ### Getting informations
 
 This plugin retrieves the XML description of articles from NCBI [pubmed] and allow users to easily include article citation into their DokuWiki pages.
@@ -75,9 +71,12 @@ You can use a simple string to define your own citation formula. The following t
 
 Token    | Content
 -------- | ---
-%authors% | All authors
-%first_author% | Only first author +/- "*et al*"
 %pmid% | PMID with a link to [pubmed] citation
+%type% | Type of the citation ("article", "book")
+%authors% | All authors (complete lastname)
+%authorsVancouver% | All authors (initials lastname)
+%first_author% | Only first author +/- "*et al*"
+%collectif% | Collectif d'auteurs
 %title% | Title of the article
 %lang% | Language of the article
 %journal_iso% | ISO Journal title (abbrev)
