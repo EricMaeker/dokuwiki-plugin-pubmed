@@ -58,7 +58,7 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
   */
   function handle($match, $state, $pos, &$handler){
     $match = substr($match,9,-2);
-    return array($state,explode(':', $match, 2));
+    return array($state, explode(':', $match, 2));
   }
 
   /**
@@ -81,39 +81,39 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
 		  "vancouver"
       */
 
-      $outputString = str_replace("%authors%",      '<span class="authors">'.implode(', ',$refs["authors"]).'</span>', $outputString);
+      $outputString = str_replace("%authors%", '<span class="authors">'.implode(', ',$refs["authors"]).'</span>', $outputString);
       $outputString = str_replace("%first_author%", '<span class="authors">'.$refs["first_author"].'</span>', $outputString);
       if (count($refs["authorsVancouver"]) > 0)
-        $outputString = str_replace("%authorsVancouver%",      '<span class="vancouver authors">'.implode(', ',$refs["authorsVancouver"]).'</span>', $outputString);
+        $outputString = str_replace("%authorsVancouver%", '<span class="vancouver authors">'.implode(', ',$refs["authorsVancouver"]).'</span>', $outputString);
       $outputString = str_replace("%collectif%", '<span class="authors">'.$refs["collectif"].'</span>', $outputString);
       
-      $outputString = str_replace("%pmid%",         '<a href="'.$refs["url"].'" class="pmid" target="_blank" title="PMID: '.$refs["pmid"].'"></a>', $outputString);
-      $outputString = str_replace("%type%",      '<span class="type">'.$refs["type"].'</span>', $outputString);
+      $outputString = str_replace("%pmid%", '<a href="'.$refs["url"].'" class="pmid" target="_blank" title="PMID: '.$refs["pmid"].'"></a>', $outputString);
+      $outputString = str_replace("%type%", '<span class="type">'.$refs["type"].'</span>', $outputString);
 
-      $outputString = str_replace("%title%",        '<span class="title">'.$refs["title"].'</span>', $outputString);
-      $outputString = str_replace("%lang%",         '<span class="lang">'.$refs["lang"].'</span>', $outputString);
-      $outputString = str_replace("%journal_iso%",  '<span class="journal_iso">'.$refs["journal_iso"].'</span>', $outputString);
+      $outputString = str_replace("%title%", '<span class="title">'.$refs["title"].'</span>', $outputString);
+      $outputString = str_replace("%lang%", '<span class="lang">'.$refs["lang"].'</span>', $outputString);
+      $outputString = str_replace("%journal_iso%", '<span class="journal_iso">'.$refs["journal_iso"].'</span>', $outputString);
       $outputString = str_replace("%journal_title%", '<span class="journal_title">'.$refs["journal_title"].'</span>', $outputString);
-      $outputString = str_replace("%iso%",          '<span class="iso">'.$refs["iso"].'</span>', $outputString);
-      $outputString = str_replace("%vol%",          '<span class="vol">'.$refs["vol"].'</span>', $outputString);
-      $outputString = str_replace("%issue%",        '<span class="issue">'.$refs["issue"].'</span>', $outputString);
-      $outputString = str_replace("%year%",         '<span class="year">'.$refs["year"].'</span>', $outputString);
-      $outputString = str_replace("%month%",        '<span class="month">'.$refs["month"].'</span>', $outputString);
-      $outputString = str_replace("%pages%",        '<span class="pages">'.$refs["pages"].'</span>', $outputString);
-      $outputString = str_replace("%abstract%",     '<br/><span class="abstract">'.$refs["abstract"].'</span>', $outputString);
+      $outputString = str_replace("%iso%", '<span class="iso">'.$refs["iso"].'</span>', $outputString);
+      $outputString = str_replace("%vol%", '<span class="vol">'.$refs["vol"].'</span>', $outputString);
+      $outputString = str_replace("%issue%", '<span class="issue">'.$refs["issue"].'</span>', $outputString);
+      $outputString = str_replace("%year%", '<span class="year">'.$refs["year"].'</span>', $outputString);
+      $outputString = str_replace("%month%", '<span class="month">'.$refs["month"].'</span>', $outputString);
+      $outputString = str_replace("%pages%", '<span class="pages">'.$refs["pages"].'</span>', $outputString);
+      $outputString = str_replace("%abstract%", '<br/><span class="abstract">'.$refs["abstract"].'</span>', $outputString);
       if (empty($refs["doi"])) {
         $outputString = str_replace("%doi%", "", $outputString);
-        $outputString = str_replace("%journal_url%",  "", $outputString);
+        $outputString = str_replace("%journal_url%", "", $outputString);
       } else {
-        $outputString = str_replace("%doi%",          '<span class="doi">'.$refs["doi"].'</span>', $outputString);
-        $outputString = str_replace("%journal_url%",  '<a href="'.$this->doiUrl.$refs["doi"].'" class="journal_url" target="_blank" title="'.$refs["iso"].'"></a>', $outputString);
+        $outputString = str_replace("%doi%", '<span class="doi">'.$refs["doi"].'</span>', $outputString);
+        $outputString = str_replace("%journal_url%", '<a href="'.$this->doiUrl.$refs["doi"].'" class="journal_url" target="_blank" title="'.$refs["iso"].'"></a>', $outputString);
       }
       if (empty($refs["pmc"]))
         $outputString = str_replace("%pmc_url%", "", $outputString);
       else
-        $outputString = str_replace("%pmc_url%",      '<a href="'.$this->pmcUrl.$refs["pmc"].'" class="pmc_url" target="_blank" title="'.$refs["pmc"].'"></a>', $outputString);
+        $outputString = str_replace("%pmc_url%", '<a href="'.$this->pmcUrl.$refs["pmc"].'" class="pmc_url" target="_blank" title="'.$refs["pmc"].'"></a>', $outputString);
 
-      $outputString = str_replace("%vancouver%",          '<span class="vancouver">'.$refs["vancouver"].'</span>', $outputString);
+      $outputString = str_replace("%vancouver%",  '<span class="vancouver">'.$refs["vancouver"].'</span>', $outputString);
 
       // Remove ..
       $outputString = str_replace(".</span>.",  '.</span>', $outputString);
@@ -124,52 +124,50 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
    * Create output
    */
   function render($mode, &$renderer, $data) {
-    if ($mode!='xhtml')
+    if ($mode != 'xhtml')
       return false;
 
     // Get the command and its arg(s) 
     list($state, $query) = $data;
-    list($cmd,$pmid) = $query;
+    list($cmd, $pmid) = $query;
 
     // Lowering command string
     $cmd = strtolower($cmd);
 
-    // If command is empty (in this case, command is the numeric pmid), catch prefs of the plugin
-    if (is_numeric($cmd)) {
+    // If command is empty (in this case, command is the numeric pmids)
+    // Catch default command in plugin's preferences
+    $regex = '/^[0-9,]+$/';
+    if (preg_match($regex, $cmd) === 1) {
       $pmid = $cmd;
       $cmd = $this->getConf('default_command');
     }
 
     // Manage the article reference commands in :
-    //   short, 
-    //   long,
-    //   long_abstract, 
-    //   vancouver,
-    //   user
-    if ($cmd=='long' || $cmd=='short' || $cmd=='long_abstract' || $cmd=="vancouver" || $cmd=='user') {
-      // Check PMID format
-      if (!is_numeric($pmid) || (strlen($pmid)<8)) {
-        $renderer->doc .= sprintf($this->getLang('pubmed_wrong_format'));
-        return false;
+    //   short, long, long_abstract, vancouver,
+    //   or user
+    if ($cmd=='long' || 
+        $cmd=='short' || 
+        $cmd=='long_abstract' ||
+        $cmd=="vancouver" || 
+        $cmd=='user') {
+
+      $multiplePmids = false;
+
+      // Check multiple PMIDs (PMIDs can be passed in a coma separated list)
+      if (strpos($pmid, ",") !== false) {
+        $multiplePmids = true;
+        $renderer->doc .= "<ul>";
+      }
+        
+      $pmid = explode(",", $pmid);
+      foreach ($pmid as $currentPmid) {
+        $renderer->doc .= $this->getPmidOutput($cmd, $currentPmid, $multiplePmids);
+      }  // Foreach PMIDs
+
+      if ($multiplePmids) {
+        $renderer->doc .= "</ul>";
       }
 
-      // Get article summary (from cache or web)
-      $xml = $this->getSummaryXML($pmid);
-      if (empty($xml)) {
-        $renderer->doc .= sprintf($this->getLang('pubmed_not_found'),$pmid);
-        return false;
-      }
-
-      // Get the abstract of the article
-      $refs = $this->ncbi->getAbstract($xml, $pmid, $this);
-
-      // Catch updated user output template
-      $outputTpl['user'] = $this->getConf('user_defined_output');
-
-      // Construct reference to article (author.title.rev.year..) according to command
-      $renderer->doc .= '<div class="pubmed"><div class="'.$cmd.'">';
-      $renderer->doc .= $this->replaceTokens($this->outputTpl[$cmd], $refs);
-      $renderer->doc .= "</div></div>";
     } else {
       // Manage all other commands (summaryxml, clear_summary, remove_dir, search)
       switch($cmd) {
@@ -217,20 +215,69 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
  /**
   * Get summary XML from cache or NCBI
   */
-  function getSummaryXml($pmid){
+  function getSummaryXml($pmid) {
     global $conf;
     $cachedXml = $this->xmlCache->GetMediaText($pmid);
-    if ($cachedXml!==false){ return $cachedXml; }
+    if ($cachedXml !== false) { 
+      return $cachedXml; 
+    }
 
     // Get summary XML
     $summary = $this->ncbi->SummaryXml('pubmed',$pmid);
     $cachePath = $this->xmlCache->GetMediaPath($pmid);
-    if (!empty($summary)){
-      if(io_saveFile($cachePath,$summary)){
-        chmod($cachePath,$conf['fmode']);
+    if (!empty($summary)) {
+      if(io_saveFile($cachePath, $summary)){
+        chmod($cachePath, $conf['fmode']);
       }
     }
     return $summary;
+  }
+  
+  /**
+   * Check PMID format
+   */
+  function checkPmidFormat($pmid) {
+    // Check PMID format (numeric, 7 or 8 length)
+    if (!is_numeric($pmid) || (strlen($pmid) < 7 || strlen($pmid) > 8)) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Get pubmed string output according to the given unique PMID code passed and the command
+   */
+  function getPmidOutput($cmd, $pmid, $multiplePmids) {
+     if (!$this->checkPmidFormat($pmid)) {
+        return sprintf($this->getLang('pubmed_wrong_format'));
+      }
+
+      // Get article summary (from cache or web)
+      $xml = $this->getSummaryXML($pmid);
+      if (empty($xml)) {
+        return sprintf($this->getLang('pubmed_not_found'),$pmid);
+        return false;
+      }
+
+      // Get the abstract of the article
+      $refs = $this->ncbi->getAbstract($xml, $pmid, $this);
+
+      // Catch updated user output template
+      $outputTpl['user'] = $this->getConf('user_defined_output');
+
+      // Construct reference to article (author.title.rev.year..) according to command
+      $output = "";
+      if ($multiplePmids)
+        $output .= "<li>";
+      $output .= '<div class="pubmed"><div class="'.$cmd.'" ';
+      if ($multiplePmids)
+        $output .= 'style="margin-bottom:1em">';
+      $output .= $this->replaceTokens($this->outputTpl[$cmd], $refs);
+      $output .= "</div></div>";
+      if ($multiplePmids)
+        $output .= "</li>";
+      
+      return $output;
   }
 }
 

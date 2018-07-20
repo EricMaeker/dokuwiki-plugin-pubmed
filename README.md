@@ -34,6 +34,11 @@ The syntax is quite easy:
 - Using specific formula:
   - `{{pubmed>long:24073682}}` where 24073682 is the PMID of the article as notified by pubmed and *long* is the selected article citation formula.
 
+- You can require multiple citations at once (creating a nice HTML list):
+  - For example this list uses the citations used as examples in the Vancouver referencing paper
+  - `{{pubmed>vancouver:19171717,12142303,12028325,12084862,12166575,15857727}}`
+
+
 ### Including links to pubmed search page
 
 You can also use this plugin to create [pubmed] search URL.
