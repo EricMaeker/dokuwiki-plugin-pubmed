@@ -346,7 +346,6 @@ class ncbi {
     
       // Manage limitation in number of authors
       $limit = $pluginObject->getConf('limit_authors_vancouver');
-//       $limit = 4;
       $authorsToUse = $ret["authorsVancouver"];
       $addAndAl = false;
       if ($limit >= 1) {
