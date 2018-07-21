@@ -311,7 +311,7 @@ class ncbi {
     );
 
     // Create first author for short output
-    if (count($authors)>1) {
+    if (count($authors) > 1) {
         $ret['first_author'] = $authors[0].' <span class="etal">et al</span>';
     } else {
         $ret['first_author'] = $authors[0];
@@ -343,8 +343,24 @@ class ncbi {
     if (!empty($collectif)) {
         $vancouver = $collectif.". ";
     } else {
-      if (count($ret["authorsVancouver"])>0) {
-        $vancouver = implode(', ',$ret["authorsVancouver"]).". ";
+    
+      // Manage limitation in number of authors
+      $limit = $pluginObject->getConf('limit_authors_vancouver');
+//       $limit = 4;
+      $authorsToUse = $ret["authorsVancouver"];
+      $addAndAl = false;
+      if ($limit >= 1) {
+        if (count($authorsToUse) > $limit) {
+          $addAndAl = true;
+          $authorsToUse = array_slice($authorsToUse, 0, $limit);
+        }
+      }
+
+      if (count($authorsToUse) > 0) {
+        $vancouver = implode(', ',$authorsToUse);
+        if ($addAndAl)
+          $vancouver .= " ".$pluginObject->getConf('et_al_vancouver');
+        $vancouver .= ". ";
       } 
       // no authors -> nothing to add  Eg: pmid 12142303
     }

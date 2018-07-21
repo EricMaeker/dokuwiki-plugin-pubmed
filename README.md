@@ -62,6 +62,8 @@ The article citation can be automatically included using pre-formatted outputs:
 This plugin comes with some configuration parameters:
 - *Default citation formula*.
 - *Default user defined formula*.
+- *Default authors limitation in Vancouver citation*
+- *Default string replacement of authors over the Vancouver author limitation*
 
 ## Specific commands
 

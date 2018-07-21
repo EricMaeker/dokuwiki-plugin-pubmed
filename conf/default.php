@@ -8,3 +8,5 @@
 
 $conf['default_command'] = "vancouver";
 $conf['user_defined_output'] = "";
+$conf['limit_authors_vancouver'] = "6";
+$conf['et_al_vancouver'] = "et al";
