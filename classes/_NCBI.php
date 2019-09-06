@@ -3,7 +3,7 @@
 description : Access to NCBI using eSummary and eSearch
 author      : Ikuo Obataya, Eric Maeker
 email       : i.obataya[at]gmail_com, eric[at]maeker.fr
-lastupdate  : 2016-08-22
+lastupdate  : 2019-05-26
 license     : GPL 2 (http://www.gnu.org/licenses/gpl.html)
 */
 
@@ -14,7 +14,9 @@ class ncbi {
   var $pubmedURL   = '';
   var $pubmedXmlURL = '';
   var $pubmedSearchURL  = '';
+  var $pubmedXmlURLFromDOI = '';
   var $xmlStartPattern = '<?xml version="1.0" standalone="yes"?>';
+  // https://www.semanticscholar.org/
   
   // Set this to true to get debugging page output when retrieving and processing pubmed URL
   var $debugUsingEchoing = false; 
@@ -23,16 +25,41 @@ class ncbi {
   {
     $this->HttpClient   = new DokuHTTPClient();
     $this->pubmedURL    = 'http://www.ncbi.nlm.nih.gov/pubmed/%s';
+    /**
+     * Different report/format:
+     * docsum/text
+     * docsum (no format)
+     * medlinetext			"&report=medlinetext&format=text"
+     * abstract (no format)	"&report=abstract"
+     * abstract/text		"&report=abstract&format=text"
+     * xml/text				"&report=xml&format=text"
+     * uilist/text			"&report=uilist&format=text"
+     * dispmax				Number (max articles by requests : 5,10,20,50,100,200)
+     * 
+     * https://www.ncbi.nlm.nih.gov/books/NBK3862/
+     * Search for similar articles for PMID 27328974:
+     * https://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed&from_uid=27328974
+     *
+     * See https://dataguide.nlm.nih.gov/eutilities/utilities.html
+    **/
     $this->pubmedXmlURL = 'http://www.ncbi.nlm.nih.gov/pubmed/%s?report=xml&format=text';
+    $this->pubmedXmlURLFromDOI = 'http://www.ncbi.nlm.nih.gov/pubmed/?term=%s&report=xml&format=text';
     $this->pubmedSearchURL = 'http://www.ncbi.nlm.nih.gov/pubmed/?term=%s';
   }
 
   /*
    * Retrieve Summary XML
    */
-  function SummaryXml($db,$id) {
+  function SummaryXml($db,$pmid,$doi="") {
     // Prepare pubmed URL using the XML text abstract
-    $url = sprintf($this->pubmedXmlURL, urlencode($id));
+    $url = "";
+    if (!empty($pmid))
+        $url = sprintf($this->pubmedXmlURL, urlencode($pmid));
+    else if (!empty($doi))
+        $url = sprintf($this->pubmedXmlURLFromDOI, urlencode($doi));
+    else
+        return "";
+        
     if ($this->debugUsingEchoing)
       echo PHP_EOL.">> PUBMED: getting URL: ".$url.PHP_EOL;
 
@@ -51,6 +78,12 @@ class ncbi {
         echo PHP_EOL.">> PUBMED: Error while retrieving URL: ".$url.PHP_EOL;
       return NULL; 
     }
+    // Check error in the content multiple <PubmedArticle>
+    if (substr_count($summary, 'PubmedArticle') != 2) {
+      if ($this->debugUsingEchoing)
+        echo PHP_EOL.">> PUBMED: Error while retrieving URL: Multiple PubMedArticle tag : ".$url.PHP_EOL;
+      return NULL; 
+    }
 
     // Extract everything inside the PubmedArticle tagname
     if ($this->debugUsingEchoing)
@@ -63,7 +96,9 @@ class ncbi {
     preg_match($pattern, $summary, $matches);
     if ($this->debugUsingEchoing)
       echo PHP_EOL.">> PUBMED: processed: ".PHP_EOL.htmlspecialchars_decode($matches[1]).PHP_EOL;
-    return $this->xmlStartPattern.htmlspecialchars_decode($matches[1]);
+    if (!empty($matches[1]))
+      return $this->xmlStartPattern.htmlspecialchars_decode($matches[1]);
+    return "";
   } // Ok, checked
 
   /*
@@ -111,6 +146,8 @@ class ncbi {
     // Use DOM php reader
     $dom = new DOMDocument;
 
+    //echo "<pre>".$xml."</pre><br><br>";
+    //echo $pmid."<br>";
     // Load XML document
     $dom->loadXML($xml);
     if (!$dom) {
@@ -240,12 +277,14 @@ class ncbi {
 		  $ret["iso"] .= $ym.'. ';
 
 		$ret["iso"] .= $ret["copyright"];
+
         return $ret;
         
         // TODO : Manage VANCOUVER CITATION
     }
 
 	// Manage Article references
+	$pubmedData = $content->PubmedData[0];
     $content = $content->MedlineCitation[0];
     $article = $content->Article[0];
     $journal = $article->Journal[0];
@@ -278,14 +317,21 @@ class ncbi {
         $abstract = $pluginObject->getLang('no_abstract_available').'<br>';
     }
 
-    // Catch doi, pmc
+    // Catch doi, pmc using PubMedData XML part
     $doi = "";
-    if (!empty($content->PubmedData[0]->ArticleIdList[0]->ArticleId)) {
-      foreach($content->PubmedData[0]->ArticleIdList[0]->ArticleId as $part) {
-        if ($part["IdType"]=="doi") $doi = $part;
-        if ($part["IdType"]=="pmc") $pmc = $part;
+    if (!empty($pubmedData->ArticleIdList[0]->ArticleId)) {
+      foreach($pubmedData->ArticleIdList[0]->ArticleId as $part) {
+        //echo print_r($part);
+        if ($part["IdType"]=="doi") $doi = $part[0];
+        if ($part["IdType"]=="pmc") $pmc = $part[0];
       }
     }
+//     } else if (!empty($content->Article[0]->ELocationID)) {
+//       foreach($content->Article[0]->ELocationID->ArticleId as $part) {
+//         if ($part["IdType"]=="doi") $doi = $part;
+//         if ($part["IdType"]=="pmc") $pmc = $part;
+//       }
+//     }
 
     // Create the object to return
     $ret = array(
@@ -307,8 +353,14 @@ class ncbi {
       "pages" => $article->Pagination[0]->MedlinePgn[0],
       "abstract" => $abstract,
       "doi" => $doi,
-      "pmc" => $pmc
+      // Local pdf file are stored into the cache path using DOI or PMID
+//      "localpdf1" => str_replace("/", "@", $doi).".pdf",
+//      "localpdf2" => $content->PMID[0].".pdf"
     );
+
+    // Catch unformal years months
+    if (empty($ret["year"]))
+        $ret["year"] = $journal->JournalIssue[0]->PubDate[0]->MedlineDate[0];
 
     // Create first author for short output
     if (count($authors) > 1) {
@@ -378,7 +430,6 @@ class ncbi {
     if (!empty($ret["issue"]))
       $vancouver .= "(".$ret["issue"].")";
     $vancouver .= ":".$ret["pages"];
-
     $ret["vancouver"] = $vancouver;
     return $ret;
   }

@@ -7,8 +7,6 @@ lastupdate  : 2018-07-08
 license     : GPL 2 (http://www.gnu.org/licenses/gpl.html)
 */
 
-// TODO Add Vancouver citation formatting
-
 if(!defined('DOKU_INC')) die();
 if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
 require_once(DOKU_PLUGIN.'syntax.php');
@@ -17,11 +15,13 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
   var $ncbi;
   var $xmlCache;
   var $doiUrl = 'http://dx.doi.org/'; //+doi
-  var $pmcUrl = 'https://www.ncbi.nlm.nih.gov/pmc/articles/'; //+pmc
+  var $pmcUrl = 'https://www.ncbi.nlm.nih.gov/pmc/articles/%s/pdf'; //+pmc
   var $outputTpl = array(
       "short" => '%first_author%. %iso%. %pmid% %journal_url% %pmc_url%',
       "long" => '%authors%. %title%. %iso%. %pmid% %journal_url% %pmc_url%',
-      "long_abstract" => '%authors%. %title%. %iso%. %pmid% %journal_url% %pmc_url% %abstract%',
+      "long_pdf" => '%authors%. %title%. %iso%. %pmid% %journal_url% %pmc_url% %scihub_url% %localpdf%',
+      "long_abstract" => '%authors%. %title%. %iso%. %pmid% %journal_url% %pmc_url% %abstract% %abstractFr% %pmid% %doi%',
+      "long_abstract_pdf" => '%authors%. %title%. %iso%. %pmid% %journal_url% %pmc_url% %abstract% %abstractFr% %pmid% %doi% %localpdf%',
       "vancouver" => '%vancouver%',
       );
 
@@ -55,6 +55,8 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
   * - remove_dir: clear all cache dir. No args required
   * - search: Create a pubmed search query using the arg. Arg must be a valid pubmed search (including MeSH terms)
   * - user: using plugin configuration, you can define a user specific tokened string output format
+  * - full_list
+  * - recreate_cross_refs
   */
   function handle($match, $state, $pos, &$handler){
     $match = substr($match,9,-2);
@@ -87,7 +89,7 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
         $outputString = str_replace("%authorsVancouver%", '<span class="vancouver authors">'.implode(', ',$refs["authorsVancouver"]).'</span>', $outputString);
       $outputString = str_replace("%collectif%", '<span class="authors">'.$refs["collectif"].'</span>', $outputString);
       
-      $outputString = str_replace("%pmid%", '<a href="'.$refs["url"].'" class="pmid" target="_blank" title="PMID: '.$refs["pmid"].'"></a>', $outputString);
+      $outputString = str_replace("%pmid%", '<a href="'.$refs["url"].'" class="pmid" target="_blank" title="PMID: '.$refs["pmid"].'">PMID : '.$refs["pmid"].'</a>', $outputString);
       $outputString = str_replace("%type%", '<span class="type">'.$refs["type"].'</span>', $outputString);
 
       $outputString = str_replace("%title%", '<span class="title">'.$refs["title"].'</span>', $outputString);
@@ -101,6 +103,19 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
       $outputString = str_replace("%month%", '<span class="month">'.$refs["month"].'</span>', $outputString);
       $outputString = str_replace("%pages%", '<span class="pages">'.$refs["pages"].'</span>', $outputString);
       $outputString = str_replace("%abstract%", '<br/><span class="abstract">'.$refs["abstract"].'</span>', $outputString);
+
+      $refs["abstractFr"] = $this->xmlCache->GetTranslatedAbstract($refs["pmid"]);
+      if (empty($refs["abstractFr"])) {
+        $gg =  "https://translate.google.com/#view=home";
+        $gg .= "&op=translate&sl=auto&tl=fr&text=";
+        $gg .= urlencode($refs["abstract"]);
+        $outputString = str_replace("%abstractFr%", '<a class="abstractFr" href="'.$gg.'" target="_blank">FR</a>', $outputString);
+      } else {
+        // TODO: Create a form to send french abstrat to this class
+        // TODO: Allow to store it in a separate file abstractfr_{pmid}.txt
+          $outputString = str_replace("%abstractFr%", '<span class="abstract">'.$refs["abstractFr"].'</span>', $outputString);
+      }
+      
       if (empty($refs["doi"])) {
         $outputString = str_replace("%doi%", "", $outputString);
         $outputString = str_replace("%journal_url%", "", $outputString);
@@ -111,7 +126,15 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
       if (empty($refs["pmc"]))
         $outputString = str_replace("%pmc_url%", "", $outputString);
       else
-        $outputString = str_replace("%pmc_url%", '<a href="'.$this->pmcUrl.$refs["pmc"].'" class="pmc_url" target="_blank" title="'.$refs["pmc"].'"></a>', $outputString);
+        $outputString = str_replace("%pmc_url%", '<a href="'.sprintf($this->pmcUrl, $refs["pmc"]).'" class="pmc_url" target="_blank" title="'.$refs["pmc"].'"></a>', $outputString);
+
+    // Check local PDF using cache
+    $localPdf = $this->xmlCache->GetLocalPdfPath($refs["pmid"], $refs["doi"]);
+    if (empty($localPdf)) {
+        $outputString = str_replace("%localpdf%", 'No PDF', $outputString);
+    } else {
+        $outputString = str_replace("%localpdf%", ' <a href="'.$localPdf.'" class="localPdf" target="_blank" title="'.$localPdf.'">PDF</a>', $outputString);
+    }
 
       $outputString = str_replace("%vancouver%",  '<span class="vancouver">'.$refs["vancouver"].'</span>', $outputString);
 
@@ -145,11 +168,7 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
     // Manage the article reference commands in :
     //   short, long, long_abstract, vancouver,
     //   or user
-    if ($cmd=='long' || 
-        $cmd=='short' || 
-        $cmd=='long_abstract' ||
-        $cmd=="vancouver" || 
-        $cmd=='user') {
+    if (array_key_exists($cmd, $this->outputTpl)) {
 
       $multiplePmids = false;
 
@@ -200,6 +219,51 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
           $renderer->doc.='</div>';
           return true;
 
+        case 'recreate_cross_refs':
+          $this->xmlCache->RecreateCrossRefFile();
+          return true;
+
+        case 'full_pdf_list':
+          // Get all PMID from cache
+          $mediaList = array_keys($this->xmlCache->GetAllMediaPaths());
+          // Get all PMID using the local PDF filename
+          $pdfPmids = $this->xmlCache->GetAllAvailableLocalPdfByPMIDs();
+          // Remove all local PDF PMIDs already in the media list
+          $pdfPmids = array_diff($pdfPmids, $mediaList); 
+          // Remove all pdfPmid if present in the mediaList
+          $pdfDois = $this->xmlCache->GetAllAvailableLocalPdfByDOIs();
+          // Get PMIDs from DOIs
+          $pmids = $this->xmlCache->PmidFromDoi($pdfDois);
+
+//           $i = 0;
+          foreach($pdfDois as $doi) {
+//             if (++$i == 5)
+//                break;
+            $xml = $this->ncbi->SummaryXml('pubmed', "", $doi);
+            if (!empty($xml)) {
+              $this->xmlCache->SavePubMedXmlSummaryText($xml);
+            }
+          }
+
+          // Create a complete list of PMIDs to show
+          //$fullPmids = array_merge($pdfPmids, $pmids, $mediaList);
+          $fullPmids = array_merge($pdfPmids, $pmids);
+          // Check multiple PMIDs (PMIDs can be passed in a coma separated list)
+          $renderer->doc .= "<ul>";
+          foreach($fullPmids as $currentPmid) {
+            $renderer->doc .= $this->getPmidOutput("long_abstract", $currentPmid, true);
+          }  // Foreach PMIDs
+          foreach($pdfDois as $doi) {
+            $renderer->doc .= 
+                "<a href='".$this->xmlCache->GetDoiPdfUrl($doi).
+                "' title='".$doi.
+                "'><img src='".$this->xmlCache->GetDoiPdfThumbnailUrl($doi).
+                "' alt='".$doi.
+                "'/></a>";
+          }  // Foreach PMIDs
+          $renderer->doc .= "</ul>";
+          return true;
+
         default:
           // Command was not found..
           $renderer->doc.='<div class="pdb_plugin">'.sprintf($this->getLang('plugin_cmd_not_found'),$cmd).'</div>';
@@ -212,7 +276,7 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
   }
 
 
- /**
+  /**
   * Get summary XML from cache or NCBI
   */
   function getSummaryXml($pmid) {
@@ -222,14 +286,16 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
       return $cachedXml; 
     }
 
-    // Get summary XML
+    // Get summary XML from PubMed website
     $summary = $this->ncbi->SummaryXml('pubmed',$pmid);
-    $cachePath = $this->xmlCache->GetMediaPath($pmid);
-    if (!empty($summary)) {
-      if(io_saveFile($cachePath, $summary)){
-        chmod($cachePath, $conf['fmode']);
-      }
-    }
+    // Save to cache
+    $this->xmlCache->SavePubMedXmlSummaryText($summary);
+//     $cachePath = $this->xmlCache->GetMediaPath($pmid);
+//     if (!empty($summary)) {
+//       if(io_saveFile($cachePath, $summary)){
+//         chmod($cachePath, $conf['fmode']);
+//       }
+//     }
     return $summary;
   }
   
@@ -238,7 +304,7 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
    */
   function checkPmidFormat($pmid) {
     // Check PMID format (numeric, 7 or 8 length)
-    if (!is_numeric($pmid) || (strlen($pmid) < 7 || strlen($pmid) > 8)) {
+    if (!is_numeric($pmid) || (strlen($pmid) < 6 || strlen($pmid) > 8)) {
       return false;
     }
     return true;
@@ -269,11 +335,23 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
       $output = "";
       if ($multiplePmids)
         $output .= "<li>";
-      $output .= '<div class="pubmed"><div class="'.$cmd.'" ';
+        
+      if (empty($this->outputTpl[$cmd]))
+          $cmd = "long_abstract";
+
+      // $cmd contains abstract -> use div instead of span
+      $block = "span";
+      if (strpos($cmd, 'abstract') !== false) {
+        $block = "div";
+      }
+
+      $output .= "<{$block} class=\"pubmed\"><{$block} class=\"{$cmd}\"";
       if ($multiplePmids)
-        $output .= 'style="margin-bottom:1em">';
+        $output .= ' style="margin-bottom:1em"';
+      $output .= ">";
+
       $output .= $this->replaceTokens($this->outputTpl[$cmd], $refs);
-      $output .= "</div></div>";
+      $output .= "</{$block}></{$block}>";
       if ($multiplePmids)
         $output .= "</li>";
       

@@ -3,11 +3,12 @@
 description : Manage cache system
 author      : Ikuo Obataya, Eric Maeker
 email       : i.obataya[at]gmail_com, eric[at]maeker.fr
-lastupdate  : 2016-08-22
+lastupdate  : 2019-05-25
 license     : GPL 2 (http://www.gnu.org/licenses/gpl.html)
 */
 
 if(!defined('DOKU_INC')) die();
+
 class plugin_cache{
   var $namespace  ='';
   var $mediaDir   ='';
@@ -16,9 +17,23 @@ class plugin_cache{
   var $prefix     ='';
   var $extension  ='';
   var $tmpdir     ='';
+  var $crossRefId =''; // Crossreference file PMID <-> DOI
+  var $pdfDoiNS   =''; // Saving PDF using DOI.pdf
+                       // All files in this path must be named
+                       // {DOI}.pdf with a replacement of any '/' using '_'
+  var $pdfPmidNS  =''; // Saving PDF using PMID.pdf
+                       // All files in this path must be named
+                       // {PMID}.pdf
+  var $abstractTrFormat =''; // Files containing the translated abstract
+
+  /**
+   * Initialization
+   */
   function plugin_cache($_name='plugin_cache',$_prefix='noname',$_ext='txt'){
     global $conf;
     $this->namespace = strtolower($_name);
+    $this->pdfDoiNS  = strtolower($_name."/doi_pdf");
+    $this->pdfPmidNS = strtolower($_name."/pmid_pdf");
     $this->prefix    = strtolower($_prefix);
     $this->extension = strtolower($_ext);
     if (empty($_prefix)){
@@ -30,17 +45,56 @@ class plugin_cache{
     $this->mediaDir    = $conf['mediadir'].'/'.$this->namespace;
     $this->mediaFormat = $this->mediaDir.'/'.$this->prefix.'%s.'.$this->extension;
     $this->linkFormat  = $this->namespace.$delimiter.$this->prefix.'%s.'.$this->extension;
+    $this->abstractTrFormat = $this->mediaDir.'/'.$this->prefix.'%s_fr.txt';
 
     $this->useTmpDir   = false;
     $this->tmpDir      = '/var/tmp';
     $this->tmpFormat   = $this->tmpDir.'/'.$this->namespace.'_'.$this->prefix.'%s.'.$this->extension;
-
+    $this->crossRefId = 'cross'; 
+//     echo "<br/><br/><br/><pre>".
+//         "NS: ". $this->namespace.PHP_EOL.
+//         "pdfDoiNS: ". $this->pdfDoiNS.PHP_EOL.
+//         "pdfPmidNS: ". $this->pdfPmidNS.PHP_EOL.
+//         "Prefix: ".$this->prefix.PHP_EOL.
+//         "extension: ".$this->extension.PHP_EOL.
+//         "delimiter: ".$delimiter.PHP_EOL.
+//         "mediaDir: ".$this->mediaDir.PHP_EOL.
+//         "mediaFormat: ".$this->mediaFormat.PHP_EOL.
+//         "linkFormat: ".$this->linkFormat.PHP_EOL.
+//         "useTmpDir: ".print_r($this->useTmpDir).PHP_EOL.
+//         "tmpFormat: ".$this->tmpFormat.PHP_EOL.
+//         "crossRefId: ".$this->crossRefId.PHP_EOL.
+//         "abstractTrFormat: ".$this->abstractTrFormat.PHP_EOL.
+//         "</pre><br/>";
     $this->CheckDir();
   }
 
- /**
-  * Get media file path
-  */
+  /**
+   * Get local pdf file path if exists (checking PMID and DOI dirs)
+   */
+  function GetLocalPdfPath($pmid, $doi){
+    global $conf;
+    $delimiter = ($conf['useslash'])?'/':':';
+    // Check with PMID
+    $ml = $this->pdfPmidNS.$delimiter.$pmid.".pdf";
+    $filename = mediaFN($ml);
+    //echo "<br/><pre>".$ml." ".$filename."</pre></br>";
+    if (!file_exists($filename)) {
+        // Test DOI
+        $ml = $this->pdfDoiNS.$delimiter.str_replace("/","_",$doi).".pdf";
+        $filename = mediaFN($ml);
+        //echo "<br/><pre>".$ml." ".$filename."</pre></br>";
+        if (!file_exists($filename)) {
+            return ""; // Not found
+        }
+    }
+    return ml($ml,'',true,'',true);
+  }
+
+
+  /**
+   * Get media file path
+   */
   function GetMediaPath($id){
     $id = strtolower($id);
     if($this->useTmpDir===false){
@@ -50,10 +104,10 @@ class plugin_cache{
     }
   }
 
- /**
-  * Get all media file paths array
-  * array(ID,filepath)
-  */
+  /**
+   * Get all media file paths array
+   * array(ID,filepath)
+   */
   function GetAllMediaPaths(){
     $dir = $this->mediaDir;
     $dirhandle = opendir($dir);
@@ -65,72 +119,213 @@ class plugin_cache{
       if (strpos($name,$this->extension)!==false){
         $path = $dir.'/'.$name;
         $id = str_replace($patten,$replace,$name);
-        $files[$id] = $path;
+        if (!empty($id))
+            $files[$id] = $path;
       }
     }
     closedir();
     return $files;
   }
 
- /**
-  * Get media link
-  */
+  /**
+   */
+  function RecreateCrossRefFile(){
+    $files = $this->GetAllMediaPaths();
+    $cross = Array();
+    foreach ($files as $id => $path) {
+        // Read file $path
+        if (@file_exists($path)){
+          $content = io_readFile($path);
+          $doi = $this->_catchDoiFromRawPubmedXml($content);
+          // What to do if doi not found ?
+          if (!empty($doi))
+              $cross[$id] = $doi;
+        }
+    }
+    // Save cross data
+    $this->_save_array($this->crossRefId, $cross);
+    return true;
+  }
+
+  function PmidFromDoi(&$pdfDois){
+    $cross = $this->_read_array("cross");
+    if (empty($cross))
+        return NULL;
+//     echo "<br><br>".print_r($cross)."<br><br>";
+    $pmids = Array();
+    $removeDoi = Array();
+    foreach ($pdfDois as $doi) {
+        $pmid = array_search($doi, $cross);
+//         echo "<br>PMID:{$pmid}.............DOI:{$doi}<br>";
+        if (!empty($pmid)) {
+            $pmids[] = $pmid;
+            $removeDoi[] = $doi;
+        }
+    }
+    $pdfDois = array_diff($pdfDois, $removeDoi); 
+    return $pmids;
+  }
+
+  /**
+   * Get all local PDF file PMIDs
+   */
+  function GetAllAvailableLocalPdfByPMIDs(){
+    //$this->pdfDoiNS  = strtolower($_name."/doi_pdf");
+    //$this->pdfPmidNS = strtolower($_name."/pmid_pdf");
+    // cache all PDF in PMID dir
+    $dir = mediaFN($this->pdfPmidNS);
+    $dirhandle = opendir($dir);
+    $files = array();
+    while($name = readdir($dirhandle)){
+      if (strpos($name,".pdf")!==false){
+        $id = str_replace(".pdf","",$name);
+        $files[] = $id;
+      }
+    }
+    closedir();
+    //echo print_r($files);
+    return $files;
+  }
+
+  /**
+   * Get all local PDF file DOIs
+   */
+  function GetAllAvailableLocalPdfByDOIs(){
+    // cache all PDF in DOI dir
+    $dir = mediaFN($this->pdfDoiNS);
+//     echo "*********** ".$dir."<br/>";
+    $dirhandle = opendir($dir);
+    $files = array();
+    while($name = readdir($dirhandle)){
+      if (strpos($name,".pdf")!==false){
+        $id = str_replace(".pdf","",$name);
+        $id = str_replace("_","/",$id);
+        $files[] = $id;
+      }
+    }
+    closedir();
+    return $files;
+  }
+
+  /**
+   * Get media link
+   */
   function GetMediaLink($id){
     return ml(sprintf($this->linkFormat,$id),'',true,'',true);
   }
+  
+  function GetDoiPdfUrl($doi){
+    global $conf;
+    $delimiter = ($conf['useslash'])?'/':':';
+    $doi = str_replace("/","_",$doi);
+    $ml = $this->pdfDoiNS.$delimiter.$doi.".pdf";
+//     $filename = mediaFN($ml);
+//     $file = mediaFN($this->pdfDoiNS.$this->delimiter.$doi.'.pdf');
+    return ml($ml,'',true,'',true);
+  }
+  function GetDoiPdfThumbnailUrl($doi){
+    global $conf;
+    $delimiter = ($conf['useslash'])?'/':':';
+    $doi = str_replace("/","_",$doi);
+    $ml = $this->pdfDoiNS.$delimiter.$doi.'.jpg';
+    return ml($ml,'',true,'',true);
+  }
 
- /**
-  * Get text from cache. If none, return false
-  *
-  * Uses gzip if extension is .gz
-  * and bz2 if extension is .bz2
-  */
+  /**
+   * Get text from cache. If none, return false
+   *
+   * Uses gzip if extension is .gz
+   * and bz2 if extension is .bz2
+   */
   function GetMediaText($id){
     $filepath = $this->GetMediaPath($id);
     if (@file_exists($filepath)){
-      @touch($filepath);
+      //@touch($filepath);
       return io_readFile($filepath);
     }
     return false;
   }
- /**
-  * Save string to cache with a permission of $conf['fmode'].
-  *
-  * Uses gzip if extension is .gz
-  * and bz2 if extension is .bz2
-  */
-  function PutMediaText($id,$text){
+  
+  /**
+   * Return the content of the translated abstract of the PMID
+   */
+  function GetTranslatedAbstract($pmid, $lang='fr'){
+    $filepath = sprintf($this->abstractTrFormat,$pmid);
+    if (@file_exists($filepath)){
+      //@touch($filepath);
+      return io_readFile($filepath);
+    }
+    return "";
+  }
+  
+  /**
+   * Save string to cache with a permission of $conf['fmode'].
+   *
+   * Uses gzip if extension is .gz
+   * and bz2 if extension is .bz2
+   */
+  function SavePubMedXmlSummaryText($xml){
     global $conf;
-    $path = $this->GetMediaPath($id);
-    if(io_saveFile($path,$text)){
+    $pmid = $this->_catchPmidFromRawPubmedXml($xml);
+    $doi = $this->_catchDoiFromRawPubmedXml($xml);
+//     echo "********* SAVING <br>PMID=".$pmid."  DOI=".$doi."<br>";
+    $path = $this->GetMediaPath($pmid);
+    if (io_saveFile($path,$xml)){
         @chmod($path,$conf['fmode']);
+        $crossrefs = $this->_read_array($this->crossRefId);
+        $crossrefs[$pmid] = $doi;
+        $this->_save_array($this->crossRefId, $crossrefs);
         return true;
     }
     return false;
   }
- /**
-  * Check cache directories
-  */
+  
+  /**
+   * Check cache directories
+   */
   function CheckDir(){
     global $conf;
     $dummyFN=mediaFN($this->namespace.':_dummy');
+    //echo "dummyFN: ".$dummyFN;
     $tmp = dirname($dummyFN);
     if (!@is_dir($tmp)){
       io_makeFileDir($dummyFN);
       @chmod($tmp,$conf['dmode']);
     }
+
+    $dummyFN=mediaFN($this->pdfDoiNS.':_dummy');
+    $tmp = dirname($dummyFN);
+    //echo "dummyFN: ".$dummyFN." ".print_r(@is_dir($tmp))."<br>";
+    if (!@is_dir($tmp)){
+      io_makeFileDir($dummyFN);
+      @chmod($tmp,$conf['dmode']);
+    }
+
+    $dummyFN=mediaFN($this->pdfPmidNS.':_dummy');
+    $tmp = dirname($dummyFN);
+    //echo "dummyFN: ".$dummyFN." ".print_r(@is_dir($tmp))."<br>";
+    if (!@is_dir($tmp)){
+      io_makeFileDir($dummyFN);
+      @chmod($tmp,$conf['dmode']);
+    }
+
     if (auth_aclcheck($this->namespace.":*","","@ALL")==0){
        global $AUTH_ACL;
        $acl = join("",file(DOKU_CONF.'acl.auth.php'));
        $p_acl = $this->namespace.":*\t@ALL\t1\n";
+       $p_acl .= $this->pdfDoiNS.":*\t@admin\t16\n";
+       $p_acl .= $this->pdfPmidNS.":*\t@admin\t16\n";
+       $p_acl .= $this->pdfDoiNS.":*\t@ALL\t0\n";
+       $p_acl .= $this->pdfPmidNS.":*\t@ALL\t0\n";
        $new_acl = $acl.$p_acl;
        io_saveFile(DOKU_CONF.'acl.auth.php', $new_acl);
        $AUTH_ACL = file(DOKU_CONF.'acl.auth.php'); // Reload ACL
     }
   }
- /**
-  * Return true if the file exists
-  */
+
+  /**
+   * Return true if the file exists
+   */
   function Exists($id){
     $path = $this->GetMediaPath($id);
     if(@file_exists($path)!==false){
@@ -140,9 +335,9 @@ class plugin_cache{
     return false;
   }
 
- /**
-  * Clear all media files in a plugin's media directory
-  */
+  /**
+   * Clear all media files in a plugin's media directory
+   */
   function ClearCache(){
     global $conf;
     $handle = @opendir($this->mediaDir);
@@ -155,66 +350,54 @@ class plugin_cache{
     }
     closedir($handle);
   }
- /**
-  * Remove cache and directory
-  */
+
+  /**
+   * Remove cache and directory
+   */
   function RemoveDir(){
     $this->ClearCache();
     @rmdir($this->mediaDir);
   }
- /**
-  * save array as tab-text
-  */
-  function _save_array($id,$ar=''){
-    $_st = _microtime();
-    if(empty($id)) return false;
+
+  /**
+   * save key/value array as tab-text
+   */
+  function _save_array($id,$array){
+    if (empty($id)) 
+      return false;
+    if (empty($array))
+        return false;
     global $conf;
-    if (empty($ar)){
-    }else{
-      $rep_pair = array("\n"=>"","\t"=>"");
-      $values = array_values($ar);
-      $keys = array_keys($ar);
-      $sz = count($values);
-      for($i=0;$i<$sz;$i++){
-        $k = $keys[$i];
-        if(empty($k)) $k=$i;
-        $v=strtr($ar[$k],$rep_pair);
-        $file.= $k."\t".$v."\n";
-      }
-    }
-    if (empty($file)){$file='#not found';}
     $path = $this->GetMediaPath($id);
-    if(io_saveFile($path,$file)){
+    if (io_saveFile($path,json_encode($array))) {
       @chmod($path,$conf['fmode']);
-      _stopwatch('save_array',$_st);
       return true;
-    }else{
-      _stopwatch('save_array',$_st);
+    }
     return false;
-    }
   }
 
- /**
-  * read array from tab-text
-  */
+  /**
+   * read array from tab-text
+   */
   function _read_array($id){
-    $_st = _microtime();
-    if (empty($id) || !$this->Exists($id)) return NULL;
+    if (empty($id) || !$this->Exists($id)) 
+        return NULL;
     $path = $this->GetMediaPath($id);
-    $lines = split("\n",io_readFile($path));
-    $a = array();
-    $sz = count($lines);
-    for($i=0;$i<$sz;$i++){
-      if ($line=='#not found') return null;
-      $line = chop($lines[$i]);
-      if (empty($line)) continue;
-      $items = explode("\t",$line);
-      if (count($items)!=2)continue;
-      $a[$items[0]] = $items[1];
-    }
-      _stopwatch('read_array',$_st);
-    @touch($path);
-    return $a;
+    $array = json_decode(io_readFile($path), true);
+    return $array;
   }
 
+  function _catchDoiFromRawPubmedXml($xml){
+    $pattern = '~"doi">(.*)</~';
+    $matches = '';
+    $r = preg_match($pattern,$xml,$matches);
+    return $matches[1];
+  }
+
+  function _catchPmidFromRawPubmedXml($xml){
+    $pattern = '~"pubmed">(.*)</~';
+    $matches = '';
+    $r = preg_match($pattern,$xml,$matches);
+    return $matches[1];
+  }
 }

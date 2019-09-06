@@ -7,8 +7,9 @@ See http://www.dokuwiki.org/plugin:pubmed
 ## Authors and licence
 
 - Ikuo Obataya wrote this plugin (2007-2016)
-- Eric Maeker improved this plugins (without integrating new Ikuo code) from 2016 to 2018
+- Eric Maeker improved this plugins (without integrating new Ikuo code) from 2016 to 2019
 - Licence : GPLv2
+- Version : September 2019
 
 ## How does it work
 
@@ -72,6 +73,8 @@ Some more commands are available:
 `{{pubmed>summaryxml:24073682}}`
 - *clear_summary* : clear all cached files
 - *remove_dir* : remove the cache directory (by default */data/media/ncbi_esummary*)
+- *recreate_cross_refs* : recreate the crossref (DOI <-> PMID)
+- *full_pdf_list* : show all available PDF (see specific doc)
 
 ## User defined citation
 
@@ -99,17 +102,24 @@ Token    | Content
 %doi% | DOI of the publication
 %journal_url% | Link to Journal web site using the DOI
 %pmc_url% | If available, link to free PDF of the article.
+%abstractFr% | Show french translated abstract (see specific doc)
+%localpdf% | Add link to local PDF file (see specific doc)
 
 Hard coded formula    |  Content
 --------------------- | ----------
 *short*               | `%first_author%. %iso%. %pmid%. %journal_url% %pmc_url%`
 *long*                | `%authors%. %title%. %iso%. %pmid%. %journal_url% %pmc_url%`
-*long_abstract*       | `%authors%. %title%. %iso%. %pmid%. %journal_url% %pmc_url% %abstract%`
+*long_pdf*            | `%authors%. %title%. %iso%. %pmid%. %journal_url% %pmc_url% %localpdf%`
+*long_abstract*       | `%authors%. %title%. %iso%. %pmid%. %journal_url% %pmc_url% %abstract% %abstractFr%`
+*long_abstract_pdf*   | `%authors%. %title%. %iso%. %pmid%. %journal_url% %pmc_url% %abstract% %abstractFr% %localpdf%`
 
 ## Styling
 
 You can change the style of your citation. Please take a look at the style.css file for further information.
 
+## Using local PDF
+
+You get a direct link to your media PDF files of publications. You have to save the PDF files in the media directory: media/ncbi_esummary/pmid_pdf or media/ncbi_esummary/doi_pdf. Just use the PMID or DOI as file name. It is recommanded to use the PMID mode.
 
 ## Problems, wishes
 

@@ -1,79 +1,73 @@
-/*div.dokuwiki div.pubmed{
-  border-bottom:solid 1px #CCCCCC;
-}
-*/
-div.pubmed div.vancouver{
+.pubmed .vancouver{
   font-weight: normal;
 }
 
-div.pubmed div.long span.authors,
-div.pubmed div.long_abstract span.authors{
-  font-weight: bold;
-}
-
-div.pubmed div.short span.authors{
+.pubmed .long .authors,
+.pubmed .long_abstract .authors,
+.pubmed .short span.authors{
   font-weight: normal;
-  font-style: italic;
 }
 
-div.pubmed div.short span.etal{ /* always in short output */
+.pubmed .short span.etal{ /* always in short output */
   font-style: inherit;
 }
 
-div.pubmed span.journal_iso,
-div.pubmed span.journal_title,
-div.pubmed span.volume,
-div.pubmed span.pages,
-div.pubmed span.date{
+.pubmed span.journal_iso,
+.pubmed span.journal_title,
+.pubmed span.volume,
+.pubmed span.pages,
+.pubmed span.date{
   margin-left:5px;
   margin-right:5px;
 }
 
-div.pubmed span.journal_title{
+.pubmed .journal_title{
   font-style:italic;
 }
 
-div.pubmed span.journal_iso{
+.pubmed .journal_iso{
   font-style:italic;
 }
 
-div.pubmed div.long span.title,
-div.pubmed div.long_abstract span.title, {
+.pubmed .long .title,
+.pubmed .long_pdf .title,
+.pubmed .long_abstract .title,
+.pubmed .long_abstract_pdf .title, {
   font-weight: bold;
 }
 
-div.pubmed span.volume{
+.pubmed span.volume{
   font-weight:bold;
 }
 
-div.pubmed a.pmid  {
+.pubmed a.pmid  {
   background-image:url(images/pubmed_icon.png);
   background-repeat:no-repeat;
   background-position:left center;
   padding-left:48px;
 }
-div.pubmed a.journal_url {
+.pubmed a.journal_url {
   background-image:url(images/magazine100.png);
   background-repeat:no-repeat;
   background-position:left center;
   background-size: contain;
   padding-left:1em;
 }
-div.pubmed a.pmc_url {
+.pubmed a.pmc_url {
   background-image:url(images/pmc.png);
   background-repeat:no-repeat;
   background-position:left center;
   background-size: contain;
   padding-left:1em;
 }
-div.pubmed span.pmid {
+.pubmed .pmid {
   font-size:80%;
 }
-div.pubmed span.iso {
+.pubmed .iso {
   font-weight: normal;
 }
 
-div.pubmed span.abstract{
+.pubmed .abstract{
   font-size:80%;
   padding-left:20px;
   display:block;
