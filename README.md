@@ -55,7 +55,9 @@ The article citation can be automatically included using pre-formatted outputs:
 - *vancouver* : Full Vancouver citation see [Vancouver].
 - *short* : ISO citation in a short way.
 - *long* : full ISO citation including all authors, article title, journal title, volume, year, month, pages.
+- *long_pdf* : full ISO citation including all authors, article title, journal title, volume, year, month, pages. If you own the PDF file a link will show.
 - *long_abstract* : append the full abstract to the *long* citation. The abstract can toggled and is hidden by default.
+- *long_abstract_pdf* : append the full abstract to the *long* citation. The abstract can toggled and is hidden by default. If you own the PDF file a link will show.
 - or *user* defined : you can define you own citation formula (see below).
 
 ### Plugin parameters
