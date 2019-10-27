@@ -353,6 +353,7 @@ class ncbi {
       "pages" => $article->Pagination[0]->MedlinePgn[0],
       "abstract" => $abstract,
       "doi" => $doi,
+      "pmc" => $pmc,
       // Local pdf file are stored into the cache path using DOI or PMID
 //      "localpdf1" => str_replace("/", "@", $doi).".pdf",
 //      "localpdf2" => $content->PMID[0].".pdf"
