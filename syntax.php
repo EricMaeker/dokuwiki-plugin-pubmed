@@ -58,7 +58,7 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
   * - full_list
   * - recreate_cross_refs
   */
-  function handle($match, $state, $pos, &$handler){
+  function handle($match, $state, $pos, Doku_Handler $handler){
     $match = substr($match,9,-2);
     return array($state, explode(':', $match, 2));
   }
@@ -146,7 +146,7 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
   /**
    * Create output
    */
-  function render($mode, &$renderer, $data) {
+  function render($mode, Doku_Renderer $renderer, $data) {
     if ($mode != 'xhtml')
       return false;
 
