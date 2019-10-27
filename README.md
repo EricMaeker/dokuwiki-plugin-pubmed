@@ -9,7 +9,7 @@ See http://www.dokuwiki.org/plugin:pubmed
 - Ikuo Obataya wrote this plugin (2007-2016)
 - Eric Maeker improved this plugins (without integrating new Ikuo code) from 2016 to 2019
 - Licence : GPLv2
-- Version : September 2019
+- Version : 27 Octobre 2019
 
 ## How does it work
 
