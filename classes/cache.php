@@ -401,3 +401,4 @@ class plugin_cache{
     return $matches[1];
   }
 }
+?>
