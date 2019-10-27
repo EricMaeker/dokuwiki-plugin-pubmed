@@ -26,7 +26,7 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
       );
 
   // Constructor
-  function syntax_plugin_pubmed(){
+  public function __construct() {
     if (!class_exists('plugin_cache'))
       @require_once(DOKU_PLUGIN.'pubmed/classes/cache.php');
     if (!class_exists('ncbi'))
@@ -35,8 +35,8 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
     $this->xmlCache = new plugin_cache("ncbi_esummary","pubmed","xml.gz");
   }
 
-  function getType(){ return 'substition'; }
-  function getSort(){ return 158; }
+  function getType() { return 'substition'; }
+  function getSort() { return 158; }
 
   /**
    * Plugin tag format: {{pubmed>command:arg}}

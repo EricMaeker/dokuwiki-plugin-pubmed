@@ -29,7 +29,7 @@ class plugin_cache{
   /**
    * Initialization
    */
-  function plugin_cache($_name='plugin_cache',$_prefix='noname',$_ext='txt'){
+  public function __construct($_name='plugin_cache',$_prefix='noname',$_ext='txt'){
     global $conf;
     $this->namespace = strtolower($_name);
     $this->pdfDoiNS  = strtolower($_name."/doi_pdf");

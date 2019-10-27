@@ -21,7 +21,7 @@ class ncbi {
   // Set this to true to get debugging page output when retrieving and processing pubmed URL
   var $debugUsingEchoing = false; 
 
-  function ncbi()
+  public function __construct()
   {
     $this->HttpClient   = new DokuHTTPClient();
     $this->pubmedURL    = 'http://www.ncbi.nlm.nih.gov/pubmed/%s';
