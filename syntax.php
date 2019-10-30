@@ -200,7 +200,7 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
             $renderer->doc.=sprintf($this->getLang('pubmed_not_found'),$pmid);
             return false;
           }
-          $renderer->doc .= "<pre>".$xml."</pre>";
+          $renderer->doc .= "<pre>".htmlspecialchars($xml,ENT_QUOTES)."</pre>";
           return true;
 
         case 'clear_summary':
