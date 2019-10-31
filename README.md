@@ -135,6 +135,13 @@ You get a direct link to your media PDF files of publications. You have to save 
 
 Please use [github] repository to adress any comments, issues or wishes.
 
+## To Do
+
+- Add multiple language abstract translations
+- Add a `user`command
+- Add a `related` to list the related articles of one PMID
+- Use the new NCBI API
+
 [pubmed]: https://www.ncbi.nlm.nih.gov/pubmed
 [github]: https://github.com/EricMaeker/dokuwiki-plugin-pubmed/tree/dokuwiki-web-site
 [in action]: https://www.maeker.fr/eric/wiki/fr:medical:cours:part:iatrogenese:references
