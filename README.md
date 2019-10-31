@@ -85,6 +85,7 @@ Some more commands are available:
 ## User defined citation
 
 You can use a simple string to define your own citation formula. The following tokens are available.
+To get it work, just define in the plugin params your line and then remove all command to the wiki pubmed invocation : `{{pubmed>20413750}}` instead of `{{pubmed>CMD:20413750}}`
 
 Token    | Content
 -------- | ---
@@ -122,6 +123,10 @@ Hard coded formula    |  Content
 ## Styling
 
 You can change the style of your citation. Please take a look at the style.css file for further information.
+
+## Using abstract translations
+
+In your media dir (by default `media/ncbi_esummary`), add a textual file with the translation. Name it : `pubmed_PMID_fr.txt` where PMID is the PMID of the citation. That's all.
 
 ## Using local PDF
 
