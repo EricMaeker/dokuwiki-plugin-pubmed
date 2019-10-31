@@ -34,7 +34,6 @@ The syntax is quite easy:
 
 - Using the default options:
   - `{{pubmed>24073682}}` where 24073682 is the PMID of the article as notified by pubmed.
-  - `{{pubmed>user:24073682}}` where 24073682 is the PMID of the article as notified by pubmed and the default *user* parameter will be used to create the article citation.
 
 - Using specific formula:
   - `{{pubmed>long:24073682}}` where 24073682 is the PMID of the article as notified by pubmed and *long* is the selected article citation formula.
@@ -130,7 +129,7 @@ In your media dir (by default `media/ncbi_esummary`), add a textual file with th
 
 ## Using local PDF
 
-You get a direct link to your media PDF files of publications. You have to save the PDF files in the media directory: media/ncbi_esummary/pmid_pdf or media/ncbi_esummary/doi_pdf. Just use the PMID or DOI as file name. It is recommanded to use the PMID mode.
+You get a direct link to your media PDF files of publications. You have to save the PDF files in the media directory: `media/ncbi_esummary/pmid_pdf` or `media/ncbi_esummary/doi_pdf. Just use the PMID or DOI as file name. It is recommanded to use the PMID mode.
 
 ## Problems, wishes
 
