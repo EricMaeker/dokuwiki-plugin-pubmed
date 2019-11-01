@@ -1,10 +1,11 @@
 <?php
-/**
- * English language file
- *
- * @author     <dokuwiki@meistermetz.de>
- */
-
+/*
+description : Dokuwiki Eric Maeker Pubmed plugin
+author      : Eric Maeker
+email       : eric.maeker[at]gmail.com
+lastupdate  : 2019-11-01
+license     : Public-Domain
+*/
 // for the configuration manager
 $lang['default_command'] = 'Choose the default command. This allow you to write {{pubmed>234234}} instead of {{pubmed>command:342342}}.';
 $lang['user_defined_output'] = 'Tokened user output. Eg: %authors%. %title%. %iso%';

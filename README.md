@@ -6,10 +6,14 @@ See http://www.dokuwiki.org/plugin:pubmed
 
 ## Authors and licence
 
-- Ikuo Obataya wrote this plugin (2007-2016)
-- Eric Maeker improved this plugins (without integrating new Ikuo code) from 2016 to 2019
-- Licence : GPLv2
-- Version : 27 Octobre 2019
+- Plugin based on the Ikuo Obataya pubmed code (2007-2016)
+- Eric Maeker, MD (Fr)
+  - [maekerwebsite]
+  - [maekermail]
+  - Mostly completely rewrote the code
+  - from 2016 to 2019
+- Licence : Public-Domain
+- Version : 01 November 2019
 
 ## How does it work
 
@@ -77,7 +81,7 @@ Some more commands are available:
 - *summaryxml* show the retrieved XML code.
 `{{pubmed>summaryxml:24073682}}`
 - *clear_summary* : clear all cached files
-- *remove_dir* : remove the cache directory (by default */data/media/ncbi_esummary*)
+- *remove_dir* : remove the cache directory (by default `/data/media/ncbi_esummary`)
 - *recreate_cross_refs* : recreate the crossref (DOI <-> PMID)
 - *full_pdf_list* : show all available PDF (see specific doc)
 
@@ -143,6 +147,8 @@ Please use [github] repository to adress any comments, issues or wishes.
 - Add a `related` to list the related articles of one PMID
 - Use the new NCBI API
 
+[maekerwebsite]: https://www.maeker.fr
+[maekermail]: eric.maeker@gmail.com
 [pubmed]: https://www.ncbi.nlm.nih.gov/pubmed
 [github]: https://github.com/EricMaeker/dokuwiki-plugin-pubmed/tree/dokuwiki-web-site
 [in action]: https://www.maeker.fr/eric/wiki/fr:medical:cours:part:iatrogenese:references

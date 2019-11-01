@@ -1,10 +1,10 @@
 <?php
 /*
-description : Access to NCBI using eSummary and eSearch
-author      : Ikuo Obataya, Eric Maeker
-email       : i.obataya[at]gmail_com, eric[at]maeker.fr
-lastupdate  : 2019-05-26
-license     : GPL 2 (http://www.gnu.org/licenses/gpl.html)
+description : Dokuwiki Eric Maeker Pubmed plugin
+author      : Eric Maeker
+email       : eric.maeker[at]gmail.com
+lastupdate  : 2019-11-01
+license     : Public-Domain
 */
 
 if(!defined('DOKU_INC')) die();

@@ -1,10 +1,10 @@
 <?php
 /*
-description : Syntax plugin, PubMed article references integrator
-author      : Eric Maeker (based on Ikuo Obataya work)
-email       : eric[at]maeker.fr
-lastupdate  : 2018-07-08
-license     : GPL 2 (http://www.gnu.org/licenses/gpl.html)
+description : Dokuwiki Eric Maeker Pubmed plugin
+author      : Eric Maeker
+email       : eric.maeker[at]gmail.com
+lastupdate  : 2019-11-01
+license     : Public-Domain
 */
 
 if(!defined('DOKU_INC')) die();

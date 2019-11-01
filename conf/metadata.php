@@ -1,11 +1,11 @@
 <?php
-/**
- * DokuWiki Plugin pubmed
- *
- * @license BSD-3 Clause http://www.gnu.org/licenses/bsd.html
- * @author  Eric Maeker, MD (fr) <eric.maeker@gmail.com>
- */
-
+/*
+description : Dokuwiki Eric Maeker Pubmed plugin
+author      : Eric Maeker
+email       : eric.maeker[at]gmail.com
+lastupdate  : 2019-11-01
+license     : Public-Domain
+*/
 $meta['default_command'] = array('multichoice', '_choices' => array('short','long','vancouver','long_abstract','summaryxml','search','user'));
 $meta['user_defined_output'] = array('string');
 $meta['limit_authors_vancouver'] = array('numericopt', '_min' => '1');
