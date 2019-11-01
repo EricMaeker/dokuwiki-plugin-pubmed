@@ -134,7 +134,7 @@ In your media dir (by default `media/ncbi_esummary`), add a textual file with th
 
 ## Using local PDF
 
-You get a direct link to your media PDF files of publications. You have to save the PDF files in the media directory: `media/ncbi_esummary/pmid_pdf` or `media/ncbi_esummary/doi_pdf. Just use the PMID or DOI as file name. It is recommanded to use the PMID mode.
+You get a direct link to your media PDF files of publications. You have to save the PDF files in the media directory: `media/ncbi_esummary/pmid_pdf` or `media/ncbi_esummary/doi_pdf`. Just use the PMID or DOI as file name. It is recommanded to use the PMID mode.
 
 ## Problems, wishes
 
