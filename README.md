@@ -151,5 +151,5 @@ Please use [github] repository to adress any comments, issues or wishes.
 [Email]: eric.maeker@gmail.com
 [pubmed]: https://www.ncbi.nlm.nih.gov/pubmed
 [github]: https://github.com/EricMaeker/dokuwiki-plugin-pubmed/tree/dokuwiki-web-site
-[in action]: https://www.maeker.fr/eric/wiki/fr:medical:cours:part:iatrogenese:references
+[in action]: https://www.maeker.fr/eric/wiki/fr/humaniste/soins/centre_personne_biblio
 [Vancouver]: https://www.nlm.nih.gov/bsd/uniform_requirements.html
