@@ -35,8 +35,8 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
     $this->xmlCache = new plugin_cache("ncbi_esummary","pubmed","xml.gz");
   }
 
-  function getType() { return 'substition'; }
-  function getSort() { return 158; }
+  function getType(){ return 'substition'; }
+  function getSort(){ return 158; }
 
   /**
    * Plugin tag format: {{pubmed>command:arg}}
@@ -168,6 +168,7 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
     // Manage the article reference commands in :
     //   short, long, long_abstract, vancouver,
     //   or user
+    $this->outputTpl["user"] = $this->getConf('user_defined_output');
     if (array_key_exists($cmd, $this->outputTpl)) {
 
       $multiplePmids = false;

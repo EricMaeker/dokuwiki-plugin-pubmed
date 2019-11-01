@@ -83,8 +83,9 @@ Some more commands are available:
 
 ## User defined citation
 
-You can use a simple string to define your own citation formula. The following tokens are available.
-To get it work, just define in the plugin params your line and then remove all command to the wiki pubmed invocation : `{{pubmed>20413750}}` instead of `{{pubmed>CMD:20413750}}`
+You can use a simple string to define your own citation formula. In first, you need to define it in the plugin params `user_defined_output`, then you can call it using the `user` command : `{{pubmed>user:20413750}}`.
+
+The following tokens are available.
 
 Token    | Content
 -------- | ---
