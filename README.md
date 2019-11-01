@@ -143,7 +143,6 @@ Please use [github] repository to adress any comments, issues or wishes.
 ## To Do
 
 - Add multiple language abstract translations
-- Add a `user`command
 - Add a `related` to list the related articles of one PMID
 - Use the new NCBI API
 
