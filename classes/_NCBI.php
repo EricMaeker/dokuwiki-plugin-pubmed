@@ -3,7 +3,7 @@
 description : Dokuwiki Eric Maeker Pubmed plugin
 author      : Eric Maeker
 email       : eric.maeker[at]gmail.com
-lastupdate  : 2019-11-01
+lastupdate  : 2020-01-01
 license     : Public-Domain
 */
 
@@ -75,13 +75,14 @@ class ncbi {
     // Check error in the content (no <pre></pre>)
     if (preg_match("/<pre>\s+<\/pre>/i",$summary)) {
       if ($this->debugUsingEchoing)
-        echo PHP_EOL.">> PUBMED: Error while retrieving URL: ".$url.PHP_EOL;
+        echo PHP_EOL.">> PUBMED: Error while retrieving URL: ".$url." No HTML PRE tag".PHP_EOL;
       return NULL; 
     }
     // Check error in the content multiple <PubmedArticle>
-    if (substr_count($summary, 'PubmedArticle') != 2) {
+    if ((substr_count($summary, 'PubmedArticle') != 2) &&
+       (substr_count($summary, 'BookDocument') != 2)) {
       if ($this->debugUsingEchoing)
-        echo PHP_EOL.">> PUBMED: Error while retrieving URL: Multiple PubMedArticle tag : ".$url.PHP_EOL;
+        echo PHP_EOL.">> PUBMED: Error while retrieving URL: Multiple PubMedArticle/BookDocument tag : ".$url.PHP_EOL;
       return NULL; 
     }
 
@@ -160,8 +161,12 @@ class ncbi {
     $abstract = "";
     $part = array();
 
+    //echo print_r($content->BookDocument).PHP_EOL.PHP_EOL;
+
     // Manage Book references
     if (!empty($content->BookDocument)) {
+      if ($this->debugUsingEchoing)
+        echo "This is a BookDocument".PHP_EOL;
       $content = $content->BookDocument[0];
       $book = $content->Book[0];
     
@@ -233,7 +238,7 @@ class ncbi {
       // Catch authors
       if (!empty($book->AuthorList)) {
         if (!empty($book->AuthorList->Author[0]->CollectiveName)) {
-          array_push($authors, $book->AuthorList->Author[0]->CollectiveName);
+          array_push($authors, $book->AuthorList->Author[0]->CollectiveName[0]);
         } else if (!empty($book->AuthorList)) {
           foreach($book->AuthorList[0]->Author as $author) {
             if (!empty($author->LastName) || !empty($author->ForeName))
@@ -242,6 +247,13 @@ class ncbi {
         } else {
           array_push($authors, $pluginObject->getLang('no_author_listed'));
         }
+      }
+
+      // Create first author for short output
+      if (count($authors) > 1) {
+          $ret['first_author'] = $authors[0].' <span class="etal">et al</span>';
+      } else {
+          $ret['first_author'] = $authors[0];
       }
 
 	  $ret = array(
@@ -263,11 +275,18 @@ class ncbi {
 		// Construct iso citation of this book
 		$ym = "";
 		$ret["iso"] = "";
+
+		if (!empty($ret["authors"])) {
+		  $ret["iso"] .= implode(', ',$ret["authors"]).". ";
+		}
+
+		if (!empty($ret["title"]))
+		  $ret["iso"] .= $ret["title"].". ";
 		  
 		if (!empty($ret["publisherName"]))
-		  $ret["iso"] .= " ".$ret["publisherName"].". ";
+		  $ret["iso"] .= $ret["publisherName"].". ";
 		if (!empty($ret["publisherLocation"]))
-		  $ret["iso"] .= ' '.$ret["publisherLocation"].'. ';
+		  $ret["iso"] .= $ret["publisherLocation"].". ";
 
         if (!empty($ret["year"]) && !empty($ret["month"]))
 		  $ym = $ret["year"].", ".$ret["month"];
@@ -276,11 +295,11 @@ class ncbi {
 		if (!empty($ym))
 		  $ret["iso"] .= $ym.'. ';
 
-		$ret["iso"] .= $ret["copyright"];
+		$ret["vancouver"] = $ret["iso"];
 
         return $ret;
         
-        // TODO : Manage VANCOUVER CITATION
+        // TODO : Correct VANCOUVER CITATION
     }
 
 	// Manage Article references
