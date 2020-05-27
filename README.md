@@ -150,5 +150,5 @@ Please use [github] repository to adress any comments, issues or wishes.
 [pubmed]: https://pubmed.ncbi.nlm.nih.gov/
 [updateCtx]: https://api.ncbi.nlm.nih.gov/lit/ctxp
 [github]: https://github.com/EricMaeker/dokuwiki-plugin-pubmed/tree/dokuwiki-web-site
-[in action]: https://www.maeker.fr/eric/wiki/fr:medical:cours:part:iatrogenese:references
+[in action]: https://www.maeker.fr/covid19
 [Vancouver]: https://www.nlm.nih.gov/bsd/uniform_requirements.html
