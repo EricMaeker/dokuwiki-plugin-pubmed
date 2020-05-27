@@ -1,15 +1,15 @@
 <?php
 /*
-description : Dokuwiki Eric Maeker Pubmed plugin
+description : Dokuwiki PubMed2020 plugin
 author      : Eric Maeker
-email       : eric.maeker[at]gmail.com
-lastupdate  : 2019-11-01
+email       : eric.maeker@gmail.com
+lastupdate  : 2020-05-26
 license     : Public-Domain
 */
 
 if(!defined('DOKU_INC')) die();
 
-class plugin_cache{
+class pubmed2020_cache {
   var $namespace  ='';
   var $mediaDir   ='';
   var $mediaFormat='';
@@ -29,7 +29,7 @@ class plugin_cache{
   /**
    * Initialization
    */
-  public function __construct($_name='plugin_cache',$_prefix='noname',$_ext='txt'){
+  public function __construct($_name='plugin_cache',$_prefix='noname',$_ext='nbib'){
     global $conf;
     $this->namespace = strtolower($_name);
     $this->pdfDoiNS  = strtolower($_name."/doi_pdf");
@@ -237,7 +237,7 @@ class plugin_cache{
    * Uses gzip if extension is .gz
    * and bz2 if extension is .bz2
    */
-  function GetMediaText($id){
+  function getMedlineContent($id){
     $filepath = $this->GetMediaPath($id);
     if (@file_exists($filepath)){
       //@touch($filepath);
@@ -264,11 +264,10 @@ class plugin_cache{
    * Uses gzip if extension is .gz
    * and bz2 if extension is .bz2
    */
-  function SavePubMedXmlSummaryText($xml){
+  function saveRawMedlineContent($xml){
     global $conf;
     $pmid = $this->_catchPmidFromRawPubmedXml($xml);
     $doi = $this->_catchDoiFromRawPubmedXml($xml);
-//     echo "********* SAVING <br>PMID=".$pmid."  DOI=".$doi."<br>";
     $path = $this->GetMediaPath($pmid);
     if (io_saveFile($path,$xml)){
         @chmod($path,$conf['fmode']);
@@ -278,7 +277,7 @@ class plugin_cache{
         return true;
     }
     return false;
-  }
+  } // Ok pubmed2020
   
   /**
    * Check cache directories
@@ -388,17 +387,21 @@ class plugin_cache{
   }
 
   function _catchDoiFromRawPubmedXml($xml){
-    $pattern = '~"doi">(.*)</~';
+    $xmlPattern = '~"doi">(.*)</~';
+    $medlinePattern = '~AID - (.*) \[doi\]~';
+    //AID - 10.1016/s0035-3787(05)85071-4 [doi]
     $matches = '';
-    $r = preg_match($pattern,$xml,$matches);
+    $r = preg_match($medlinePattern,$xml,$matches);
     return $matches[1];
-  }
+  } // Ok pubmed2020
 
   function _catchPmidFromRawPubmedXml($xml){
-    $pattern = '~"pubmed">(.*)</~';
+    $xmlPattern = '~"pubmed">(.*)</~';
+    $medlinePattern = '~PMID- (.*)~';
+    //PMID - 15924077
     $matches = '';
-    $r = preg_match($pattern,$xml,$matches);
-    return $matches[1];
-  }
+    $r = preg_match($medlinePattern,$xml,$matches);
+    return trim($matches[1]);
+  } // Ok pubmed2020
 }
 ?>

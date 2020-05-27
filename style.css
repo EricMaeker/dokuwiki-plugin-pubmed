@@ -1,8 +1,16 @@
+/*
+description : Dokuwiki PubMed2020 plugin
+author      : Eric Maeker
+email       : eric.maeker@gmail.com
+lastupdate  : 2020-05-26
+license     : Public-Domain
+*/
 .pubmed .vancouver{
   font-weight: normal;
 }
 
 .pubmed .long .authors,
+.pubmed .long_tt .authors,
 .pubmed .long_abstract .authors,
 .pubmed .short span.authors{
   font-weight: normal;
@@ -30,9 +38,14 @@
 }
 
 .pubmed .long .title,
+.pubmed .long_tt .title,
+.pubmed .long_tt .title,
 .pubmed .long_pdf .title,
+.pubmed .long_tt_pdf .title,
 .pubmed .long_abstract .title,
-.pubmed .long_abstract_pdf .title, {
+.pubmed .long_tt_abstract .title,
+.pubmed .long_abstract_pdf .title, 
+.pubmed .long_tt_abstract_pdf .title {
   font-weight: bold;
 }
 

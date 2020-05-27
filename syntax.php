@@ -1,9 +1,9 @@
 <?php
 /*
-description : Dokuwiki Eric Maeker Pubmed plugin
+description : Dokuwiki PubMed2020 plugin
 author      : Eric Maeker
 email       : eric.maeker[at]gmail.com
-lastupdate  : 2019-11-01
+lastupdate  : 2020-05-26
 license     : Public-Domain
 */
 
@@ -11,55 +11,50 @@ if(!defined('DOKU_INC')) die();
 if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
 require_once(DOKU_PLUGIN.'syntax.php');
 
-class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
-  var $ncbi;
-  var $xmlCache;
+class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
+  var $pubmed2020;
+  var $pubmedCache;
   var $doiUrl = 'http://dx.doi.org/'; //+doi
   var $pmcUrl = 'https://www.ncbi.nlm.nih.gov/pmc/articles/%s/pdf'; //+pmc
   var $outputTpl = array(
       "short" => '%first_author%. %iso%. %pmid% %journal_url% %pmc_url%',
       "long" => '%authors%. %title%. %iso%. %pmid% %journal_url% %pmc_url%',
-      "long_pdf" => '%authors%. %title%. %iso%. %pmid% %journal_url% %pmc_url% %scihub_url% %localpdf%',
+      "long_tt" => '%authors%. %title_tt%. %iso%. %pmid% %journal_url% %pmc_url%',
+      "long_pdf" => '%authors%. %title%. %iso%. %pmid% %journal_url% %pmc_url% %localpdf%',
+      "long_tt_pdf" => '%authors%. %title_tt%. %iso%. %pmid% %journal_url% %pmc_url% %localpdf%',
       "long_abstract" => '%authors%. %title%. %iso%. %pmid% %journal_url% %pmc_url% %abstract% %abstractFr% %pmid% %doi%',
+      "long_tt_abstract" => '%authors%. %title_tt%. %iso%. %pmid% %journal_url% %pmc_url% %abstract% %abstractFr% %pmid% %doi%',
       "long_abstract_pdf" => '%authors%. %title%. %iso%. %pmid% %journal_url% %pmc_url% %abstract% %abstractFr% %pmid% %doi% %localpdf%',
+      "long_tt_abstract_pdf" => '%authors%. %title_tt%. %iso%. %pmid% %journal_url% %pmc_url% %abstract% %abstractFr% %pmid% %doi% %localpdf%',
       "vancouver" => '%vancouver%',
+      "vancouver_links" => '%vancouver% %pmid% %pmc_url%',
       );
 
   // Constructor
-  public function __construct() {
-    if (!class_exists('plugin_cache'))
-      @require_once(DOKU_PLUGIN.'pubmed/classes/cache.php');
-    if (!class_exists('ncbi'))
-      @require_once(DOKU_PLUGIN.'pubmed/classes/_NCBI.php');
-    $this->ncbi     = new ncbi();
-    $this->xmlCache = new plugin_cache("ncbi_esummary","pubmed","xml.gz");
+  public function __construct(){
+    if (!class_exists('pubmed2020_cache'))
+      @require_once(DOKU_PLUGIN.'pubmed2020/classes/cache.php');
+    if (!class_exists('PubMed2020'))
+      @require_once(DOKU_PLUGIN.'pubmed2020/classes/pubmed2020.php');
+    $this->pubmed2020  = new PubMed2020();
+    $this->pubmedCache = new pubmed2020_cache("pubmed","pubmed","nbib");
   }
 
   function getType(){ return 'substition'; }
   function getSort(){ return 158; }
 
   /**
-   * Plugin tag format: {{pubmed>command:arg}}
+   * Plugin tag format: {{pmid>command:arg}}
    */
   function connectTo($mode) {
-    $this->Lexer->addSpecialPattern('\{\{pubmed>[^}]*\}\}',$mode,'plugin_pubmed');
+    $this->Lexer->addSpecialPattern('\{\{pmid>[^}]*\}\}',$mode,'plugin_pubmed2020');
   }
 
  /**
-  * Handle the match. Accepted commands:
-  * - long: integrate the full article reference. Arg must be a valid PMID number
-  * - short: integrate a simplified article reference. Arg must be a valid PMID number
-  * - long_abstract: integrate the full article reference and its abstract (if available). Arg must be a valid PMID number
-  * - summaryxml: Arg must be a valid PMID number
-  * - clear_summary: clear all cached summary of the selected PMID. No args required
-  * - remove_dir: clear all cache dir. No args required
-  * - search: Create a pubmed search query using the arg. Arg must be a valid pubmed search (including MeSH terms)
-  * - user: using plugin configuration, you can define a user specific tokened string output format
-  * - full_list
-  * - recreate_cross_refs
+  * Handle the match.
   */
   function handle($match, $state, $pos, Doku_Handler $handler){
-    $match = substr($match,9,-2);
+    $match = substr($match,7,-2);
     return array($state, explode(':', $match, 2));
   }
 
@@ -72,17 +67,6 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
       if (count($refs) < 2) { // PMID is always included
         return sprintf($this->getLang('pubmed_not_found'),$refs["pmid"]);
       }
-
-      /*
-		  "type" => "book", "article"
-		  "publisherName" (book)
-		  "publisherLocation" (book)
-		  "collectionTitle" (book)
-		  "copyright" (book)
-		  "authorsVancouver" (article)
-		  "vancouver"
-      */
-
       $outputString = str_replace("%authors%", '<span class="authors">'.implode(', ',$refs["authors"]).'</span>', $outputString);
       $outputString = str_replace("%first_author%", '<span class="authors">'.$refs["first_author"].'</span>', $outputString);
       if (count($refs["authorsVancouver"]) > 0)
@@ -93,6 +77,11 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
       $outputString = str_replace("%type%", '<span class="type">'.$refs["type"].'</span>', $outputString);
 
       $outputString = str_replace("%title%", '<span class="title">'.$refs["title"].'</span>', $outputString);
+      if ($refs["translated_title"])
+          $outputString = str_replace("%title_tt%", '<span class="title">'.$refs["translated_title"].'</span>', $outputString);
+      else
+          $outputString = str_replace("%title_tt%", '<span class="title">'.$refs["title"].'</span>', $outputString);
+
       $outputString = str_replace("%lang%", '<span class="lang">'.$refs["lang"].'</span>', $outputString);
       $outputString = str_replace("%journal_iso%", '<span class="journal_iso">'.$refs["journal_iso"].'</span>', $outputString);
       $outputString = str_replace("%journal_title%", '<span class="journal_title">'.$refs["journal_title"].'</span>', $outputString);
@@ -104,7 +93,7 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
       $outputString = str_replace("%pages%", '<span class="pages">'.$refs["pages"].'</span>', $outputString);
       $outputString = str_replace("%abstract%", '<br/><span class="abstract">'.$refs["abstract"].'</span>', $outputString);
 
-      $refs["abstractFr"] = $this->xmlCache->GetTranslatedAbstract($refs["pmid"]);
+      $refs["abstractFr"] = $this->pubmedCache->GetTranslatedAbstract($refs["pmid"]);
       if (empty($refs["abstractFr"])) {
         $gg =  "https://translate.google.com/#view=home";
         $gg .= "&op=translate&sl=auto&tl=fr&text=";
@@ -129,7 +118,7 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
         $outputString = str_replace("%pmc_url%", '<a href="'.sprintf($this->pmcUrl, $refs["pmc"]).'" class="pmc_url" target="_blank" title="'.$refs["pmc"].'"></a>', $outputString);
 
     // Check local PDF using cache
-    $localPdf = $this->xmlCache->GetLocalPdfPath($refs["pmid"], $refs["doi"]);
+    $localPdf = $this->pubmedCache->GetLocalPdfPath($refs["pmid"], $refs["doi"]);
     if (empty($localPdf)) {
         $outputString = str_replace("%localpdf%", 'No PDF', $outputString);
     } else {
@@ -169,8 +158,8 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
     //   short, long, long_abstract, vancouver,
     //   or user
     $this->outputTpl["user"] = $this->getConf('user_defined_output');
-    if (array_key_exists($cmd, $this->outputTpl)) {
 
+    if (array_key_exists($cmd, $this->outputTpl)) {
       $multiplePmids = false;
 
       // Check multiple PMIDs (PMIDs can be passed in a coma separated list)
@@ -180,6 +169,7 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
       }
         
       $pmid = explode(",", $pmid);
+
       foreach ($pmid as $currentPmid) {
         $renderer->doc .= $this->getPmidOutput($cmd, $currentPmid, $multiplePmids);
       }  // Foreach PMIDs
@@ -189,14 +179,17 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
       }
 
     } else {
-      // Manage all other commands (summaryxml, clear_summary, remove_dir, search)
+      // Manage all other commands
       switch($cmd) {
-        case 'summaryxml':
+        case 'test':
+            $this->runTests();
+            return true;
+        case 'raw_medline':
           if (!is_numeric($pmid)){
             $renderer->doc.=sprintf($this->getLang('pubmed_wrong_format'));
             return false;
           }
-          $xml = $this->getSummaryXML($pmid);
+          $xml = $this->getMedlineContent($pmid);
           if(empty($xml)){
             $renderer->doc.=sprintf($this->getLang('pubmed_not_found'),$pmid);
             return false;
@@ -204,45 +197,45 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
           $renderer->doc .= "<pre>".htmlspecialchars($xml,ENT_QUOTES)."</pre>";
           return true;
 
-        case 'clear_summary':
-          $this->xmlCache->ClearCache();
+        case 'clear_raw_medline':
+          $this->pubmedCache->ClearCache();
           $renderer->doc .= 'Cleared.';
           return true;
 
         case 'remove_dir':
-          $this->xmlCache->RemoveDir();
+          $this->pubmedCache->RemoveDir();
           $renderer->doc .= 'Directory cleared.';
           return true;
           
         case 'search':
           $renderer->doc.='<div class="pubmed">';
-          $renderer->doc.= '<a class="pmid" target="_blank" href="'.$this->ncbi->getPubmedSearchURL($pmid).'">'.$pmid.'</a>';
+          $renderer->doc.= '<a class="pmid" target="_blank" href="'.$this->pubmed2020->getPubmedSearchURL($pmid).'">'.$pmid.'</a>';
           $renderer->doc.='</div>';
           return true;
 
         case 'recreate_cross_refs':
-          $this->xmlCache->RecreateCrossRefFile();
+          $this->pubmedCache->RecreateCrossRefFile();
           return true;
 
         case 'full_pdf_list':
           // Get all PMID from cache
-          $mediaList = array_keys($this->xmlCache->GetAllMediaPaths());
+          $mediaList = array_keys($this->pubmedCache->GetAllMediaPaths());
           // Get all PMID using the local PDF filename
-          $pdfPmids = $this->xmlCache->GetAllAvailableLocalPdfByPMIDs();
+          $pdfPmids = $this->pubmedCache->GetAllAvailableLocalPdfByPMIDs();
           // Remove all local PDF PMIDs already in the media list
           $pdfPmids = array_diff($pdfPmids, $mediaList); 
           // Remove all pdfPmid if present in the mediaList
-          $pdfDois = $this->xmlCache->GetAllAvailableLocalPdfByDOIs();
+          $pdfDois = $this->pubmedCache->GetAllAvailableLocalPdfByDOIs();
           // Get PMIDs from DOIs
-          $pmids = $this->xmlCache->PmidFromDoi($pdfDois);
+          $pmids = $this->pubmedCache->PmidFromDoi($pdfDois);
 
 //           $i = 0;
           foreach($pdfDois as $doi) {
 //             if (++$i == 5)
 //                break;
-            $xml = $this->ncbi->SummaryXml('pubmed', "", $doi);
+            $xml = $this->pubmed2020->getDataFromCtxp("", $doi);
             if (!empty($xml)) {
-              $this->xmlCache->SavePubMedXmlSummaryText($xml);
+              $this->pubmedCache->saveRawMedlineContent($xml);
             }
           }
 
@@ -256,9 +249,9 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
           }  // Foreach PMIDs
           foreach($pdfDois as $doi) {
             $renderer->doc .= 
-                "<a href='".$this->xmlCache->GetDoiPdfUrl($doi).
+                "<a href='".$this->pubmedCache->GetDoiPdfUrl($doi).
                 "' title='".$doi.
-                "'><img src='".$this->xmlCache->GetDoiPdfThumbnailUrl($doi).
+                "'><img src='".$this->pubmedCache->GetDoiPdfThumbnailUrl($doi).
                 "' alt='".$doi.
                 "'/></a>";
           }  // Foreach PMIDs
@@ -278,27 +271,20 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
 
 
   /**
-  * Get summary XML from cache or NCBI
+  * Get Medline raw data from cache or get it from NCBI
   */
-  function getSummaryXml($pmid) {
+  function getMedlineContent($pmid) {
     global $conf;
-    $cachedXml = $this->xmlCache->GetMediaText($pmid);
-    if ($cachedXml !== false) { 
-      return $cachedXml; 
+    $cached = $this->pubmedCache->getMedlineContent($pmid);
+    if ($cached !== false) { 
+      return $cached; 
     }
-
-    // Get summary XML from PubMed website
-    $summary = $this->ncbi->SummaryXml('pubmed',$pmid);
+    // Get content from PubMed website
+    $medline = $this->pubmed2020->getDataFromCtxp($pmid);
     // Save to cache
-    $this->xmlCache->SavePubMedXmlSummaryText($summary);
-//     $cachePath = $this->xmlCache->GetMediaPath($pmid);
-//     if (!empty($summary)) {
-//       if(io_saveFile($cachePath, $summary)){
-//         chmod($cachePath, $conf['fmode']);
-//       }
-//     }
-    return $summary;
-  }
+    $this->pubmedCache->saveRawMedlineContent($medline);
+    return $medline;
+  } // Ok pubmed2020
   
   /**
    * Check PMID format
@@ -309,7 +295,7 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
       return false;
     }
     return true;
-  }
+  } // Ok pubmed2020
 
   /**
    * Get pubmed string output according to the given unique PMID code passed and the command
@@ -319,15 +305,15 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
         return sprintf($this->getLang('pubmed_wrong_format'));
       }
 
-      // Get article summary (from cache or web)
-      $xml = $this->getSummaryXML($pmid);
+      // Get article content (from cache or web)
+      $xml = $this->getMedlineContent($pmid);
       if (empty($xml)) {
         return sprintf($this->getLang('pubmed_not_found'),$pmid);
         return false;
       }
 
       // Get the abstract of the article
-      $refs = $this->ncbi->getAbstract($xml, $pmid, $this);
+      $refs = $this->pubmed2020->readMedlineContent($xml, $pmid, $this);
 
       // Catch updated user output template
       $outputTpl['user'] = $this->getConf('user_defined_output');
@@ -357,7 +343,30 @@ class syntax_plugin_pubmed extends DokuWiki_Syntax_Plugin {
         $output .= "</li>";
       
       return $output;
+  } // Ok pubmed2020
+
+  /**
+   * Only for dev usage
+   */
+  function runTests() {
+    echo "Starting PubMed2020 Tests<br>";
+    // Test CTXP URLs
+    $retrieved = $this->pubmed2020->getDataFromCtxp("15924077", "doi");
+
+    // Test MedLine Format Reader
+    $myfile = fopen(DOKU_PLUGIN.'pubmed/tests/PM15924077.nbib', "r") or die("Unable to open file!");
+    $s = fread($myfile, filesize(DOKU_PLUGIN.'pubmed/tests/PM15924077.nbib'));
+    fclose($myfile);
+    
+    // Check retrieved files
+    if ($retrieved === $s)
+      echo "File Content: Ok".PHP_EOL;
+    else
+      echo "File Content: NOT Ok".PHP_EOL;
+
+    $this->pubmed2020->readMedlineContent($s, "PMID", $this);
   }
+  
 }
 
 ?>

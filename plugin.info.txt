@@ -1,8 +1,7 @@
-base   pubmed
+base   pubmed2020
 author Eric Maeker
 email  eric.maeker[at]gmail_com
-date   2019-11-01
-name   Dokuwiki Eric Maeker Pubmed plugin
-desc   Creates PubMed info
-url    http://www.dokuwiki.org/plugin:pubmed
-
+date   2020-05-26
+name   PubMed2020 plugin
+desc   Creates PubMed citations with a simple PMID
+url    http://www.dokuwiki.org/plugin:pubmed2020

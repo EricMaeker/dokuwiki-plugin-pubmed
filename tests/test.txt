@@ -1,0 +1,60 @@
+===== Unique =====
+
+==== PMID: 32123385 ====
+
+  * <nowiki>{{pmid>short:32123385}}</nowiki>
+    * {{pmid>short:32123385}}
+  * <nowiki>{{pmid>long:32123385}}</nowiki>
+    * {{pmid>long:32123385}}
+  * <nowiki>{{pmid>long_tt:32123385}}</nowiki>
+    * {{pmid>long_tt:32123385}}
+  * <nowiki>{{pmid>long_abstract:32123385}}</nowiki>
+    * {{pmid>long_abstract:32123385}}
+  * <nowiki>{{pmid>long_tt_abstract:32123385}}</nowiki>
+    * {{pmid>long_tt_abstract:32123385}}
+  * <nowiki>{{pmid>vancouver:32123385}}</nowiki>
+    * {{pmid>vancouver:32123385}}
+
+==== PMID: 32200990 ====
+
+  * <nowiki>{{pmid>short:32200990}}</nowiki>
+    * {{pmid>short:32200990}}
+  * <nowiki>{{pmid>long:32200990}}</nowiki>
+    * {{pmid>long:32200990}}
+  * <nowiki>{{pmid>long_tt:32200990}}</nowiki>
+    * {{pmid>long_tt:32200990}}
+  * <nowiki>{{pmid>long_abstract:32200990}}</nowiki>
+    * {{pmid>long_abstract:32200990}}
+  * <nowiki>{{pmid>long_tt_abstract:32200990}}</nowiki>
+    * {{pmid>long_tt_abstract:32200990}}
+  * <nowiki>{{pmid>vancouver:32200990}}</nowiki>
+    * {{pmid>vancouver:32200990}}
+
+===== Multiple =====
+
+  * <nowiki>{{pmid>short:32123385,28866979,28328043,24913723}}</nowiki>
+  * {{pmid>short:32123385,28866979,28328043,24913723}}
+  * <nowiki>{{pmid>long:32123385,28866979,28328043,24913723}}</nowiki>
+  * {{pmid>long:32123385,28866979,28328043,24913723}}
+  * <nowiki>{{pmid>vancouver:32123385,28866979,28328043,24913723}}</nowiki>
+  * {{pmid>vancouver:32123385,28866979,28328043,24913723}}
+
+===== Book =====
+
+  * <nowiki>{{pmid>long:28876803}}</nowiki>
+    * {{pmid>long:28876803}}
+  * <nowiki>{{pmid>vancouver:28876803}}</nowiki>
+    * {{pmid>vancouver:28876803}}
+
+===== Translated Titles =====
+
+  * <nowiki>{{pmid>long_tt:15924077,32200990}}</nowiki>
+  * {{pmid>long_tt:15924077,32200990}}
+  * <nowiki>{{pmid>long_tt_abstract:15924077,32200990}}</nowiki>
+  * {{pmid>long_tt_abstract:15924077,32200990}}
+
+===== Search ====
+
+  * <nowiki>{{pmid>search:maeker}}</nowiki>
+    * {{pmid>search:maeker}}
+
