@@ -76,12 +76,12 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       $outputString = str_replace("%collectif%", '<span class="authors">'.$refs["collectif"].'</span>', $outputString);
       
       if (!empty($refs["pmid"])) 
-          $outputString = str_replace("%pmid%", '<a href="'.$refs["url"].'" class="pmid" target="_blank" title="PMID: '.$refs["pmid"].'">PMID : '.$refs["pmid"].'</a>', $outputString);
+          $outputString = str_replace("%pmid%", '<a href="'.$refs["url"].'" class="pmid" target="_blank" title="PMID: '.$refs["pmid"].'">PMID: '.$refs["pmid"].'</a>', $outputString);
       else
           $outputString = str_replace("%pmid%", "", $outputString);
 
       if (!empty($refs["pmcid"])) 
-          $outputString = str_replace("%pmcid%", '<a href="'.$refs["pmcurl"].'" class="pmcid" target="_blank" title="PMCID: '.$refs["pmcid"].'">PMCID : '.$refs["pmcid"].'</a>', $outputString);
+          $outputString = str_replace("%pmcid%", '<a href="'.$refs["pmcurl"].'" class="pmcid" target="_blank" title="PMCID: '.$refs["pmcid"].'">PMCID: '.$refs["pmcid"].'</a>', $outputString);
       else
           $outputString = str_replace("%pmcid%", "", $outputString);
 
