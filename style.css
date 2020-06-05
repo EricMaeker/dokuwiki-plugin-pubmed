@@ -73,7 +73,8 @@ license     : Public-Domain
   background-size: contain;
   padding-left:1em;
 }
-.pubmed .pmid {
+.pubmed .pmid,
+.pubmed .pmcid {
   font-size:80%;
 }
 .pubmed .iso {
