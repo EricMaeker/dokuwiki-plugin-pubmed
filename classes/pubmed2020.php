@@ -3,7 +3,7 @@
 description : Dokuwiki PubMed2020 plugin
 author      : Eric Maeker
 email       : eric.maeker[at]gmail.com
-lastupdate  : 2020-05-26
+lastupdate  : 2020-06-05
 license     : Public-Domain
 */
 
@@ -12,40 +12,44 @@ if(!defined('DOKU_INC')) die();
 class PubMed2020 {
   var $HttpClient;
   // New PubMed interface. See https://api.ncbi.nlm.nih.gov/lit/ctxp
-  var $ctxpURL_RIS = "https://api.ncbi.nlm.nih.gov/lit/ctxp/v1/pubmed/?format=ris&id=%s";
-  var $ctxpURL_MEDLINE = "https://api.ncbi.nlm.nih.gov/lit/ctxp/v1/pubmed/?format=medline&id=%s";
-  var $ctxpURL_CSL = "https://api.ncbi.nlm.nih.gov/lit/ctxp/v1/pubmed/?format=csl&id=%s";
+  var $ctxpBaseURL = "https://api.ncbi.nlm.nih.gov/lit/ctxp/v1/";
+  var $ctxpURLs = array(
+        "pmid" => "pubmed/?format=medline&id=%s",
+        "pmcid" => "pmc/?format=medline&id=%s",
+      );
 
   var $pubmedURL       = 'https://pubmed.ncbi.nlm.nih.gov/%s';
+  var $pmcURL          = 'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC%s';
   var $pubmedSearchURL = 'https://pubmed.ncbi.nlm.nih.gov/?term=%s';
-  var $scihubURL = "https://sci-hub.tw/%s";
   
-  // Set this to true to get debugging page output when retrieving and processing pubmed URL
+  // Set this to true to get debugging page output
+  //     when retrieving and processing pubmed URL
   var $debugUsingEchoing = false; 
 
-  public function __construct()
-  {
+  public function __construct() {
     $this->HttpClient   = new DokuHTTPClient();
+    $this->ctxpURLs["pmid"] = $this->ctxpBaseURL.$this->ctxpURLs["pmid"];
+    $this->ctxpURLs["pmcid"] = $this->ctxpBaseURL.$this->ctxpURLs["pmcid"];
   } // Ok, V2020
 
 
-  function startsWith($string, $startString) 
-  { 
+  function startsWith($string, $startString) { 
     $len = strlen($startString); 
     return (substr($string, 0, $len) === $startString); 
-  }
+  } // ok, V2020
 
   /*
    * Get RIS, MEDLINE and CITATION from CTXP website
   */
-  function getDataFromCtxp($pmid, $doi="") {
+  function getDataFromCtxp($base, $id, $doi="") {
     $url = "";
-    if (!empty($pmid))
-        $url = sprintf($this->ctxpURL_MEDLINE, urlencode($pmid));
-//     else if (!empty($doi))
-//         $url = sprintf($this->pubmedXmlURLFromDOI, urlencode($doi));
-    else
-        return "";
+    if (empty($id))
+      return NULL;
+    if (empty($this->ctxpURLs[$base]))
+      return NULL;
+
+    $url = sprintf($this->ctxpURLs[$base], urlencode($id));
+
     if ($this->debugUsingEchoing)
       echo PHP_EOL.">> PUBMED: getting URL: ".$url.PHP_EOL;
 
@@ -81,7 +85,6 @@ class PubMed2020 {
    * Get full abstract of the article stored in an Array where
    *      "pmid"          -> PMID 
    *      "url"           -> URL to PubMed site
-   *      "scihuburl"     -> URL to sci-hub site
    *      "authors"       -> Array of authors
    *      "first_author"  -> First author + "et al." if other authors are listed
    *      "title"         -> Full title
@@ -97,12 +100,11 @@ class PubMed2020 {
    *      "abstract"      -> Complete abstract
    *      "doi"           -> doi references when available
    * $pluginObject must be accessible for translations ($this->getLang())
-   * $pmid is used for error message
    */
-  function readMedlineContent($string, $pmid, $pluginObject) {
+  function readMedlineContent($string, $pluginObject) {
     // No data return empty array
     if (empty($string))
-      return array("pmid" => $pmid);
+      return array("pmid" => "0");
     $content = $string;
     $authors = array();
     $authorsVancouver = array();
@@ -134,13 +136,21 @@ class PubMed2020 {
     // TODO: Catch book references. Eg: 28876803
     $ret = array();
     $mesh = array();
+    $keywords = array();
     foreach($array as $key => $value) {
       $k = preg_replace('/[0-9]+/', '', $key);
 
       switch ($k) {  // See https://www.nlm.nih.gov/bsd/mms/medlineelements.html
+//AD  - Médecin gériatre, psychogériatre, Court séjour gériatrique, Unité COVID, Centre 
+//      Hospitalier de Calais, 1601 Boulevard des Justes, 62100, Calais, France      Hospitalier de Calais, 1601 Boulevard des Justes, 62100, Calais, France
+
         case "PMID": 
           $ret["pmid"] = $value;  //PMID - 15924077
           $ret["url"] = sprintf($this->pubmedURL, urlencode($value));
+          break;
+        case "PMC":
+          $ret["pmcid"] = str_replace("PMC", "", $value);
+          $ret["pmcurl"] = sprintf($this->pmcURL, urlencode($ret["pmcid"]));
           break;
         case "DCOM": break; //DCOM- 20050929
         case "LR": break;  //LR  - 20191109
@@ -162,7 +172,8 @@ class PubMed2020 {
         case "JT": $ret["journal_title"] = $value; break; // JT  - Revue neurologique
         case "JID": $ret["journal_id"] = $value; break; // JID - 2984779R
 //         case "SB": $ret[""] = $value; break; // SB  - IM
-        case "MH": array_push($mesh, $value); break; // MH  - *Accidental Falls
+        case "MH": array_push($mesh, $value); break;
+        case "OT": array_push($keywords, $value); break;
 //         case "EDAT": $ret[""] = $value; break; // SB  - IM
 //         case "MHDA": $ret[""] = $value; break; // SB  - IM
 //         case "CRDT": $ret[""] = $value; break; // SB  - IM
@@ -175,7 +186,6 @@ class PubMed2020 {
           break;
         //case "PST": $ret[""] = $value; break; // SB  - IM
         case "SO": $ret["so"] = $value; break; //SO  - Rev Neurol (Paris). 2005 Apr;161(4):419-26. doi: 10.1016/s0035-3787(05)85071-4.
-        case "PMC": $ret["pmc"] = $value; break;//PMC - PMC6549299
         case "CI" : $ret["copyright"] = $value; break;
         case "CN" : $ret["corporate_author"] = $value; break;
         case "CTI" : $ret["collection_title"] = $value; break;
@@ -226,8 +236,9 @@ class PubMed2020 {
     } 
     // no authors -> nothing to add  Eg: pmid 12142303
 
-    // Get Mesh terms
+    // Get Mesh terms & keywords
     $ret["mesh"] = $mesh;
+    $ret["keywords"] = $keywords;
 
     if ($ret["book_title"]) {
       // Author. <i>BookTitle</i>. country:PB;year.
@@ -236,7 +247,6 @@ class PubMed2020 {
       $ret["iso"] = $ret["country"]." : ";
       $ret["iso"] .= $ret["year"].".";
       $ret["vancouver"] .= $ret["iso"];
-      $ret["scihuburl"] = sprintf($this->scihubURL, urlencode($ret["doi"]));
       //echo print_r($ret);
       return $ret;
     }
@@ -244,6 +254,10 @@ class PubMed2020 {
     if ($pluginObject->getConf('remove_dot_from_journal_iso') === true)
        $ret["journal_iso"] = str_replace(".", "", $ret["journal_iso"]);
 
+    // Construct iso citation of this article
+    // Use SO from the raw medline content
+    $ret["iso"] = $ret["so"];
+/*
     // Construct iso citation of this article
     $pubDate = $ret["year"]." ".$ret["month"]." ".$ret["day"];
     $pubDate = trim(str_replace("  ", " ", $pubDate));
@@ -255,19 +269,19 @@ class PubMed2020 {
     if (!empty($ret["issue"]))
       $ret["iso"] .= '('.$ret["issue"].')';
     $ret["iso"] .= ':'.$ret["pages"];
-
+*/
     // Construct Vancouver citation of this article
     // See https://www.nlm.nih.gov/bsd/uniform_requirements.html
     $vancouver .= $ret["title"];
-    $vancouver .= " ".$ret["journal_iso"]."";
-    $vancouver .= " ".$pubDate;
-    $vancouver .= ";".$ret["vol"];
-    if (!empty($ret["issue"]))
-      $vancouver .= "(".$ret["issue"].")";
-    $vancouver .= ":".$ret["pages"];
+    $vancouver .= " ".$ret["so"];
+//     $vancouver .= " ".$ret["journal_iso"]."";
+//     $vancouver .= " ".$pubDate;
+//     $vancouver .= ";".$ret["vol"];
+//     if (!empty($ret["issue"]))
+//       $vancouver .= "(".$ret["issue"].")";
+//     $vancouver .= ":".$ret["pages"];
     $ret["vancouver"] = $vancouver;
 
-    $ret["scihuburl"] = sprintf($this->scihubURL, urlencode($ret["doi"]));
     //echo print_r($ret);
     return $ret;
   } // Ok pubmed2020

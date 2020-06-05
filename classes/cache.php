@@ -3,7 +3,7 @@
 description : Dokuwiki PubMed2020 plugin
 author      : Eric Maeker
 email       : eric.maeker@gmail.com
-lastupdate  : 2020-05-26
+lastupdate  : 2020-06-05
 license     : Public-Domain
 */
 
@@ -47,9 +47,6 @@ class pubmed2020_cache {
     $this->linkFormat  = $this->namespace.$delimiter.$this->prefix.'%s.'.$this->extension;
     $this->abstractTrFormat = $this->mediaDir.'/'.$this->prefix.'%s_fr.txt';
 
-    $this->useTmpDir   = false;
-    $this->tmpDir      = '/var/tmp';
-    $this->tmpFormat   = $this->tmpDir.'/'.$this->namespace.'_'.$this->prefix.'%s.'.$this->extension;
     $this->crossRefId = 'cross'; 
 //     echo "<br/><br/><br/><pre>".
 //         "NS: ". $this->namespace.PHP_EOL.
@@ -61,18 +58,21 @@ class pubmed2020_cache {
 //         "mediaDir: ".$this->mediaDir.PHP_EOL.
 //         "mediaFormat: ".$this->mediaFormat.PHP_EOL.
 //         "linkFormat: ".$this->linkFormat.PHP_EOL.
-//         "useTmpDir: ".print_r($this->useTmpDir).PHP_EOL.
-//         "tmpFormat: ".$this->tmpFormat.PHP_EOL.
 //         "crossRefId: ".$this->crossRefId.PHP_EOL.
 //         "abstractTrFormat: ".$this->abstractTrFormat.PHP_EOL.
 //         "</pre><br/>";
-    $this->CheckDir();
+    $this->checkDir();
   }
+
+  function startsWith($string, $startString) { 
+    $len = strlen($startString); 
+    return (substr($string, 0, $len) === $startString); 
+  } // ok, V2020
 
   /**
    * Get local pdf file path if exists (checking PMID and DOI dirs)
    */
-  function GetLocalPdfPath($pmid, $doi){
+  function GetLocalPdfPath($pmid, $doi) {
     global $conf;
     $delimiter = ($conf['useslash'])?'/':':';
     // Check with PMID
@@ -91,24 +91,23 @@ class pubmed2020_cache {
     return ml($ml,'',true,'',true);
   }
 
-
   /**
    * Get media file path
    */
-  function GetMediaPath($id){
+  function getRawContentPath($base, $id) {
     $id = strtolower($id);
-    if($this->useTmpDir===false){
-      return sprintf($this->mediaFormat,$id);
-    }else{
-      return sprintf($this->tmpFormat,$id);
-    }
+    $base = strtolower($base);
+    $file = sprintf($this->mediaFormat, $id);
+    if ($base === "pmcid")
+        $file = str_replace($this->prefix, $base.'_' , $file);
+    return $file;
   }
 
   /**
    * Get all media file paths array
    * array(ID,filepath)
    */
-  function GetAllMediaPaths(){
+  function getAllMediaPaths() {
     $dir = $this->mediaDir;
     $dirhandle = opendir($dir);
     $files = array();
@@ -129,14 +128,14 @@ class pubmed2020_cache {
 
   /**
    */
-  function RecreateCrossRefFile(){
-    $files = $this->GetAllMediaPaths();
+  function recreateCrossRefFile(){
+    $files = $this->getAllMediaPaths();
     $cross = Array();
     foreach ($files as $id => $path) {
         // Read file $path
         if (@file_exists($path)){
           $content = io_readFile($path);
-          $doi = $this->_catchDoiFromRawPubmedXml($content);
+          $doi = $this->_catchDoiFromRawMedlineContent($content);
           // What to do if doi not found ?
           if (!empty($doi))
               $cross[$id] = $doi;
@@ -147,8 +146,8 @@ class pubmed2020_cache {
     return true;
   }
 
-  function PmidFromDoi(&$pdfDois){
-    $cross = $this->_read_array("cross");
+  function PmidFromDoi(&$pdfDois) {
+    $cross = $this->_read_array("", "cross");
     if (empty($cross))
         return NULL;
 //     echo "<br><br>".print_r($cross)."<br><br>";
@@ -169,7 +168,7 @@ class pubmed2020_cache {
   /**
    * Get all local PDF file PMIDs
    */
-  function GetAllAvailableLocalPdfByPMIDs(){
+  function GetAllAvailableLocalPdfByPMIDs() {
     //$this->pdfDoiNS  = strtolower($_name."/doi_pdf");
     //$this->pdfPmidNS = strtolower($_name."/pmid_pdf");
     // cache all PDF in PMID dir
@@ -183,14 +182,13 @@ class pubmed2020_cache {
       }
     }
     closedir();
-    //echo print_r($files);
     return $files;
   }
 
   /**
    * Get all local PDF file DOIs
    */
-  function GetAllAvailableLocalPdfByDOIs(){
+  function GetAllAvailableLocalPdfByDOIs() {
     // cache all PDF in DOI dir
     $dir = mediaFN($this->pdfDoiNS);
 //     echo "*********** ".$dir."<br/>";
@@ -210,11 +208,11 @@ class pubmed2020_cache {
   /**
    * Get media link
    */
-  function GetMediaLink($id){
-    return ml(sprintf($this->linkFormat,$id),'',true,'',true);
+  function GetMediaLink($id) {
+    return ml(sprintf($this->linkFormat, $id),'',true,'',true);
   }
   
-  function GetDoiPdfUrl($doi){
+  function GetDoiPdfUrl($doi) {
     global $conf;
     $delimiter = ($conf['useslash'])?'/':':';
     $doi = str_replace("/","_",$doi);
@@ -237,9 +235,9 @@ class pubmed2020_cache {
    * Uses gzip if extension is .gz
    * and bz2 if extension is .bz2
    */
-  function getMedlineContent($id){
-    $filepath = $this->GetMediaPath($id);
-    if (@file_exists($filepath)){
+  function getMedlineContent($base, $id) {
+    $filepath = $this->getRawContentPath($base, $id);
+    if (@file_exists($filepath)) {
       //@touch($filepath);
       return io_readFile($filepath);
     }
@@ -264,15 +262,16 @@ class pubmed2020_cache {
    * Uses gzip if extension is .gz
    * and bz2 if extension is .bz2
    */
-  function saveRawMedlineContent($xml){
+  function saveRawMedlineContent($base, $raw) {
     global $conf;
-    $pmid = $this->_catchPmidFromRawPubmedXml($xml);
-    $doi = $this->_catchDoiFromRawPubmedXml($xml);
-    $path = $this->GetMediaPath($pmid);
-    if (io_saveFile($path,$xml)){
+    $id = $this->_catchIdFromRawMedlineContent($base, $raw);
+    $doi = $this->_catchDoiFromRawMedlineContent($raw);
+    $path = $this->getRawContentPath($base, $id);
+    
+    if (io_saveFile($path,$raw)){
         @chmod($path,$conf['fmode']);
-        $crossrefs = $this->_read_array($this->crossRefId);
-        $crossrefs[$pmid] = $doi;
+        $crossrefs = $this->_read_array($base, $this->crossRefId);
+        $crossrefs[$id] = $doi;
         $this->_save_array($this->crossRefId, $crossrefs);
         return true;
     }
@@ -282,9 +281,9 @@ class pubmed2020_cache {
   /**
    * Check cache directories
    */
-  function CheckDir(){
+  function checkDir() {
     global $conf;
-    $dummyFN=mediaFN($this->namespace.':_dummy');
+    $dummyFN = mediaFN($this->namespace.':_dummy');
     //echo "dummyFN: ".$dummyFN;
     $tmp = dirname($dummyFN);
     if (!@is_dir($tmp)){
@@ -323,21 +322,9 @@ class pubmed2020_cache {
   }
 
   /**
-   * Return true if the file exists
-   */
-  function Exists($id){
-    $path = $this->GetMediaPath($id);
-    if(@file_exists($path)!==false){
-      @touch($path);
-      return true;
-    }
-    return false;
-  }
-
-  /**
    * Clear all media files in a plugin's media directory
    */
-  function ClearCache(){
+  function clearCache(){
     global $conf;
     $handle = @opendir($this->mediaDir);
     if ($handle === false)
@@ -353,21 +340,21 @@ class pubmed2020_cache {
   /**
    * Remove cache and directory
    */
-  function RemoveDir(){
-    $this->ClearCache();
+  function removeDir() {
+    $this->clearCache();
     @rmdir($this->mediaDir);
   }
 
   /**
    * save key/value array as tab-text
    */
-  function _save_array($id,$array){
+  function _save_array($id, $array) {  // WRONG: ADD BASE
     if (empty($id)) 
       return false;
     if (empty($array))
         return false;
     global $conf;
-    $path = $this->GetMediaPath($id);
+    $path = $this->getRawContentPath("", $id);
     if (io_saveFile($path,json_encode($array))) {
       @chmod($path,$conf['fmode']);
       return true;
@@ -376,32 +363,45 @@ class pubmed2020_cache {
   }
 
   /**
+   * Return true if the ID cached file exists
+   */
+  function _idExists($base, $id) {
+    $path = $this->getRawContentPath($base, $id);
+    if(@file_exists($path)!==false){
+      @touch($path);
+      return true;
+    }
+    return false;
+  } // Ok PubMed2020
+
+  /**
    * read array from tab-text
    */
-  function _read_array($id){
-    if (empty($id) || !$this->Exists($id)) 
+  function _read_array($base, $id) {
+    if (empty($id) || !$this->_idExists($base, $id)) 
         return NULL;
-    $path = $this->GetMediaPath($id);
+    $path = $this->getRawContentPath($base, $id);
     $array = json_decode(io_readFile($path), true);
     return $array;
   }
 
-  function _catchDoiFromRawPubmedXml($xml){
-    $xmlPattern = '~"doi">(.*)</~';
+  function _catchDoiFromRawMedlineContent($raw) {
     $medlinePattern = '~AID - (.*) \[doi\]~';
-    //AID - 10.1016/s0035-3787(05)85071-4 [doi]
     $matches = '';
-    $r = preg_match($medlinePattern,$xml,$matches);
+    $r = preg_match($medlinePattern, $raw, $matches);
     return $matches[1];
   } // Ok pubmed2020
 
-  function _catchPmidFromRawPubmedXml($xml){
-    $xmlPattern = '~"pubmed">(.*)</~';
-    $medlinePattern = '~PMID- (.*)~';
-    //PMID - 15924077
+  function _catchIdFromRawMedlineContent($base, $raw) {
+    $pattern = "";
+    if ($base === "pmcid")
+        $pattern = '~PMC - PMC(.*)~';
+    else
+        $pattern = '~PMID- (.*)~';
     $matches = '';
-    $r = preg_match($medlinePattern,$xml,$matches);
+    $r = preg_match($pattern, $raw, $matches);
     return trim($matches[1]);
   } // Ok pubmed2020
+  
 }
 ?>
