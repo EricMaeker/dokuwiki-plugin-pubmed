@@ -160,10 +160,22 @@ class PubMed2020 {
         case "DP": 
           $ret["year"] = substr($value,0,4);
           break; //DP  - 2005 Apr
-        case "TI": $ret["title"] = $value; break; // TI title english
+        case "TI": 
+          // TODO: Keep case of title correctly -> How?
+          $ret["title"] = $value; 
+          break; // TI title english
         case "PG": $ret["pages"] = $value; break;
         case "AB": $ret["abstract"] = $value; break;
-        case "AU": array_push($authors, $value); break;
+        case "AU": 
+          // Keep case of names correctly
+          // NAME SN -> Name SN (first letter uppercase only)
+          $n = explode(" ", trim($value));
+          if (count($n) >= 2) {
+              $n[0] = ucfirst(strtolower($n[0]));
+              $value = $n[0]." ".$n[1];
+          }
+          array_push($authors, $value);
+          break;
         case "LA": $ret["lang"] = $value; break; //LA  - fre
         case "PT": $ret["type"] = $value; break; //PT  - English Abstract  //PT  - Journal Article
         case "TT": $ret["translated_title"] = $value; break;
