@@ -171,7 +171,9 @@ class PubMed2020 {
           // NAME SN -> Name SN (first letter uppercase only)
           $n = explode(" ", trim($value));
           if (count($n) >= 2) {
-              $n[0] = ucfirst(strtolower($n[0]));
+              // $n[0] = ucfirst(strtolower($n[0]));
+              // Correctly manages Name1-Name2
+              $n[0] = ucwords(strtolower($n[0]), "-"); 
               $value = $n[0]." ".$n[1];
           }
           array_push($authors, $value);
