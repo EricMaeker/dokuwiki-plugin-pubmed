@@ -78,7 +78,14 @@ class PubMed2020 {
    * Create a pubmed query, return the URL of the query
    */
   function getPubmedSearchURL($searchTerms) {
-    return sprintf($this->pubmedSearchURL, urlencode($searchTerms));
+    // Split using | to get URL options: size, format, filter, sort
+    $options = explode("|", $searchTerms);
+    if (count($options) < 1)
+      return "ERROR"; // TODO
+    $url = sprintf($this->pubmedSearchURL, urlencode($options[0]));
+    if (count($options) > 1)
+      $url .= "&".implode("&", array_slice($options, 1));
+    return $url;
   } // ok, V2020
 
   /**
