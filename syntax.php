@@ -76,12 +76,12 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       $outputString = str_replace("%collectif%", '<span class="authors">'.$refs["collectif"].'</span>', $outputString);
       
       if (!empty($refs["pmid"])) 
-          $outputString = str_replace("%pmid%", '<a href="'.$refs["url"].'" class="pmid" target="_blank" title="PMID: '.$refs["pmid"].'">PMID: '.$refs["pmid"].'</a>', $outputString);
+          $outputString = str_replace("%pmid%", '<a href="'.$refs["url"].'" class="pmid" rel="noopener" target="_blank" title="PMID: '.$refs["pmid"].'">PMID: '.$refs["pmid"].'</a>', $outputString);
       else
           $outputString = str_replace("%pmid%", "", $outputString);
 
       if (!empty($refs["pmcid"])) 
-          $outputString = str_replace("%pmcid%", '<a href="'.$refs["pmcurl"].'" class="pmcid" target="_blank" title="PMCID: '.$refs["pmcid"].'">PMCID: '.$refs["pmcid"].'</a>', $outputString);
+          $outputString = str_replace("%pmcid%", '<a href="'.$refs["pmcurl"].'" class="pmcid" rel="noopener" target="_blank" title="PMCID: '.$refs["pmcid"].'">PMCID: '.$refs["pmcid"].'</a>', $outputString);
       else
           $outputString = str_replace("%pmcid%", "", $outputString);
 
@@ -109,7 +109,7 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
         $gg =  "https://translate.google.com/#view=home";
         $gg .= "&op=translate&sl=auto&tl=fr&text=";
         $gg .= urlencode($refs["abstract"]);
-        $outputString = str_replace("%abstractFr%", '<a class="abstractFr" href="'.$gg.'" target="_blank">FR</a>', $outputString);
+        $outputString = str_replace("%abstractFr%", '<a class="abstractFr" href="'.$gg.'" rel="noopener" target="_blank">FR</a>', $outputString);
       } else {
         // TODO: Create a form to send french abstrat to this class
         // TODO: Allow to store it in a separate file abstractfr_{pmid}.txt
@@ -121,19 +121,19 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
         $outputString = str_replace("%journal_url%", "", $outputString);
       } else {
         $outputString = str_replace("%doi%", '<span class="doi">'.$refs["doi"].'</span>', $outputString);
-        $outputString = str_replace("%journal_url%", '<a href="'.$this->doiUrl.$refs["doi"].'" class="journal_url" target="_blank" title="'.$refs["iso"].'"></a>', $outputString);
+        $outputString = str_replace("%journal_url%", '<a href="'.$this->doiUrl.$refs["doi"].'" class="journal_url" rel="noopener" target="_blank" title="'.$refs["iso"].'"></a>', $outputString);
       }
       if (empty($refs["pmc"]))
         $outputString = str_replace("%pmc_url%", "", $outputString);
       else
-        $outputString = str_replace("%pmc_url%", '<a href="'.sprintf($this->pmcUrl, $refs["pmc"]).'" class="pmc_url" target="_blank" title="'.$refs["pmc"].'"></a>', $outputString);
+        $outputString = str_replace("%pmc_url%", '<a href="'.sprintf($this->pmcUrl, $refs["pmc"]).'" class="pmc_url" rel="noopener" target="_blank" title="'.$refs["pmc"].'"></a>', $outputString);
 
     // Check local PDF using cache
     $localPdf = $this->pubmedCache->GetLocalPdfPath($refs["pmid"], $refs["doi"]);
     if (empty($localPdf)) {
         $outputString = str_replace("%localpdf%", 'No PDF', $outputString);
     } else {
-        $outputString = str_replace("%localpdf%", ' <a href="'.$localPdf.'" class="localPdf" target="_blank" title="'.$localPdf.'">PDF</a>', $outputString);
+        $outputString = str_replace("%localpdf%", ' <a href="'.$localPdf.'" class="localPdf" rel="noopener" target="_blank" title="'.$localPdf.'">PDF</a>', $outputString);
     }
 
       $outputString = str_replace("%vancouver%",  '<span class="vancouver">'.$refs["vancouver"].'</span>', $outputString);
@@ -216,7 +216,7 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
           return true;
         case 'search':
           $renderer->doc .='<div class="pubmed">';
-          $renderer->doc .= '<a class="pmid" target="_blank" href="';
+          $renderer->doc .= '<a class="pmid" rel="noopener" target="_blank" href="';
           $renderer->doc .= $this->pubmed2020->getPubmedSearchURL($id);
           $renderer->doc .= '">'.$id.'</a>';
           $renderer->doc .='</div>';
