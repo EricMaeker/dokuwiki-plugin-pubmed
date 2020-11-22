@@ -28,6 +28,7 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       "long_tt_abstract_pdf" => '%authors%. %title_tt%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url% %abstract% %abstractFr% %pmid% %doi% %localpdf%',
       "vancouver" => '%vancouver%',
       "vancouver_links" => '%vancouver% %pmid% %pmcid% %pmc_url%',
+      "npg" => '%authorsLimit3% %title_tt%. %npg_iso%.',
       );
 
   // Constructor
@@ -70,7 +71,12 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
         return sprintf($this->getLang('pubmed_not_found'), $refs["pmid"]);
       }
       $outputString = str_replace("%authors%", '<span class="authors">'.implode(', ',$refs["authors"]).'</span>', $outputString);
+
+      $outputString = str_replace("%authorsLimit3%", '<span class="authors">'.$refs["authorsLimit3"].'</span>', $outputString);
+      $outputString = str_replace("%npg_iso%", '<span class="iso">'.$refs["npg_iso"].'</span>', $outputString);
+
       $outputString = str_replace("%first_author%", '<span class="authors">'.$refs["first_author"].'</span>', $outputString);
+
       if (count($refs["authorsVancouver"]) > 0)
         $outputString = str_replace("%authorsVancouver%", '<span class="vancouver authors">'.implode(', ',$refs["authorsVancouver"]).'</span>', $outputString);
       $outputString = str_replace("%collectif%", '<span class="authors">'.$refs["collectif"].'</span>', $outputString);

@@ -94,6 +94,7 @@ class PubMed2020 {
    *      "url"           -> URL to PubMed site
    *      "authors"       -> Array of authors
    *      "first_author"  -> First author + "et al." if other authors are listed
+   *      "authorsLimit3" -> Three first authors + "et al." if other authors are listed
    *      "title"         -> Full title
    *      "lang"          -> language of the article
    *      "journal_iso"   -> Journal ISO Abbreviation
@@ -171,7 +172,7 @@ class PubMed2020 {
           // TODO: Keep case of title correctly -> How?
           $ret["title"] = $value; 
           break; // TI title english
-        case "PG": $ret["pages"] = $value; break;
+        case "PG": $ret["pages"] = trim($value); break;
         case "AB": $ret["abstract"] = $value; break;
         case "AU": 
           // Keep case of names correctly
@@ -255,6 +256,25 @@ class PubMed2020 {
         $vancouver .= " ".$pluginObject->getConf('et_al_vancouver');
       $vancouver .= ". ";
     } 
+
+    // Create 3 authors only
+    $limit = 3;
+    $authorsToUse = $ret["authorsVancouver"];
+    $addAndAl = false;
+    if ($limit >= 1) {
+      if (count($authorsToUse) > $limit) {
+        $addAndAl = true;
+        $authorsToUse = array_slice($authorsToUse, 0, $limit);
+      }
+    }
+    if (count($authorsToUse) > 0) {
+      $authors3 = implode(', ',$authorsToUse);
+      if ($addAndAl)
+        $authors3 .= " ".$pluginObject->getConf('et_al_vancouver');
+      $authors3 .= ". ";
+    }
+    $ret["authorsLimit3"] = $authors3;
+
     // no authors -> nothing to add  Eg: pmid 12142303
 
     // Get Mesh terms & keywords
@@ -278,11 +298,32 @@ class PubMed2020 {
     // Construct iso citation of this article
     // Use SO from the raw medline content
     $ret["iso"] = $ret["so"];
-/*
-    // Construct iso citation of this article
-    $pubDate = $ret["year"]." ".$ret["month"]." ".$ret["day"];
-    $pubDate = trim(str_replace("  ", " ", $pubDate));
 
+    // Construct NPG ISO citation of this article
+    //%npg_iso% %year% ; %vol% (%issue%) : %pages%
+    if (!empty($ret["journal_iso"])) {
+       $npg = str_replace(".", "", $ret["journal_iso"])." ";
+    }
+    if (!empty($ret["year"])) {
+      $npg .= $ret["year"];
+      if (!empty($ret["vol"])) {
+          $npg .= " ; ".$ret["vol"];
+        if (!empty($ret["issue"])) {
+          $npg .= " (".$ret["issue"].")";
+        }
+        if (!empty($ret["pages"])) {
+          $npg .= " : ".$ret["pages"];
+        }
+      } else {
+        $npg .= ", doi : ".$ret["doi"];
+      }
+    } else {
+        $npg .= ", doi : ".$ret["doi"];
+    }
+    $npg = trim(str_replace("  ", " ", $npg));
+    $ret["npg_iso"] = $npg;
+
+/*
     $ret["iso"] = $ret["journal_iso"].' ';
     $ret["iso"] .= $pubDate.";";
     if (!empty($ret["vol"]))
