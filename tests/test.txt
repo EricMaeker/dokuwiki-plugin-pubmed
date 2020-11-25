@@ -45,6 +45,8 @@
     * {{pmid>long:28876803}}
   * <nowiki>{{pmid>vancouver:28876803}}</nowiki>
     * {{pmid>vancouver:28876803}}
+  * <nowiki>{{pmid>vancouver:31846262}}</nowiki>
+    * {{pmid>vancouver:31846262}} 
 
 ===== Translated Titles =====
 
@@ -52,6 +54,15 @@
   * {{pmid>long_tt:15924077,32200990}}
   * <nowiki>{{pmid>long_tt_abstract:15924077,32200990}}</nowiki>
   * {{pmid>long_tt_abstract:15924077,32200990}}
+
+===== Author names =====
+
+  * <nowiki>{{pmid>long:25617070}}</nowiki> (first name "de la Cruz M")
+  * {{pmid>long:25617070}}
+
+  * <nowiki>{{pmid>long:32444080}}</nowiki> (first, check É ; second name "Maeker-Poquet B")
+  * {{pmid>long:32444080}}
+
 
 ===== Search ====
 

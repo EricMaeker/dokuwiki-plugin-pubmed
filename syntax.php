@@ -12,6 +12,8 @@ if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
 require_once(DOKU_PLUGIN.'syntax.php');
 
 class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
+  var $documentFormat;
+  var $useDocumentFormat;
   var $pubmed2020;
   var $pubmedCache;
   var $doiUrl = 'http://dx.doi.org/'; //+doi
@@ -39,10 +41,12 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       @require_once(DOKU_PLUGIN.'pubmed2020/classes/pubmed2020.php');
     $this->pubmed2020  = new PubMed2020();
     $this->pubmedCache = new pubmed2020_cache("pubmed","pubmed","nbib");
+    $this->documentFormat = $this->getConf('default_command');
+    $this->useDocumentFormat = false;
   }
 
-  function getType(){ return 'substition'; }
-  function getSort(){ return 158; }
+  function getType() { return 'substition'; }
+  function getSort() { return 158; }
 
   /**
    * Plugin tag format: {{pmid>command:arg}}
@@ -169,13 +173,22 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
     $regex = '/^[0-9,]+$/';
     if (preg_match($regex, $cmd) === 1) {
       $id = $cmd;
-      $cmd = $this->getConf('default_command');
+      $cmd = $this->documentFormat;
     }
 
     // Manage the article reference commands in :
     //   short, long, long_abstract, vancouver,
     //   or user
     $this->outputTpl["user"] = $this->getConf('user_defined_output');
+    
+    // Allow user to define a document format
+    if ($cmd === "doc_format") {
+      $this->documentFormat = $id;
+      $this->useDocumentFormat = true;
+      return true;
+    } else if ($this->useDocumentFormat) {
+       $cmd = $this->documentFormat;
+    }
 
     if (array_key_exists($cmd, $this->outputTpl)) {
       $multipleIds = strpos($id, ",");

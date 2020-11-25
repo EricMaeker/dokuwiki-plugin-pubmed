@@ -174,6 +174,7 @@ class PubMed2020 {
           break; // TI title english
         case "PG": $ret["pages"] = trim($value); break;
         case "AB": $ret["abstract"] = $value; break;
+/*
         case "AU": 
           // Keep case of names correctly
           // NAME SN -> Name SN (first letter uppercase only)
@@ -181,9 +182,30 @@ class PubMed2020 {
           if (count($n) >= 2) {
               // $n[0] = ucfirst(strtolower($n[0]));
               // Correctly manages Name1-Name2
-              $n[0] = ucwords(strtolower($n[0]), "-"); 
+              $n[0] = ucwords(strtolower($n[0]), "-");
               $value = $n[0]." ".$n[1];
           }
+          //array_push($authors, $value);
+          break;
+*/
+        case "FAU": 
+          $sn = "";
+          $surname = "";
+          if (strpos($value, ',') !== false) {
+            $n = explode(",", trim($value));
+            $sn = $n[1];
+            $name = $n[0];
+          } else {
+            $n = explode(" ", trim($value));
+              $name = $n[0];
+              $sn = $n[1];
+          }
+
+          // Keep only first letter of each surname and lower it
+          foreach (explode(' ', $sn) as $w) {
+            $surname .=  mb_substr($w,0,1,'UTF-8');
+          }
+          $value = $name." ".$surname;
           array_push($authors, $value);
           break;
         case "LA": $ret["lang"] = $value; break; //LA  - fre
@@ -215,6 +237,9 @@ class PubMed2020 {
           $ret["book_title"] = $value; 
           $ret["title"] = $value; 
           break;
+        case "PB" : // Possible publisher? count as author?
+          $ret["publisher"] = $value;
+          break;
         
       }  // Switch
     } // Foreach
@@ -222,7 +247,9 @@ class PubMed2020 {
     // Get authors
     if ($ret["corporate_author"]) {
       array_push($authors, $ret["corporate_author"]);
-    }
+    } else if ($ret["publisher"]) {
+      array_push($authors, $ret["publisher"]);
+    } 
     $ret["authors"] = $authors;
     $ret["authorsVancouver"] = $authors;
     if (count($authors) == 0) {
@@ -272,6 +299,9 @@ class PubMed2020 {
       if ($addAndAl)
         $authors3 .= " ".$pluginObject->getConf('et_al_vancouver');
       $authors3 .= ". ";
+    } else {
+      // Less than three authors
+      $authors3 = implode(', ',$authorsToUse).". ";
     }
     $ret["authorsLimit3"] = $authors3;
 
