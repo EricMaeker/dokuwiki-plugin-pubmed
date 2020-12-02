@@ -232,6 +232,8 @@ class PubMed2020 {
             $ret["doi"] = str_replace(" [doi]", "", $value); 
           if (strpos($value, "[pii]") > 0)
             $ret["pii"] = str_replace(" [pii]", "", $value);
+          if (strpos($value, "[bookaccession]") > 0)
+            $ret["bookaccession"] = str_replace(" [bookaccession]", "", $value);
           break;
         //case "PST": $ret[""] = $value; break; // SB  - IM
         case "SO": $ret["so"] = $value; break; //SO  - Rev Neurol (Paris). 2005 Apr;161(4):419-26. doi: 10.1016/s0035-3787(05)85071-4.
@@ -244,6 +246,13 @@ class PubMed2020 {
           break;
         case "PB" : // Possible publisher? count as author?
           $ret["publisher"] = $value;
+          break;
+        case "LID": // possible page? see 32947851
+          if (strpos($value, "[doi]") > 0) {
+            $ret["doi"] = str_replace(" [doi]", "", $value); 
+          } else {
+            $ret["pages"] = $value;
+          }
           break;
         
       }  // Switch
@@ -324,16 +333,6 @@ class PubMed2020 {
     $ret["mesh"] = $mesh;
     $ret["keywords"] = $keywords;
 
-    if ($ret["book_title"]) {
-      // Author. <i>BookTitle</i>. country:PB;year.
-      $ret["vancouver"] = $vancouver;
-      $ret["vancouver"] .= "<i>".$ret["book_title"].".</i> ";
-      $ret["iso"] = $ret["country"]." : ";
-      $ret["iso"] .= $ret["year"].".";
-      $ret["vancouver"] .= $ret["iso"];
-      //echo print_r($ret);
-      return $ret;
-    }
     // Remove points from the journal_iso string
     if ($pluginObject->getConf('remove_dot_from_journal_iso') === true)
        $ret["journal_iso"] = str_replace(".", "", $ret["journal_iso"]);
@@ -341,42 +340,7 @@ class PubMed2020 {
     // Construct iso citation of this article
     // Use SO from the raw medline content
     $ret["iso"] = $ret["so"];
-
-    // Construct NPG ISO citation of this article
-    //%npg_iso% %year% ; %vol% (%issue%) : %pages%
-    if (!empty($ret["journal_iso"])) {
-       $npg = str_replace(".", "", $ret["journal_iso"])." ";
-    }
-    if (!empty($ret["year"])) {
-      $npg .= $ret["year"];
-      if (!empty($ret["vol"])) {
-          $npg .= " ; ".$ret["vol"];
-        if (!empty($ret["issue"])) {
-          $npg .= " (".$ret["issue"].")";
-        }
-        if (!empty($ret["pages"])) {
-          $npg .= " : ".$ret["pages"];
-        }
-      } else {
-        $npg .= ", doi : ".$ret["doi"];
-      }
-    } else {
-        $npg .= ", doi : ".$ret["doi"];
-    }
-    $npg = trim(str_replace("  ", " ", $npg));
-    $ret["npg_iso"] = $npg;
-    $ret["npg_full"] = $ret["authorsLimit3"];
-    $t = "";
-    if (!empty($ret["translated_title_low"])) {
-      $t = $ret["translated_title_low"];
-    } else {
-      $t = $ret["title_low"];
-    }
-    if (substr_compare(".", $t, -strlen($t)) === 0) {
-      mb_substr($t, 0, -1);
-    }
-    $ret["npg_full"] .= $t." ";
-    $ret["npg_full"] .= $ret["npg_iso"];
+    $ret = $this->createNpgCitation($ret);
 
 /*
     $ret["iso"] = $ret["journal_iso"].' ';
@@ -389,6 +353,15 @@ class PubMed2020 {
 */
     // Construct Vancouver citation of this article
     // See https://www.nlm.nih.gov/bsd/uniform_requirements.html
+    if ($ret["book_title"]) {
+      // Author. <i>BookTitle</i>. country:PB;year.
+      $ret["vancouver"] = $vancouver;
+      $ret["vancouver"] .= "<i>".$ret["book_title"].".</i> ";
+      $ret["iso"] = $ret["country"]." : ";
+      $ret["iso"] .= $ret["year"].".";
+      $ret["vancouver"] .= $ret["iso"];
+      return $ret;
+    } 
     $vancouver .= $ret["title"];
     $vancouver .= " ".$ret["so"];
 //     $vancouver .= " ".$ret["journal_iso"]."";
@@ -402,6 +375,84 @@ class PubMed2020 {
     //echo print_r($ret);
     return $ret;
   } // Ok pubmed2020
+
+
+
+  function createNpgCitation($ret) {
+    // Construct NPG ISO citation of this article
+    //%npg_iso% %year% ; %vol% (%issue%) : %pages%
+    // BOOKS
+    if (!empty($ret["book_title"])) {
+      // Trivalle C. Gérontologie préventive. Éléments de prévention du vieillissement pathologique. Paris : Masson, 2002.
+      // Authors
+      $ret["npg_full"] = $ret["authorsLimit3"];
+      // Title
+      if (!empty($ret["translated_title"])) {
+        $t = $ret["translated_title"];
+      } else if (!empty($ret["book_title"])) {
+        $t = $ret["book_title"];
+      }
+      $ret["npg_full"] .= $t.". ";
+      // Town
+      if (!empty($ret["country"])) {
+        $ret["npg_full"] .= $ret["country"];
+      }
+      // Editor
+      if (!empty($ret["publisher"])) {
+        $ret["npg_full"] .= " : ".$ret["publisher"];
+      }
+      // Year
+      if (!empty($ret["year"])) {
+        $ret["npg_full"] .= ", ".$ret["year"].".";
+      }
+      if (!empty($ret["bookaccession"])) {
+        $ret["npg_full"] .= " https://www.ncbi.nlm.nih.gov/books/".$ret["bookaccession"];
+      }      
+      return $ret;
+    }
+    // JOURNALS
+    if (!empty($ret["journal_iso"])) {
+       $npg = str_replace(".", "", $ret["journal_iso"])." ";
+    }
+    if (!empty($ret["year"])) {
+      $npg .= $ret["year"];
+      if (!empty($ret["vol"])) {
+          $npg .= " ; ".$ret["vol"];
+        if (!empty($ret["issue"])) {
+          $npg .= " (".$ret["issue"].")";
+        }
+        if (!empty($ret["pages"])) {
+          $npg .= " : ".$ret["pages"];
+        }
+      } else if (!empty($ret["doi"])) {
+        $npg .= ", doi : ".$ret["doi"];
+      } else if (!empty($ret["bookaccession"])) {
+        $npg .= ", https://www.ncbi.nlm.nih.gov/books/".$ret["bookaccession"];
+      }
+    } else if (!empty($ret["doi"])) {
+      $npg .= ", doi : ".$ret["doi"];
+    } else if (!empty($ret["bookaccession"])) {
+      $npg .= ", https://www.ncbi.nlm.nih.gov/books/".$ret["bookaccession"];
+    }
+    $npg = trim(str_replace("  ", " ", $npg));
+    $ret["npg_iso"] = $npg;
+    $ret["npg_full"] = $ret["authorsLimit3"];
+    $t = "";
+    if (!empty($ret["translated_title"])) {
+      $t = $ret["translated_title"];
+    } else if (!empty($ret["title"])) {
+      $t = $ret["title"];
+    } else if (!empty($ret["book_title"])) {
+      $t = $ret["book_title"];
+    }
+    if (substr_compare(".", $t, -strlen($t)) === 0) {
+      mb_substr($t, 0, -1);
+    }
+    $ret["npg_full"] .= $t." ";
+    $ret["npg_full"] .= $ret["npg_iso"];
+
+    return $ret;
+  }
 
 
 
