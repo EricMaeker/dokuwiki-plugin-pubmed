@@ -96,6 +96,9 @@ class PubMed2020 {
    *      "first_author"  -> First author + "et al." if other authors are listed
    *      "authorsLimit3" -> Three first authors + "et al." if other authors are listed
    *      "title"         -> Full title
+   *      "title_low"     -> Lowered full title
+   *      "translated_title"
+   *      "translated_title_low"
    *      "lang"          -> language of the article
    *      "journal_iso"   -> Journal ISO Abbreviation
    *      "journal_title" -> Journal full title
@@ -107,6 +110,8 @@ class PubMed2020 {
    *      "pages"         -> Journal pagination
    *      "abstract"      -> Complete abstract
    *      "doi"           -> doi references when available
+   *      "npg_iso"       -> French specific journal (NPG)
+   *      "npg_full"      -> French specific journal (NPG)
    * $pluginObject must be accessible for translations ($this->getLang())
    */
   function readMedlineContent($string, $pluginObject) {
@@ -243,6 +248,14 @@ class PubMed2020 {
         
       }  // Switch
     } // Foreach
+    
+    // Create lowered case titles
+    if (!empty($ret["translated_title"])) {
+        $ret["translated_title_low"] = ucfirst(strtolower($ret["translated_title"])); //mb_convert_case($ret["translated_title"], MB_CASE_TITLE);
+    }
+    if (!empty($ret["title"])) {
+        $ret["title_low"] = ucfirst(strtolower($ret["title"])); //mb_convert_case($ret["title"], MB_CASE_TITLE);
+    }
 
     // Get authors
     if ($ret["corporate_author"]) {
@@ -297,7 +310,7 @@ class PubMed2020 {
     if (count($authorsToUse) > 0) {
       $authors3 = implode(', ',$authorsToUse);
       if ($addAndAl)
-        $authors3 .= " ".$pluginObject->getConf('et_al_vancouver');
+        $authors3 .= ", ".$pluginObject->getConf('et_al_vancouver');
       $authors3 .= ". ";
     } else {
       // Less than three authors
@@ -352,6 +365,18 @@ class PubMed2020 {
     }
     $npg = trim(str_replace("  ", " ", $npg));
     $ret["npg_iso"] = $npg;
+    $ret["npg_full"] = $ret["authorsLimit3"];
+    $t = "";
+    if (!empty($ret["translated_title_low"])) {
+      $t = $ret["translated_title_low"];
+    } else {
+      $t = $ret["title_low"];
+    }
+    if (substr_compare(".", $t, -strlen($t)) === 0) {
+      mb_substr($t, 0, -1);
+    }
+    $ret["npg_full"] .= $t." ";
+    $ret["npg_full"] .= $ret["npg_iso"];
 
 /*
     $ret["iso"] = $ret["journal_iso"].' ';

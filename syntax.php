@@ -31,6 +31,7 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       "vancouver" => '%vancouver%',
       "vancouver_links" => '%vancouver% %pmid% %pmcid% %pmc_url%',
       "npg" => '%authorsLimit3% %title_tt%. %npg_iso%.',
+      "npg_full" => '%npg_full%',
       );
 
   // Constructor
@@ -78,6 +79,7 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
 
       $outputString = str_replace("%authorsLimit3%", '<span class="authors">'.$refs["authorsLimit3"].'</span>', $outputString);
       $outputString = str_replace("%npg_iso%", '<span class="iso">'.$refs["npg_iso"].'</span>', $outputString);
+      $outputString = str_replace("%npg_full%", '<span class="npg">'.$refs["npg_full"].'</span>', $outputString);
 
       $outputString = str_replace("%first_author%", '<span class="authors">'.$refs["first_author"].'</span>', $outputString);
 
