@@ -199,14 +199,13 @@ class PubMed2020 {
           if (strpos($value, ',') !== false) {
             $n = explode(",", trim($value));
             $sn = $n[1];
-            $name = $n[0];
+            $name = $this->_normalizeNameCase($n[0]);
           } else {
             $n = explode(" ", trim($value));
-              $name = $n[0];
-              $sn = $n[1];
+            $name = $this->_normalizeNameCase($n[0]);
+            $sn = $n[1];
           }
-
-          // Keep only first letter of each surname and lower it
+          // Keep only first letter of each surname
           foreach (explode(' ', $sn) as $w) {
             $surname .=  mb_substr($w,0,1,'UTF-8');
           }
@@ -250,6 +249,8 @@ class PubMed2020 {
         case "LID": // possible page? see 32947851
           if (strpos($value, "[doi]") > 0) {
             $ret["doi"] = str_replace(" [doi]", "", $value); 
+          } else if (strpos($value, "[pii]") > 0) {
+            $ret["pii"] = str_replace(" [pii]", "", $value); 
           } else {
             $ret["pages"] = $value;
           }
@@ -411,18 +412,23 @@ class PubMed2020 {
       return $ret;
     }
     // JOURNALS
+    // Journal
     if (!empty($ret["journal_iso"])) {
        $npg = str_replace(".", "", $ret["journal_iso"])." ";
     }
+    // Year
     if (!empty($ret["year"])) {
       $npg .= $ret["year"];
+      // Vol
       if (!empty($ret["vol"])) {
           $npg .= " ; ".$ret["vol"];
+        // Issue
         if (!empty($ret["issue"])) {
           $npg .= " (".$ret["issue"].")";
         }
+        // Pages
         if (!empty($ret["pages"])) {
-          $npg .= " : ".$ret["pages"];
+          $npg .= " : ".$this->_normalizePages($ret["pages"]);
         }
       } else if (!empty($ret["doi"])) {
         $npg .= ", doi : ".$ret["doi"];
@@ -453,6 +459,45 @@ class PubMed2020 {
 
     return $ret;
   }
+  
+  /*
+   * Normalize case of the author's name
+   */
+  function _normalizeNameCase($name) {
+    // Only change fully uppered names
+    if (ctype_upper($name)) {
+       return ucwords(mb_strtolower($name), " \t\r\n\f\v-'");
+    }
+    return $name;
+  }
+
+  /*
+   * Normamize pages number
+   */
+  function _normalizePages($pages) {
+    // Test -
+    if (strpos($pages, "-") === false) {
+      return $pages;
+    }
+    // Split pages
+    $p = mb_split("-", $pages);
+    if (count($p) !== 2) {
+      return $pages;
+    }
+    // Count number of num and compare
+    if (strlen($p[0]) !== strlen($p[1])) {
+      return $pages;
+    }
+
+    // Compare num by num
+    $length = mb_strlen($p[0]);
+    for($i = 0 ; $i < $length ; $i++) {
+       if ($p[0][$i] !== $p[1][$i]) {
+         return $p[0]."-".mb_substr($p[1], $i);
+       }
+    }
+    return $pages;
+}
 
 
 
