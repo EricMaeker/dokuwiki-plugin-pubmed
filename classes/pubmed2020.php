@@ -428,7 +428,7 @@ class PubMed2020 {
         }
         // Pages
         if (!empty($ret["pages"])) {
-          $npg .= " : ".$this->_normalizePages($ret["pages"]);
+          $npg .= " : ".$this->_normalizePages($ret["pages"]).".";
         }
       } else if (!empty($ret["doi"])) {
         $npg .= ", doi : ".$ret["doi"];
