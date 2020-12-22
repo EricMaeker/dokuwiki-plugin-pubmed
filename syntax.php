@@ -250,6 +250,15 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
     } else {
       // Manage all other commands
       switch($cmd) {
+        case 'addtt': // Ok PubMed2020
+            // $id = pmid|translatedTitle
+            list($id, $tt) = explode('|', $id, 2);
+            $raw = $this->getMedlineContent($base, $id);
+            if (strpos($raw, "TT  - ") === false) {
+              $raw .= "\nTT  - ".$tt."\n";
+            }
+            $this->pubmedCache->saveRawMedlineContent($base, $raw);
+            return true;
         case 'test': // Ok PubMed2020
             $this->runTests();
             return true;
