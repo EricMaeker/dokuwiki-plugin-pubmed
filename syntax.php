@@ -32,6 +32,15 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       "vancouver_links" => '%vancouver% %pmid% %pmcid% %pmc_url%',
       "npg" => '%authorsLimit3% %title_tt%. %npg_iso%.',
       "npg_full" => '%npg_full%',
+      // Add item one by one
+      "authors" => '%authors%',
+      "title" => '%title%',
+      "year" => '%year%',
+      "date" => '%month% %year%',
+      "journal" => '%journal_title%',
+      "journaliso" => '%journal_iso%',
+      "doi_link" => '%doi% %journal_url%',
+      "listgroup" => '%listgroup%'
       );
 
   // Constructor
@@ -140,6 +149,40 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       else
         $outputString = str_replace("%pmc_url%", '<a href="'.sprintf($this->pmcUrl, $refs["pmc"]).'" class="pmc_url" rel="noopener" target="_blank" title="'.$refs["pmc"].'"></a>', $outputString);
 
+
+    // Bootstrap listgroup
+    if (strpos($outputString, "%listgroup%") !== false) {
+      $lg = "<div class='bs-wrap bs-wrap-list-group list-group'>";
+      $lg .= "<ul class='list-group'>";
+      $lg .= "<li class='level1 list-group-item list-group-item-warning pubmed'>";
+      $lg .=   "<strong>".$refs["translated_title"]."</strong></li>";
+
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=   " <i class='dw-icons fa fa-file-o fa-fw' style='font-size:16px'></i> ";
+      $lg .=   $refs["title"]."</li>";
+
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=   " <i class='dw-icons fa fa-users fa-fw' style='font-size:16px'></i>";
+      $lg .=   " <span class='pubmed'><span class='authors'>";
+      $lg .=   implode(', ',$refs["authors"]);
+      $lg .=   "</span></span></li>";
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=   " <i class='dw-icons fa fa-newspaper-o fa-fw' style='font-size:16px'></i>";
+      $lg .=   " <span class='pubmed'><span class='journal'><span class='journal_title'>".$refs["journal_title"]."</span></span></span></li>";
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=   " <i class='dw-icons fa fa-calendar-check-o fa-fw' style='font-size:16px'></i> ";
+      $lg .=   "<span class='pubmed'><span class='date'>".$refs["year"]." ".$refs["month"]."</span></li>";
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
+      $lg .=  " <a href='http://dx.doi.org/".$refs["doi"]."' class='list-group-item pubmed' rel='noopener' target='_blank' title='".$refs["doi"]."'>DOI: ".$refs["doi"]."</a></li>";
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
+      $lg .=  " <a href='".$refs["url"]."' class='list-group-item pubmed' rel='noopener' target='_blank' title='PMID: ".$refs["pmid"]."'>PMID: ".$refs["pmid"]."</a></li>";
+      $lg .= "</ul>";
+      $lg .= "</div>";
+      $outputString = str_replace("%listgroup%", $lg, $outputString);
+    }
+
     // Check local PDF using cache
     $localPdf = $this->pubmedCache->GetLocalPdfPath($refs["pmid"], $refs["doi"]);
     if (empty($localPdf)) {
@@ -148,11 +191,11 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
         $outputString = str_replace("%localpdf%", ' <a href="'.$localPdf.'" class="localPdf" rel="noopener" target="_blank" title="'.$localPdf.'">PDF</a>', $outputString);
     }
 
-      $outputString = str_replace("%vancouver%",  '<span class="vancouver">'.$refs["vancouver"].'</span>', $outputString);
+    $outputString = str_replace("%vancouver%",  '<span class="vancouver">'.$refs["vancouver"].'</span>', $outputString);
 
-      // Remove ..
-      $outputString = str_replace(".</span>.",  '.</span>', $outputString);
-      return $outputString;
+    // Remove ..
+    $outputString = str_replace(".</span>.",  '.</span>', $outputString);
+    return $outputString;
   }
 
   /**
@@ -379,6 +422,8 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
 
   /**
    * Only for dev usage
+   *
+   * Tests: 25617070 for author "de la Cruz M"
    */
   function runTests() {
     echo "Starting PubMed2020 Tests<br>";
