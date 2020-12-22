@@ -21,6 +21,9 @@ class PubMed2020 {
   var $pubmedURL       = 'https://pubmed.ncbi.nlm.nih.gov/%s';
   var $pmcURL          = 'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC%s';
   var $pubmedSearchURL = 'https://pubmed.ncbi.nlm.nih.gov/?term=%s';
+  var $similarURL      = 'https://pubmed.ncbi.nlm.nih.gov/?linkname=pubmed_pubmed&from_uid=%s';
+  var $citedByURL      = 'https://pubmed.ncbi.nlm.nih.gov/?linkname=pubmed_pubmed_citedin&from_uid=%s';
+  var $referencesURL   = 'https://pubmed.ncbi.nlm.nih.gov/%s/#references';
   
   // Set this to true to get debugging page output
   //     when retrieving and processing pubmed URL
@@ -352,6 +355,11 @@ class PubMed2020 {
       $ret["iso"] .= '('.$ret["issue"].')';
     $ret["iso"] .= ':'.$ret["pages"];
 */
+
+    $ret["similarurl"] = sprintf($this->similarURL, $ret["pmid"]);
+    $ret["citedbyurl"] = sprintf($this->citedByURL, $ret["pmid"]);
+    $ret["referencesurl"] = sprintf($this->referencesURL, $ret["pmid"]);
+
     // Construct Vancouver citation of this article
     // See https://www.nlm.nih.gov/bsd/uniform_requirements.html
     if ($ret["book_title"]) {

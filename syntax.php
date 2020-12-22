@@ -172,12 +172,43 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       $lg .= "<li class='level1 list-group-item pubmed'>";
       $lg .=   " <i class='dw-icons fa fa-calendar-check-o fa-fw' style='font-size:16px'></i> ";
       $lg .=   "<span class='pubmed'><span class='date'>".$refs["year"]." ".$refs["month"]."</span></li>";
+
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=   " <i class='dw-icons fa fa-cogs fa-fw' style='font-size:16px'></i> ";
+      if (!empty($refs["mesh"])) {
+        $lg .=   "<span class='mesh'>".implode(', ',$refs["mesh"])."</span> ";
+      } else if (!empty($refs["keywords"])) {
+        $lg .=   "<span class='keywords'>".implode(', ',$refs["keywords"])."</span>";
+      } else {
+        $lg .=   "<span class='keywords'>Aucun mots clés</span>";
+      }
+      $lg .=   "</li>";
+      
       $lg .= "<li class='level1 list-group-item pubmed'>";
       $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
       $lg .=  " <a href='http://dx.doi.org/".$refs["doi"]."' class='list-group-item pubmed' rel='noopener' target='_blank' title='".$refs["doi"]."'>DOI: ".$refs["doi"]."</a></li>";
       $lg .= "<li class='level1 list-group-item pubmed'>";
       $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
       $lg .=  " <a href='".$refs["url"]."' class='list-group-item pubmed' rel='noopener' target='_blank' title='PMID: ".$refs["pmid"]."'>PMID: ".$refs["pmid"]."</a></li>";
+
+      if (!empty($refs["similarurl"])) { 
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
+      $lg .=  " <a href='".$refs["similarurl"]."' class='list-group-item pubmed' rel='noopener' target='_blank''>Articles similaires</a></li>";
+      }
+
+      if (!empty($refs["citedbyurl"])) { 
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
+      $lg .=  " <a href='".$refs["citedbyurl"]."' class='list-group-item pubmed' rel='noopener' target='_blank''>Cité par</a></li>";
+      }
+
+      if (!empty($refs["referencesurl"])) { 
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
+      $lg .=  " <a href='".$refs["referencesurl"]."' class='list-group-item pubmed' rel='noopener' target='_blank''>Références</a></li>";
+      }
+
       $lg .= "</ul>";
       $lg .= "</div>";
       $outputString = str_replace("%listgroup%", $lg, $outputString);
