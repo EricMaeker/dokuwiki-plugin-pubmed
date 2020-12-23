@@ -271,16 +271,32 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
     } else if ($this->useDocumentFormat) {
        $cmd = $this->documentFormat;
     }
+    
+    //echo $cmd.PHP_EOL;
 
     if (array_key_exists($cmd, $this->outputTpl)) {
+      // Check and open multiple PMIDs
       $multipleIds = strpos($id, ",");
       if ($multipleIds) {
         $renderer->doc .= "<ul>";
       }        
       $id = explode(",", $id);
+      
+      // With multiple PMIDs, the first one can be a word
+      if ($id[0] === "sort") {
+        // Remove [0]
+        array_shift($id);
+        // Sort ids
+        sort($id);
+        $id = array_reverse($id);
+      }
+      
+      // Add each PMID to the renderer
       foreach ($id as $curId) {
         $renderer->doc .= $this->getIdOutput($cmd, $base, $curId, $multipleIds);
       }
+      
+      // Close multiple PMIDs
       if ($multipleIds) {
         $renderer->doc .= "</ul>";
       }
