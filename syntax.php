@@ -167,6 +167,7 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       $lg .= "<li class='level1 list-group-item pubmed'>";
       $lg .=   " <i class='dw-icons fa fa-file-o fa-fw' style='font-size:16px'></i> ";
       $lg .=   $refs["title"]."</li>";
+      }
 
       $lg .= "<li class='level1 list-group-item pubmed'>";
       $lg .=   " <i class='dw-icons fa fa-users fa-fw' style='font-size:16px'></i>";
@@ -186,6 +187,7 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       $lg .=   " <i class='dw-icons fa fa-code fa-fw' style='font-size:16px'></i> ";
       $lg .=   "<span class='pubmed'><span class='iso'>".$refs["iso"]."</span></li>";
 
+      // Keywords
       $lg .= "<li class='level1 list-group-item pubmed'>";
       $lg .=   " <i class='dw-icons fa fa-tags fa-fw' style='font-size:16px'></i> ";
       if (!empty($refs["mesh"])) {
@@ -196,6 +198,13 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
         $lg .=   "<span class='keywords'>Aucun mots clés</span>";
       }
       $lg .=   "</li>";
+
+      // User added HASHTAGS
+      if (!empty($refs["hashtags"])) {
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=   " <i class='dw-icons fa fa-hashtag fa-fw' style='font-size:16px'></i> ";
+      $lg .=   "<span class='pubmed'><span class='hashtags'>".$refs["hashtags"]."</span></li>";
+      }
 
       // Links
       $lg .= "<li class='level1 list-group-item list-group-item-warning pubmed'>";
@@ -231,6 +240,13 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
       $lg .=  " <a href='".$refs["pmcurl"]."' class='list-group-item pubmed' rel='noopener' target='_blank''>Texte complet gratuit</a></li>";
       }
+
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=  " <i class='dw-icons fa fa-twitter fa-fw' style='font-size:16px'></i>";
+      $lg .=  " <a href='".$this->_createTwitterUrl($refs)."' class='list-group-item pubmed' rel='noopener' target='_blank''>Twitter cet article (lien vers l'article)</a></li>";
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=  " <i class='dw-icons fa fa-twitter fa-fw' style='font-size:16px'></i>";
+      $lg .=  " <a href='".$this->_createTwitterUrl($refs, true)."' class='list-group-item pubmed' rel='noopener' target='_blank''>Twitter cet article (lien vers cette page)</a></li>";
 
       $lg .= "</ul>";
       $lg .= "</div>";
