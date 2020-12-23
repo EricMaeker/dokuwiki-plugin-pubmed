@@ -505,6 +505,63 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       return $output;
   } // Ok pubmed2020
 
+
+
+
+  /**
+   * Create a link to Tweet the paper
+   * - $refs is the full paper references (use pubmed2020 class to get it)
+   * - $currentUrl if true tweet with current website URL, if false use the $refs["url"]
+   */
+  function _createTwitterUrl($refs, $currentUrl = false) {
+    // https://developer.twitter.com/en/docs/twitter-for-websites/tweet-button/guides/web-intent
+    // 280 characters when text is combined with any passed hashtags, via, or url parameters.
+
+    // HASHTAGS
+    if (!empty($refs["hashtags"])) {
+      $hash = "&hashtags=".$refs["hashtags"]; // Comma separated without #
+    } else {
+      $hash = "";
+    }
+
+    // TEXT
+    if (!empty($refs["translated_title"])) {
+        $txt  = $refs["translated_title"]."\n\n";
+    } else {
+        $txt  = $refs["title"]."\n\n";
+    }
+    $txt .= $refs["journal_title"]." ".$refs["year"]."\n";
+    $txt  = "&text=".rawurlencode($txt);
+    
+    // URL
+    $url = "";
+    // Get current page URL
+    if ($currentUrl) {
+      global $ID;
+      $url = wl($ID,'',true);
+    } else {
+      $url = $refs["url"];
+    }
+    $url = "&url=".rawurlencode($url);
+    
+    // VIA
+    if (!empty($this->getConf('twitter_via_user_name'))) {
+      $via  = "&via=".$this->getConf('twitter_via_user_name');
+    }
+    //$related = "&related=";
+
+    // Create full link
+    $tweet  = "";    
+    $tweet .= str_replace(array("-", "#"), "", $hash);
+    $tweet .= $txt;
+    $tweet .= $url;
+    $tweet .= $via;
+    $tweet  = substr($tweet, 1);
+    $tweet  = sprintf($this->twitterUrl, $tweet);
+
+    return $tweet;
+  }
+
   /**
    * Only for dev usage
    *
