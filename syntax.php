@@ -153,6 +153,12 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
 
     // Bootstrap listgroup
     if (strpos($outputString, "%listgroup%") !== false) {
+      if (empty($refs["translated_title"])) {
+      $lg = "<div class='bs-wrap bs-wrap-list-group list-group'>";
+      $lg .= "<ul class='list-group'>";
+      $lg .= "<li class='level1 list-group-item list-group-item-warning pubmed'>";
+      $lg .=   "<strong>".$refs["title"]."</strong></li>";
+      } else {
       $lg = "<div class='bs-wrap bs-wrap-list-group list-group'>";
       $lg .= "<ul class='list-group'>";
       $lg .= "<li class='level1 list-group-item list-group-item-warning pubmed'>";
