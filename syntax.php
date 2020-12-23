@@ -18,14 +18,15 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
   var $pubmedCache;
   var $doiUrl = 'http://dx.doi.org/'; //+doi
   var $pmcUrl = 'https://www.ncbi.nlm.nih.gov/pmc/articles/%s/pdf'; //+pmc
+  var $twitterUrl = 'https://twitter.com/intent/tweet?%s';
   var $outputTpl = array(
       "short" => '%first_author%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url%',
       "long" => '%authors%. %title%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url%',
       "long_tt" => '%authors%. %title_tt%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url%',
-      "long_pdf" => '%authors%. %title%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url% %localpdf%',
-      "long_tt_pdf" => '%authors%. %title_tt%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url% %localpdf%',
-      "long_abstract" => '%authors%. %title%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url% %abstract% %abstractFr% %pmid% %doi%',
-      "long_tt_abstract" => '%authors%. %title_tt%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url% %abstract% %abstractFr% %pmid% %doi%',
+      "long_pdf" => '%authors%. %title%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url% %localpdf% %tweet%',
+      "long_tt_pdf" => '%authors%. %title_tt%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url% %localpdf% %tweet%',
+      "long_abstract" => '%authors%. %title%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url% %abstract% %abstractFr% %pmid% %doi% %tweet%',
+      "long_tt_abstract" => '%authors%. %title_tt%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url% %abstract% %abstractFr% %pmid% %doi% %tweet%',
       "long_abstract_pdf" => '%authors%. %title%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url% %abstract% %abstractFr% %pmid% %doi% %localpdf%',
       "long_tt_abstract_pdf" => '%authors%. %title_tt%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url% %abstract% %abstractFr% %pmid% %doi% %localpdf%',
       "vancouver" => '%vancouver%',
@@ -150,6 +151,12 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       else
         $outputString = str_replace("%pmc_url%", '<a href="'.sprintf($this->pmcUrl, $refs["pmc"]).'" class="pmc_url" rel="noopener" target="_blank" title="'.$refs["pmc"].'"></a>', $outputString);
 
+    // Create Twitter links (non listgroup presentation)
+    $tweet  = "<div class='pubmed tweetme'>";
+    $tweet .= "<a href='".$this->_createTwitterUrl($refs)."' rel='noopener' target='_blank''>Twitter cet article (lien vers l'article)</a><br/>";
+    $tweet .= "<a href='".$this->_createTwitterUrl($refs, true)."' rel='noopener' target='_blank''>Twitter cet article (lien vers ce site)</a>";
+    $tweet .= "</div>";
+    $outputString = str_replace("%tweet%", $tweet, $outputString);
 
     // Bootstrap listgroup
     if (strpos($outputString, "%listgroup%") !== false) {
