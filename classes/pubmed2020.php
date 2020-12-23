@@ -115,6 +115,7 @@ class PubMed2020 {
    *      "doi"           -> doi references when available
    *      "npg_iso"       -> French specific journal (NPG)
    *      "npg_full"      -> French specific journal (NPG)
+   *      "hashtags"      -> Added hastag with command 'addhash'
    * $pluginObject must be accessible for translations ($this->getLang())
    */
   function readMedlineContent($string, $pluginObject) {
@@ -258,10 +259,10 @@ class PubMed2020 {
             $ret["pages"] = $value;
           }
           break;
-        
+        case "HASH": $ret["hashtags"] = $value; break;
       }  // Switch
     } // Foreach
-    
+
     // Create lowered case titles
     if (!empty($ret["translated_title"])) {
         $ret["translated_title_low"] = ucfirst(strtolower($ret["translated_title"])); //mb_convert_case($ret["translated_title"], MB_CASE_TITLE);

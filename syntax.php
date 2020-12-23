@@ -326,6 +326,15 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
             }
             $this->pubmedCache->saveRawMedlineContent($base, $raw);
             return true;
+        case 'addhash_fr': // Ok PubMed2020
+            // $id = pmid|hash1,hash2,hash3
+            list($id, $hash) = explode('|', $id, 2);
+            $raw = $this->getMedlineContent($base, $id);
+            if (strpos($raw, "HASH- ") === false) {
+              $raw .= "\nHASH- ".$hash."\n";
+            }
+            $this->pubmedCache->saveRawMedlineContent($base, $raw);
+            return true;
         case 'test': // Ok PubMed2020
             $this->runTests();
             return true;
