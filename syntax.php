@@ -302,6 +302,9 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
         $id = array_reverse($id);
       }
       
+      // Remove duplicates
+      $id = array_unique($id, SORT_REGULAR);
+      
       // Add each PMID to the renderer
       foreach ($id as $curId) {
         $renderer->doc .= $this->getIdOutput($cmd, $base, $curId, $multipleIds);
