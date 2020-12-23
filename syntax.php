@@ -127,9 +127,10 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
 
       $refs["abstractFr"] = $this->pubmedCache->GetTranslatedAbstract($refs["pmid"]);
       if (empty($refs["abstractFr"])) {
-        $gg =  "https://translate.google.com/#view=home";
-        $gg .= "&op=translate&sl=auto&tl=fr&text=";
-        $gg .= urlencode($refs["abstract"]);
+        $gg =  "https://translate.google.com/";
+        $gg .= "?sl=auto&tl=fr&text=";
+        $gg .= rawurlencode($refs["abstract"]);
+        $gg .= "&op=translate";        
         $outputString = str_replace("%abstractFr%", '<a class="abstractFr" href="'.$gg.'" rel="noopener" target="_blank">FR</a>', $outputString);
       } else {
         // TODO: Create a form to send french abstrat to this class
