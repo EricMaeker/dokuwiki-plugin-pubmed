@@ -209,6 +209,12 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       $lg .=  " <a href='".$refs["referencesurl"]."' class='list-group-item pubmed' rel='noopener' target='_blank''>Références</a></li>";
       }
 
+      if (!empty($refs["pmcid"])) { 
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
+      $lg .=  " <a href='".$refs["pmcurl"]."' class='list-group-item pubmed' rel='noopener' target='_blank''>Texte complet gratuit</a></li>";
+      }
+
       $lg .= "</ul>";
       $lg .= "</div>";
       $outputString = str_replace("%listgroup%", $lg, $outputString);
