@@ -548,7 +548,13 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
 
     // HASHTAGS
     if (!empty($refs["hashtags"])) {
-      $hash = "&hashtags=".$refs["hashtags"]; // Comma separated without #
+      $list = explode(",", $refs["hashtags"]);
+      foreach ($list as &$value) {
+        $value = trim($value);
+        $value = str_replace(" ", "_", $value);
+        $value = str_replace("-", "ー", $value);
+      }
+      $hash = "&hashtags=".implode(",", $list); // Comma separated without #
     } else {
       $hash = "";
     }
