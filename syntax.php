@@ -167,15 +167,21 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       $lg .=   " <span class='pubmed'><span class='authors'>";
       $lg .=   implode(', ',$refs["authors"]);
       $lg .=   "</span></span></li>";
+
       $lg .= "<li class='level1 list-group-item pubmed'>";
       $lg .=   " <i class='dw-icons fa fa-newspaper-o fa-fw' style='font-size:16px'></i>";
       $lg .=   " <span class='pubmed'><span class='journal'><span class='journal_title'>".$refs["journal_title"]."</span></span></span></li>";
+
       $lg .= "<li class='level1 list-group-item pubmed'>";
       $lg .=   " <i class='dw-icons fa fa-calendar-check-o fa-fw' style='font-size:16px'></i> ";
       $lg .=   "<span class='pubmed'><span class='date'>".$refs["year"]." ".$refs["month"]."</span></li>";
 
       $lg .= "<li class='level1 list-group-item pubmed'>";
-      $lg .=   " <i class='dw-icons fa fa-cogs fa-fw' style='font-size:16px'></i> ";
+      $lg .=   " <i class='dw-icons fa fa-code fa-fw' style='font-size:16px'></i> ";
+      $lg .=   "<span class='pubmed'><span class='iso'>".$refs["iso"]."</span></li>";
+
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=   " <i class='dw-icons fa fa-tags fa-fw' style='font-size:16px'></i> ";
       if (!empty($refs["mesh"])) {
         $lg .=   "<span class='mesh'>".implode(', ',$refs["mesh"])."</span> ";
       } else if (!empty($refs["keywords"])) {
@@ -184,7 +190,11 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
         $lg .=   "<span class='keywords'>Aucun mots clés</span>";
       }
       $lg .=   "</li>";
-      
+
+      // Links
+      $lg .= "<li class='level1 list-group-item list-group-item-warning pubmed'>";
+      $lg .=   "<strong>Liens</strong></li>";
+
       $lg .= "<li class='level1 list-group-item pubmed'>";
       $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
       $lg .=  " <a href='http://dx.doi.org/".$refs["doi"]."' class='list-group-item pubmed' rel='noopener' target='_blank' title='".$refs["doi"]."'>DOI: ".$refs["doi"]."</a></li>";
