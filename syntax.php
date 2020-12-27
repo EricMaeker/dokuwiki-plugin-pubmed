@@ -3,7 +3,7 @@
 description : Dokuwiki PubMed2020 plugin
 author      : Eric Maeker
 email       : eric.maeker[at]gmail.com
-lastupdate  : 2020-06-05
+lastupdate  : 2020-12-27
 license     : Public-Domain
 */
 
@@ -20,17 +20,17 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
   var $pmcUrl = 'https://www.ncbi.nlm.nih.gov/pmc/articles/%s/pdf'; //+pmc
   var $twitterUrl = 'https://twitter.com/intent/tweet?%s';
   var $outputTpl = array(
-      "short" => '%first_author%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url%',
-      "long" => '%authors%. %title%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url%',
-      "long_tt" => '%authors%. %title_tt%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url%',
-      "long_pdf" => '%authors%. %title%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url% %localpdf% %tweet%',
-      "long_tt_pdf" => '%authors%. %title_tt%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url% %localpdf% %tweet%',
-      "long_abstract" => '%authors%. %title%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url% %abstract% %abstractFr% %pmid% %doi% %tweet%',
-      "long_tt_abstract" => '%authors%. %title_tt%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url% %abstract% %abstractFr% %pmid% %doi% %tweet%',
-      "long_abstract_pdf" => '%authors%. %title%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url% %abstract% %abstractFr% %pmid% %doi% %localpdf%',
-      "long_tt_abstract_pdf" => '%authors%. %title_tt%. %iso%. %pmid% %pmcid% %journal_url% %pmc_url% %abstract% %abstractFr% %pmid% %doi% %localpdf%',
+      "short" => '%first_author%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url%',
+      "long" => '%authors%. %title%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url%',
+      "long_tt" => '%authors%. %title_tt%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url%',
+      "long_pdf" => '%authors%. %title%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url% %localpdf% %tweet%',
+      "long_tt_pdf" => '%authors%. %title_tt%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url% %pmc_url% %localpdf% %tweet%',
+      "long_abstract" => '%authors%. %title%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url% %abstract% %abstractFr% %tweet%',
+      "long_tt_abstract" => '%authors%. %title_tt%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url% %abstract% %abstractFr% %tweet%',
+      "long_abstract_pdf" => '%authors%. %title%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url% %abstract% %abstractFr% %localpdf%',
+      "long_tt_abstract_pdf" => '%authors%. %title_tt%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url% %abstract% %abstractFr% %localpdf%',
       "vancouver" => '%vancouver%',
-      "vancouver_links" => '%vancouver% %pmid% %pmcid% %pmc_url%',
+      "vancouver_links" => '%vancouver%<br/>%pmid_url% %pmcid_url% %pmc_url%',
       "npg" => '%authorsLimit3% %title_tt%. %npg_iso%.',
       "npg_full" => '%npg_full%',
       // Add item one by one
@@ -57,7 +57,7 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
   }
 
   function getType() { return 'substition'; }
-  function getSort() { return 158; }
+  function getSort() { return 306; }
 
   /**
    * Plugin tag format: {{pmid>command:arg}}
@@ -76,6 +76,29 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
     return array($state, explode('>', $match, 2));
   }
 
+
+  function _span($refs, $class, $id) {
+    // No data
+    if (empty($refs[$id]))
+      return "";
+    // Data = array
+    if (is_array($refs[$id]))
+      return "<span class=\"$class\">".hsc(implode(", ",$refs[$id]))."</span>";
+    // Default
+    return "<span class=\"$class\">".hsc($refs[$id])."</span>";
+  }
+
+  function _a($refs, $class, $href, $id, $text) {
+    // No data
+    if (empty($refs[$id]))
+      return "";
+    // Default
+    return "[<a class=\"$class\" href=\"$href\" ".
+           "rel=\"noopener\" target=\"_blank\" ".
+           "title=\"$text\" ".
+           ">$text</a>]";
+  }
+
   /**
    * Replace tokens in the string \e $outputString using the array $refs.
    * \returns Replaced string content.
@@ -85,84 +108,112 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       if (count($refs) < 2) { // PMID is always included
         return sprintf($this->getLang('pubmed_not_found'), $refs["pmid"]);
       }
-      $outputString = str_replace("%authors%", '<span class="authors">'.implode(', ',$refs["authors"]).'</span>', $outputString);
+      // $r = replacement key/value: key=tag to replace in string, value=replacement string
+      $r = array(
+         // IDs
+        "pmid"          => "",
+        "pmcid"         => "",
+        "doi"           => "",
+         
+        // AUTHORS
+        "authors"       => $this->_span($refs, "authors", "authors"),
+        "authorsLimit3" => $this->_span($refs, "authors", "authorsLimit3"),
+        "first_author"  => $this->_span($refs, "authors", "first_author"),
+        "authorsVancouver" => $this->_span($refs, "vancouver authors", "authorsVancouver"),
+        "collectif"     => $this->_span($refs, "authors", "collectif"),
+        "corporate_author"=> $this->_span($refs, "authors", "corporate_author"),
 
-      $outputString = str_replace("%authorsLimit3%", '<span class="authors">'.$refs["authorsLimit3"].'</span>', $outputString);
-      $outputString = str_replace("%npg_iso%", '<span class="iso">'.$refs["npg_iso"].'</span>', $outputString);
-      $outputString = str_replace("%npg_full%", '<span class="npg">'.$refs["npg_full"].'</span>', $outputString);
+        // CITATION
+        "vancouver"     => "",
+        "npg_iso"       => $this->_span($refs, "iso", "npg_iso"),
+        "npg_full"      => $this->_span($refs, "npg", "npg_full"),
 
-      $outputString = str_replace("%first_author%", '<span class="authors">'.$refs["first_author"].'</span>', $outputString);
+        // URLS
+        "pmid_url"      => $this->_a($refs, "pmid", $refs["url"], 
+                                      "url", "PMID: ".$refs["pmid"]),
+        "pmcid_url"     => $this->_a($refs, "pmcid", $refs["pmcurl"], 
+                                     "pmcid", "PMCID: ".$refs["pmcid"]),
+        "doi_url"       => $this->_a($refs, "pmcid", $this->doiUrl.$refs["doi"],
+                                      "doi", "DOI: ".$refs["doi"]),
+        "journal_url"   => $this->_a($refs, "pmid", $this->doiUrl.$refs["doi"], 
+                                      "pmid", $refs["iso"]),
 
-      if (count($refs["authorsVancouver"]) > 0)
-        $outputString = str_replace("%authorsVancouver%", '<span class="vancouver authors">'.implode(', ',$refs["authorsVancouver"]).'</span>', $outputString);
-      $outputString = str_replace("%collectif%", '<span class="authors">'.$refs["collectif"].'</span>', $outputString);
+        "tweet_current" => "<a href='".$this->_createTwitterUrl($refs, true).
+                             "' rel='noopener' target='_blank''>Twitter cet article ".
+                             "(lien vers ce site)</a>",
+        "tweet_pmid"    => "<a href='".$this->_createTwitterUrl($refs).
+                             "' rel='noopener' target='_blank''>".
+                             "Twitter cet article (lien vers l'article)</a>",
+        
+        // TITLE
+        "title"         => "",
+        "booktitle"     => $this->_span($refs, "title", "booktitle"),
+        "title_low"     => "",
+        "translated_title" => $this->_span($refs, "title", "translated_title"),
+        "translated_title_low" => $this->_span($refs, "title", "translated_title_low"),
+        "title_tt"      => $this->_span($refs, "title", "translated_title"),
+
+        // JOURNAL
+        "journal_iso"   => "",
+        "journal_title" => "",
+        "journal_iso"   => "",
+
+        // OTHERS
+        "lang"          => "",
+        "iso"           => "",
+        "vol"           => "",
+        "issue"         => "",
+        "year"          => "",
+        "month"         => "",
+        "pages"         => "",
+        "abstract"      => '<br/>'.$this->_span($refs, "abstract", "abstract"),
+        "type"          => "",
+        "country"       => "",
+        "copyright"     => "",
+        "collection_title" => "",
+        "publisher"     => "",
+    );
+    $r["tweet"] = "<div class='pubmed tweetme'>".
+                  $r["tweet_pmid"]."<br/>".
+                  $r["tweet_current"].
+                  "</div>";
+    // Check if we have the local PDF of the paper
+    $localPdf = $this->pubmedCache->GetLocalPdfPath($refs["pmid"], $refs["doi"]);
+    if (empty($localPdf)) {
+      $r["localpdf"] = $this->_span($refs, "nopdf", "No PDF");
+    } else {
+      $r["localpdf"] = $this->_a($refs, "localPdf", $localPdf, "pmid", "PDF");
+    }
+
+    foreach($r as $key => $value) {
+      $v = $value;
+      if (empty($v))
+        $v = $this->_span($refs, $key, $key);
+      $outputString = str_replace("%".$key."%", $v, $outputString);
+    }
       
-      if (!empty($refs["pmid"])) 
-          $outputString = str_replace("%pmid%", '<a href="'.$refs["url"].'" class="pmid" rel="noopener" target="_blank" title="PMID: '.$refs["pmid"].'">PMID: '.$refs["pmid"].'</a>', $outputString);
-      else
-          $outputString = str_replace("%pmid%", "", $outputString);
-
-      if (!empty($refs["pmcid"])) 
-          $outputString = str_replace("%pmcid%", '<a href="'.$refs["pmcurl"].'" class="pmcid" rel="noopener" target="_blank" title="PMCID: '.$refs["pmcid"].'">PMCID: '.$refs["pmcid"].'</a>', $outputString);
-      else
-          $outputString = str_replace("%pmcid%", "", $outputString);
-
-      $outputString = str_replace("%type%", '<span class="type">'.$refs["type"].'</span>', $outputString);
-
-      $outputString = str_replace("%title%", '<span class="title">'.$refs["title"].'</span>', $outputString);
-      if ($refs["translated_title"])
-          $outputString = str_replace("%title_tt%", '<span class="title">'.$refs["translated_title"].'</span>', $outputString);
-      else
-          $outputString = str_replace("%title_tt%", '<span class="title">'.$refs["title"].'</span>', $outputString);
-
-      $outputString = str_replace("%lang%", '<span class="lang">'.$refs["lang"].'</span>', $outputString);
-      $outputString = str_replace("%journal_iso%", '<span class="journal_iso">'.$refs["journal_iso"].'</span>', $outputString);
-      $outputString = str_replace("%journal_title%", '<span class="journal_title">'.$refs["journal_title"].'</span>', $outputString);
-      $outputString = str_replace("%iso%", '<span class="iso">'.$refs["iso"].'</span>', $outputString);
-      $outputString = str_replace("%vol%", '<span class="vol">'.$refs["vol"].'</span>', $outputString);
-      $outputString = str_replace("%issue%", '<span class="issue">'.$refs["issue"].'</span>', $outputString);
-      $outputString = str_replace("%year%", '<span class="year">'.$refs["year"].'</span>', $outputString);
-      $outputString = str_replace("%month%", '<span class="month">'.$refs["month"].'</span>', $outputString);
-      $outputString = str_replace("%pages%", '<span class="pages">'.$refs["pages"].'</span>', $outputString);
-      $outputString = str_replace("%abstract%", '<br/><span class="abstract">'.$refs["abstract"].'</span>', $outputString);
-
+// note tt -> if empty = title
+// note doi & journal_url -> if empty add nothing
+      //echo print_r($r);
+      
       $refs["abstractFr"] = $this->pubmedCache->GetTranslatedAbstract($refs["pmid"]);
       if (empty($refs["abstractFr"])) {
         $gg =  "https://translate.google.com/";
         $gg .= "?sl=auto&tl=fr&text=";
         $gg .= rawurlencode($refs["abstract"]);
         $gg .= "&op=translate";        
-        $outputString = str_replace("%abstractFr%", '<a class="abstractFr" href="'.$gg.'" rel="noopener" target="_blank">FR</a>', $outputString);
+        $outputString = str_replace("%abstractFr%", '<div class="abstractFr"><a class="abstractFr" href="'.$gg.'" rel="noopener" target="_blank">Traduction automatique en Français sur Google Translate</a></div>', $outputString);
       } else {
         // TODO: Create a form to send french abstrat to this class
         // TODO: Allow to store it in a separate file abstractfr_{pmid}.txt
           $outputString = str_replace("%abstractFr%", '<span class="abstract">'.$refs["abstractFr"].'</span>', $outputString);
       }
-      
-      if (empty($refs["doi"])) {
-        $outputString = str_replace("%doi%", "", $outputString);
-        $outputString = str_replace("%journal_url%", "", $outputString);
-      } else {
-        $outputString = str_replace("%doi%", '<span class="doi">'.$refs["doi"].'</span>', $outputString);
-        $outputString = str_replace("%journal_url%", '<a href="'.$this->doiUrl.$refs["doi"].'" class="journal_url" rel="noopener" target="_blank" title="'.$refs["iso"].'"></a>', $outputString);
-      }
-      if (empty($refs["pmc"]))
-        $outputString = str_replace("%pmc_url%", "", $outputString);
-      else
-        $outputString = str_replace("%pmc_url%", '<a href="'.sprintf($this->pmcUrl, $refs["pmc"]).'" class="pmc_url" rel="noopener" target="_blank" title="'.$refs["pmc"].'"></a>', $outputString);
-
-    // Create Twitter links (non listgroup presentation)
-    $tweet  = "<div class='pubmed tweetme'>";
-    $tweet .= "<a href='".$this->_createTwitterUrl($refs)."' rel='noopener' target='_blank''>Twitter cet article (lien vers l'article)</a><br/>";
-    $tweet .= "<a href='".$this->_createTwitterUrl($refs, true)."' rel='noopener' target='_blank''>Twitter cet article (lien vers ce site)</a>";
-    $tweet .= "</div>";
-    $outputString = str_replace("%tweet%", $tweet, $outputString);
 
     // Bootstrap listgroup
     if (strpos($outputString, "%listgroup%") !== false) {
       if (empty($refs["translated_title"])) {
-      $lg = "<div class='bs-wrap bs-wrap-list-group list-group'>";
-      $lg .= "<ul class='list-group'>";
+      $lg = "<div class='bs-wrap bs-wrap-list-group list-group pubmed'>";
+      $lg .= "<ul class='list-group pubmed'>";
       $lg .= "<li class='level1 list-group-item list-group-item-warning pubmed'>";
       $lg .=   "<strong>".$refs["title"]."</strong></li>";
       } else {
@@ -257,21 +308,12 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
 
       $lg .= "</ul>";
       $lg .= "</div>";
-      $outputString = str_replace("%listgroup%", $lg, $outputString);
+      $outputString = str_replace("%listgroup%", $lg, hsc($outputString));
     }
 
-    // Check local PDF using cache
-    $localPdf = $this->pubmedCache->GetLocalPdfPath($refs["pmid"], $refs["doi"]);
-    if (empty($localPdf)) {
-        $outputString = str_replace("%localpdf%", 'No PDF', $outputString);
-    } else {
-        $outputString = str_replace("%localpdf%", ' <a href="'.$localPdf.'" class="localPdf" rel="noopener" target="_blank" title="'.$localPdf.'">PDF</a>', $outputString);
-    }
+    // Remove double points separated with a span tag
+    $outputString = str_replace(".</span>.",  '.</span>', $outputString);    
 
-    $outputString = str_replace("%vancouver%",  '<span class="vancouver">'.$refs["vancouver"].'</span>', $outputString);
-
-    // Remove ..
-    $outputString = str_replace(".</span>.",  '.</span>', $outputString);
     return $outputString;
   }
 
@@ -533,8 +575,6 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       
       return $output;
   } // Ok pubmed2020
-
-
 
 
   /**
