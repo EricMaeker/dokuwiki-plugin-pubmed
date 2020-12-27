@@ -152,6 +152,7 @@ class PubMed2020 {
    * Links:
    *   "url"           -> URL to PubMed site
    *   "pmcurl"        -> if available URL to PMC site
+   *   "googletranslate_abstract"   -> Link to google translate prepopulated with abstract
    *
    * \note $pluginObject must be accessible for translations ($this->getLang())
    */
@@ -420,6 +421,11 @@ class PubMed2020 {
 //     $vancouver .= ":".$ret["pages"];
     $ret["vancouver"] = $vancouver;
 
+    $gg  =  "https://translate.google.com/";
+    $gg .= "?sl=auto&tl=fr&text=";
+    $gg .= rawurlencode($ret["abstract"]);
+    $gg .= "&op=translate";
+    $ret["googletranslate_abstract"] = $gg;
     //echo print_r($ret);
     return $ret;
   } // Ok pubmed2020

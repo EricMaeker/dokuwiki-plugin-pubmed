@@ -198,11 +198,7 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       
       $refs["abstractFr"] = $this->pubmedCache->GetTranslatedAbstract($refs["pmid"]);
       if (empty($refs["abstractFr"])) {
-        $gg =  "https://translate.google.com/";
-        $gg .= "?sl=auto&tl=fr&text=";
-        $gg .= rawurlencode($refs["abstract"]);
-        $gg .= "&op=translate";        
-        $outputString = str_replace("%abstractFr%", '<div class="abstractFr"><a class="abstractFr" href="'.$gg.'" rel="noopener" target="_blank">Traduction automatique en Français sur Google Translate</a></div>', $outputString);
+        $outputString = str_replace("%abstractFr%", '<div class="abstractFr"><a class="abstractFr" href="'.$refs["googletranslate_abstract"].'" rel="noopener" target="_blank">Traduction automatique en Français sur Google Translate</a></div>', $outputString);
       } else {
         // TODO: Create a form to send french abstrat to this class
         // TODO: Allow to store it in a separate file abstractfr_{pmid}.txt

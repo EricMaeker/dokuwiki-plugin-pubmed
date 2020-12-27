@@ -80,6 +80,7 @@ license     : Public-Domain
    * Links:
    *   "url"           -> URL to PubMed site
    *   "pmcurl"        -> if available URL to PMC site
+   *   "googletranslate_abstract"   -> Link to google translate prepopulated with abstract
  */
 class helper_plugin_pubmed2020_pmid extends helper_plugin_bureaucracy_fieldtextbox {
 
