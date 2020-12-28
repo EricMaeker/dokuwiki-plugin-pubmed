@@ -431,10 +431,11 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
           $renderer->doc .= 'Directory cleared.';
           return true;
         case 'search':
+          $link = $this->pubmed2020->getPubmedSearchURL($id);
           $renderer->doc .='<div class="pubmed">';
           $renderer->doc .= '<a class="pmid" rel="noopener" target="_blank" href="';
-          $renderer->doc .= $this->pubmed2020->getPubmedSearchURL($id);
-          $renderer->doc .= '">'.$id.'</a>';
+          $renderer->doc .= $link[1];
+          $renderer->doc .= '">'.$link[0].'</a>';
           $renderer->doc .='</div>';
           return true;
         case 'recreate_cross_refs':

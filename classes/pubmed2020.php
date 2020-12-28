@@ -82,16 +82,26 @@ class PubMed2020 {
 
   /*
    * Create a pubmed query, return the URL of the query
+   * {{pmid>search:#title|terms|size|filter|...}}
+   * return array(title, searchUrl)
    */
   function getPubmedSearchURL($searchTerms) {
     // Split using | to get URL options: size, format, filter, sort
     $options = explode("|", $searchTerms);
     if (count($options) < 1)
       return "ERROR"; // TODO
+    // Find title
+    $title = "";
+    if (substr($options[0], 0, 1) === "#") {
+      $title = substr($options[0], 1);
+      array_shift($options);
+    } else {
+      $title = $searchTerms; // Title === search terms
+    }
     $url = sprintf($this->pubmedSearchURL, urlencode($options[0]));
     if (count($options) > 1)
       $url .= "&".implode("&", array_slice($options, 1));
-    return $url;
+    return array($title, $url);
   } // ok, V2020
 
   /**
