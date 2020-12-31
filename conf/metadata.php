@@ -12,6 +12,8 @@ $meta['limit_authors_vancouver'] = array('numericopt', '_min' => '1');
 $meta['et_al_vancouver'] = array('string');
 $meta['remove_dot_from_journal_iso'] = array('onoff');
 $meta['twitter_via_user_name'] = array('string');
+$meta['twitter_url_shortener_format_pmid'] = array('string');
+$meta['twitter_url_shortener_format_pmcid'] = array('string');
 
 //Setup VIM: ex: et ts=2 enc=utf-8 :
 

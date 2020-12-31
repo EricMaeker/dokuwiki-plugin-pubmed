@@ -295,6 +295,10 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       $lg .=  " <a href='".$refs["pmcurl"]."' class='list-group-item pubmed' rel='noopener' target='_blank''>Texte complet gratuit</a></li>";
       }
 
+      // Twitter
+      $lg .= "<li class='level1 list-group-item list-group-item-warning pubmed'>";
+      $lg .=   "<strong>Twitter</strong></li>";
+
       $lg .= "<li class='level1 list-group-item pubmed'>";
       $lg .=  " <i class='dw-icons fa fa-twitter fa-fw' style='font-size:16px'></i>";
       $lg .=  " <a href='".$this->_createTwitterUrl($refs)."' class='list-group-item pubmed' rel='noopener' target='_blank''>Twitter cet article (lien vers l'article)</a></li>";
@@ -609,13 +613,27 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
     $url = "";
     // Get current page URL
     if ($currentUrl) {
-      global $ID;
-      $url = wl($ID,'',true);
+      // Use Twitter URL shorteners
+      // See 
+      // $conf['twitter_url_shortener_format_pmid'] = "";
+      // $conf['twitter_url_shortener_format_pmcid'] = "";
+      if (!empty($this->getConf('twitter_url_shortener_format_pmid')) 
+          && !empty($refs["pmid"])) {
+        $url = $this->getConf('twitter_url_shortener_format_pmid');
+        $url = str_replace("%PMID", $refs["pmid"], $url);
+      } else if (!empty($this->getConf('twitter_url_shortener_format_pcmid'))
+                 && !empty($refs["pmid"])) {
+        $url = $this->getConf('twitter_url_shortener_format_pmcid');
+        $url = str_replace("%PMCID", $refs["pmcid"], $url);
+      } else {
+        global $ID;
+        $url = wl($ID,'',true);
+      }
     } else {
       $url = $refs["url"];
     }
     $url = "&url=".rawurlencode($url);
-    
+
     // VIA
     if (!empty($this->getConf('twitter_via_user_name'))) {
       $via  = "&via=".$this->getConf('twitter_via_user_name');

@@ -11,3 +11,5 @@ $lang['user_defined_output'] = 'Tokened user output. Eg: %authors%. %title%. %is
 $lang['limit_authors_vancouver'] = 'Limit the number of printed authors with the Vancouver output and add "et al" (see below) at the end of authors listing.';
 $lang['et_al_vancouver'] = 'Add this to the end of authors listing according to the author limitation defined. Eg: Author1 KL, Author2 ER et al.';
 $lang['twitter_via_user_name'] = "Nom de l'utilisateur Twitter (sans le caractère @) pour la création des liens de Tweet (via @UserName)";
+$lang['twitter_url_shortener_format_pmid'] = 'You can use URL shortener for PMID inside the tweet links. You can use %PMID% tags in your url format, they will be replaced with correct datas. Eg: \"https://agpr.fr/p/%PMID%"';
+$lang['twitter_url_shortener_format_pmcid'] = 'You can use URL shortener for PMCID inside the tweet links. You can use %PMCID% tags in your url format, they will be replaced with correct datas. Eg: \"https://agpr.fr/pm/%PMCID%"';

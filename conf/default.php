@@ -12,3 +12,5 @@ $conf['limit_authors_vancouver'] = "6";
 $conf['et_al_vancouver'] = "et al";
 $conf['remove_dot_from_journal_iso'] = 0;
 $conf['twitter_via_user_name'] = "";
+$conf['twitter_url_shortener_format_pmid'] = "";
+$conf['twitter_url_shortener_format_pmcid'] = "";
