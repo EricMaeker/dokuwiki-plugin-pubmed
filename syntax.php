@@ -266,6 +266,10 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
 
       $lg .= "<li class='level1 list-group-item pubmed'>";
       $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
+      $lg .=  " <a href='".$refs["googletranslate_abstract"]."' class='list-group-item pubmed' rel='noopener' target='_blank'>Traduction automatique en Français sur Google Translate</a></li>";
+
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
       $lg .=  " <a href='http://dx.doi.org/".$refs["doi"]."' class='list-group-item pubmed' rel='noopener' target='_blank' title='".$refs["doi"]."'>DOI: ".$refs["doi"]."</a></li>";
       $lg .= "<li class='level1 list-group-item pubmed'>";
       $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
