@@ -624,11 +624,11 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       if (!empty($this->getConf('twitter_url_shortener_format_pmid')) 
           && !empty($refs["pmid"])) {
         $url = $this->getConf('twitter_url_shortener_format_pmid');
-        $url = str_replace("%PMID", $refs["pmid"], $url);
+        $url = str_replace("%PMID%", $refs["pmid"], $url);
       } else if (!empty($this->getConf('twitter_url_shortener_format_pcmid'))
                  && !empty($refs["pmid"])) {
         $url = $this->getConf('twitter_url_shortener_format_pmcid');
-        $url = str_replace("%PMCID", $refs["pmcid"], $url);
+        $url = str_replace("%PMCID%", $refs["pmcid"], $url);
       } else {
         global $ID;
         $url = wl($ID,'',true);
