@@ -610,7 +610,7 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
     } else {
         $txt  = $refs["title"]."\n\n";
     }
-    $txt .= $refs["journal_title"]." ".$refs["year"]."\n";
+    $txt .= $refs["journal_iso"]." ".$refs["year"]."\n";
     $txt  = "&text=".rawurlencode($txt);
     
     // URL
