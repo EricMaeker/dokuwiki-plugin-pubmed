@@ -398,6 +398,13 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
             $raw = $this->getMedlineContent($base, $id);
             if (strpos($raw, "TT  - ") === false) {
               $raw .= "\nTT  - ".$tt."\n";
+            } else {
+              // Check raw value
+              $pattern = "/TT  - ".$tt."/";
+              if (!preg_match($pattern, $raw)) {
+                $pattern = "/TT  - .*/";
+                $raw = preg_replace($pattern, "\nTT  - ".$tt."\n", $raw);
+              }
             }
             $this->pubmedCache->saveRawMedlineContent($base, $raw);
             return true;
@@ -407,6 +414,13 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
             $raw = $this->getMedlineContent($base, $id);
             if (strpos($raw, "HASH- ") === false) {
               $raw .= "\nHASH- ".$hash."\n";
+            } else {
+              // Check raw value
+              $pattern = "/HASH- ".$hash."/";
+              if (!preg_match($pattern, $raw)) {
+                $pattern = "/HASH- .*/";
+                $raw = preg_replace($pattern, "\nHASH- ".$hash."\n", $raw);
+              }
             }
             $this->pubmedCache->saveRawMedlineContent($base, $raw);
             return true;
