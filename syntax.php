@@ -7,6 +7,10 @@ lastupdate  : 2020-12-27
 license     : Public-Domain
 */
 
+/**
+ * Add crossref eg: https://api.crossref.org/works/10.1016/j.npg.2020.12.002
+ */
+
 if(!defined('DOKU_INC')) die();
 if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
 require_once(DOKU_PLUGIN.'syntax.php');
@@ -41,6 +45,8 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       "journal" => '%journal_title%',
       "journaliso" => '%journal_iso%',
       "doi_link" => '%doi% %journal_url%',
+      "abstract_wiki" => '%abstract_wiki%',
+      "abstract_html" => '%abstract_html%',
       "listgroup" => '%listgroup%'
       );
 
@@ -167,6 +173,8 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
         "month"         => "",
         "pages"         => "",
         "abstract"      => '<br/>'.$this->_span($refs, "abstract", "abstract"),
+        "abstract_wiki" => $refs["abstract_wiki"],
+        "abstract_html" => $refs["abstract_html"],
         "type"          => "",
         "country"       => "",
         "copyright"     => "",
@@ -192,8 +200,8 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       $outputString = str_replace("%".$key."%", $v, $outputString);
     }
       
-// note tt -> if empty = title
-// note doi & journal_url -> if empty add nothing
+      // note tt -> if empty = title
+      // note doi & journal_url -> if empty add nothing
       //echo print_r($r);
       
       $refs["abstractFr"] = $this->pubmedCache->GetTranslatedAbstract($refs["pmid"]);

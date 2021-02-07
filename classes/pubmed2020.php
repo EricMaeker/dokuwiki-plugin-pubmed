@@ -143,6 +143,8 @@ class PubMed2020 {
    *   "month"         -> Journal Month of publication
    *   "pages"         -> Journal pagination
    *   "abstract"      -> Complete abstract
+   *   "abstract_wiki" -> Wikified abstract
+   *   "abstract_html" -> HTML'd abstract
    *   "type"          -> Type of paper
    *   "country"
    *   "copyright"
@@ -230,7 +232,11 @@ class PubMed2020 {
           $ret["title"] = $value; 
           break; // TI title english
         case "PG": $ret["pages"] = trim($value); break;
-        case "AB": $ret["abstract"] = $value; break;
+        case "AB": 
+          $ret["abstract"] = $value; 
+          $ret["abstract_wiki"] = $this->_normalizeAbstract($value);
+          $ret["abstract_html"] = $this->_normalizeAbstract($value, "html");
+          break;
 /*
         case "AU": 
           // Keep case of names correctly
@@ -560,7 +566,92 @@ class PubMed2020 {
        }
     }
     return $pages;
-}
+  }
+
+  /**
+   * Correct raw abstract into $format ("html" or "wiki")
+   */
+  function _normalizeAbstract($abstract, $format = "wiki"){
+    $chapters = Array(
+      "Aim:",
+      "Aims:",
+      "Authors' conclusions:",
+      "Background \& aims:",
+      "Background and objectives:",
+      "Background\/objectives:",
+      "Background:",
+      "Clinical rehabilitation impact:",
+      "Clinical relevance:",
+      "Clinical significance:",
+      "Clinical trial registration:",
+      "Comparison:",
+      "Conclusion:",
+      "Conclusions and implications:",
+      "Conclusions and relevance:",
+      "Conclusions:",
+      "Data collection and analysis:",
+      "Data extraction:",
+      "Data sources and review methods:",
+      "Design, study, and participants:",
+      "Design:",
+      "Experimental design:",
+      "Exposures:",
+      "Findings:",
+      "Funding:",
+      "Implications:",
+      "Interpretation:",
+      "Intervention:",
+      "Introduction:",
+      "Keywords:",
+      "Main outcome measures:",
+      "Main outcomes and measures:",
+      "Main outcomes:",
+      "Main results:",
+      "Material and methods:",
+      "Materials \& methods:",
+      "Measurements:",
+      "Methods:",
+      "Objective:",
+      "Objectives:",
+      "Outcomes:",
+      "Participants\/setting:",
+      "Participants:",
+      "Patients and methods:",
+      "Population:",
+      "Primary and secondary outcome measures:",
+      "Purpose and objective:",
+      "Purpose:",
+      "Research question:",
+      "Results:",
+      "Search methods:",
+      "Selection criteria:",
+      "Setting:",
+      "Settings:",
+      "Statistical analysis performed:",
+      "Study design and methods:",
+      "Study design:",
+      "Study selection:",
+      "Subjects\/methods:",
+      "Subjects:",
+      "Trial registration:",
+    );
+    $lf = PHP_EOL.PHP_EOL;
+    $boldS = "**";
+    $boldE = "**";
+    switch ($format) {
+      case "html": case "xhtml":
+        $boldS = "<b>"; $boldE = "</b>"; $lf = "<br><br>";
+      default: break;
+    }
+    foreach($chapters as $c) {
+      $pattern = "/\s*".$c."\s+/i";
+      $abstract = preg_replace($pattern, "$lf $boldS$c$boldE ", $abstract);
+    }
+//     $info = array();
+//     $abstract = p_render('xhtml', p_get_instructions($abstract), $info);
+    //echo '<pre>'.$abstract.'</pre>';
+    return $abstract;
+  }
 
 
 
