@@ -192,12 +192,10 @@ class PubMed2020 {
           $key .= '0';
         $key .= $id;
         $val = trim(substr($line, 6));
-        //echo PHP_EOL."k: ".$key." ; val: ".$val.PHP_EOL;
         $id++;
         $array[$key] = $val;
       }
     }
-    //echo print_r($array);
 
     // Now process datas
     // TODO: Catch book references. Eg: 28876803
@@ -402,15 +400,6 @@ class PubMed2020 {
     $ret["iso"] = $ret["so"];
     $ret = $this->createNpgCitation($ret);
 
-/*
-    $ret["iso"] = $ret["journal_iso"].' ';
-    $ret["iso"] .= $pubDate.";";
-    if (!empty($ret["vol"]))
-      $ret["iso"] .= $ret["vol"];
-    if (!empty($ret["issue"]))
-      $ret["iso"] .= '('.$ret["issue"].')';
-    $ret["iso"] .= ':'.$ret["pages"];
-*/
 
     $ret["similarurl"] = sprintf($this->similarURL, $ret["pmid"]);
     $ret["citedbyurl"] = sprintf($this->citedByURL, $ret["pmid"]);
