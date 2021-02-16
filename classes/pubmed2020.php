@@ -3,11 +3,13 @@
 description : Dokuwiki PubMed2020 plugin
 author      : Eric Maeker
 email       : eric.maeker[at]gmail.com
-lastupdate  : 2020-12-27
+lastupdate  : 2021-02-09
 license     : Public-Domain
 
 Data are stored is RIS format: https://en.wikipedia.org/wiki/RIS_(file_format)
 See also: https://citation.crosscite.org/docs.html
+
+convertIds -> https://www.ncbi.nlm.nih.gov/pmc/tools/id-converter-api/
 */
 
 if(!defined('DOKU_INC')) die();
@@ -26,6 +28,7 @@ class PubMed2020 {
   var $pubmedSearchURL = 'https://pubmed.ncbi.nlm.nih.gov/?term=%s';
   var $similarURL      = 'https://pubmed.ncbi.nlm.nih.gov/?linkname=pubmed_pubmed&from_uid=%s';
   var $citedByURL      = 'https://pubmed.ncbi.nlm.nih.gov/?linkname=pubmed_pubmed_citedin&from_uid=%s';
+  var $convertId       = 'https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?ids=%s&format=json&versions=no&showaiid=no';
   var $referencesURL   = 'https://pubmed.ncbi.nlm.nih.gov/%s/#references';
   
   // Set this to true to get debugging page output
@@ -43,6 +46,49 @@ class PubMed2020 {
     $len = strlen($startString); 
     return (substr($string, 0, $len) === $startString); 
   } // ok, V2020
+
+
+
+  function convertId($id){
+    if (empty($id))
+      return NULL;
+    $url = sprintf($this->convertId, $id);
+    if ($this->debugUsingEchoing)
+      echo PHP_EOL.">> CONVERT ID: getting URL: ".$url.PHP_EOL;
+    $json = $this->HttpClient->get($url);
+    if ($this->debugUsingEchoing)
+      echo PHP_EOL.">> CONVERT ID: returned: ".$json.PHP_EOL;
+    $r = json_decode($json);
+    if ($r->records[0]->status === "error") {
+      if ($this->debugUsingEchoing)
+        echo PHP_EOL.">> CONVERT ID: ERROR: ".$r->records[0]->errmsg.PHP_EOL;
+      return NULL;
+    }
+    echo print_r($r->records[0]);
+    return $r->records[0];
+  }
+
+  function getPmidFromDoi($doi){
+    if (empty($doi))
+      return NULL;
+    $search = "\"$doi\"&sort=date&size=100&format=pubmed";
+    $url = sprintf($this->pubmedSearchURL, $search);
+    if ($this->debugUsingEchoing)
+      echo PHP_EOL.">> getPmidFromDoi: getting URL: ".$url.PHP_EOL;
+    $r = $this->HttpClient->get($url);
+    if ($this->debugUsingEchoing)
+      echo PHP_EOL.">> getPmidFromDoi: returned: ".$r.PHP_EOL;
+    // <pre class="search-results-chunk">33543243</pre>
+
+    $pattern = "/PMID- (\d+)/";
+    if (preg_match($pattern, $r, $m)){
+      if ($this->debugUsingEchoing)
+        echo PHP_EOL.">> getPmidFromDoi: OK: ".$m[1].PHP_EOL;
+      return $m[1];
+    }
+    return NULL;
+  }
+
 
   /*
    * Get RIS, MEDLINE and CITATION from CTXP website
