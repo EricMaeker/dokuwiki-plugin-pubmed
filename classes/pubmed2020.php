@@ -611,6 +611,7 @@ class PubMed2020 {
       "Aim:",
       "Aims:",
       "Authors' conclusions:",
+      "Authors conclusions:",
       "Background \& aims:",
       "Background and objectives:",
       "Background:",
@@ -631,6 +632,7 @@ class PubMed2020 {
       "Design, study, and participants:",
       "Design:",
       "Diagnosis of interest:",
+      "Eligibility criteria:",
       "Experimental design:",
       "Exposures:",
       "Findings:",
@@ -638,6 +640,7 @@ class PubMed2020 {
       "Implications:",
       "Inclusion criteria population:",
       "Index test:",
+      "Information sources:",
       "Interpretation:",
       "Intervention:",
       "Introduction:",
@@ -650,6 +653,7 @@ class PubMed2020 {
       "Materials \& methods:",
       "Measurements:",
       "Methodological quality:",
+      "Method:",
       "Methods:",
       "Objective:",
       "Objectives:",
@@ -669,15 +673,19 @@ class PubMed2020 {
       "Selection criteria:",
       "Setting:",
       "Settings:",
+      "Significance of results:",
       "Statistical analysis performed:",
       "Study design and methods:",
       "Study design:",
       "Study selection:",
       "Subjects:",
       "Subjects\/methods:",
+      "Subjects \& methods:",
+      "Subjects and methods:",
       "Trial registration:",
       "Types of studies:",
     );
+    // Prepare output tags
     $lf = PHP_EOL.PHP_EOL;
     $boldS = "**";
     $boldE = "**";
@@ -686,13 +694,18 @@ class PubMed2020 {
         $boldS = "<b>"; $boldE = "</b>"; $lf = "<br><br>";
       default: break;
     }
+    // Sort array
+    usort($chapters, function ($a, $b) {
+       return (substr_count($a, " ") < substr_count($b, " ")); 
+    });
+    // Replace in abstract
     foreach($chapters as $c) {
       $pattern = "/\s*".$c."\s+/i";
-      $abstract = preg_replace($pattern, "$lf $boldS$c$boldE ", $abstract);
+      $abstract = preg_replace($pattern, "$lf$boldS$c$boldE ", $abstract);
     }
 //     $info = array();
 //     $abstract = p_render('xhtml', p_get_instructions($abstract), $info);
-    //echo '<pre>'.$abstract.'</pre>';
+//     echo '<pre>'.$abstract.'</pre>';
     return $abstract;
   }
 
