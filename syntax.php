@@ -139,6 +139,8 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
                                       "url", "PMID: ".$refs["pmid"]),
         "pmcid_url"     => $this->_a($refs, "pmcid", $refs["pmcurl"], 
                                      "pmcid", "PMCID: ".$refs["pmcid"]),
+        "pmc_url"       => $this->_a($refs, "pmcid", $refs["pmcurl"], 
+                                     "pmcid", "PMCID: ".$refs["pmcid"]),
         "doi_url"       => $this->_a($refs, "pmcid", $this->doiUrl.$refs["doi"],
                                       "doi", "DOI: ".$refs["doi"]),
         "journal_url"   => $this->_a($refs, "pmid", $this->doiUrl.$refs["doi"], 
