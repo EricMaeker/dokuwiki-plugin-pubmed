@@ -342,8 +342,9 @@ class PubMed2020 {
         case "CN" : $ret["corporate_author"] = $value; break;
         case "CTI" : $ret["collection_title"] = $value; break;
         case "BTI" : 
-          $ret["book_title"] = $value; 
-          $ret["title"] = $value; 
+          $ret["book_title"] = $value;
+          if (empty($ret["title"]))
+            $ret["title"] = $value; 
           break;
         case "PB" : // Possible publisher? count as author?
           $ret["publisher"] = $value;
@@ -372,8 +373,6 @@ class PubMed2020 {
     // Get authors
     if ($ret["corporate_author"]) {
       array_push($authors, $ret["corporate_author"]);
-    } else if ($ret["publisher"]) {
-      array_push($authors, $ret["publisher"]);
     } 
 
     $ret["authors"] = $authors;
@@ -432,6 +431,8 @@ class PubMed2020 {
     $ret["authorsLimit3"] = $authors3;
 
     // no authors -> nothing to add  Eg: pmid 12142303
+    
+    // Book -> See https://pubmed.ncbi.nlm.nih.gov/30475568/?format=pubmed
 
     // Get Mesh terms & keywords
     $ret["mesh"] = $mesh;
@@ -489,11 +490,14 @@ class PubMed2020 {
     // BOOKS
     if (!empty($ret["book_title"])) {
       // Trivalle C. Gérontologie préventive. Éléments de prévention du vieillissement pathologique. Paris : Masson, 2002.
+      // https://pubmed.ncbi.nlm.nih.gov/30475568/?format=pubmed
       // Authors
       $ret["npg_full"] = $ret["authorsLimit3"];
       // Title
       if (!empty($ret["translated_title"])) {
         $t = $ret["translated_title"];
+      } else if (!empty($ret["title"])) {
+        $t = $ret["title"];
       } else if (!empty($ret["book_title"])) {
         $t = $ret["book_title"];
       }
@@ -606,7 +610,7 @@ class PubMed2020 {
   /**
    * Correct raw abstract into $format ("html" or "wiki")
    */
-  function _normalizeAbstract($abstract, $format = "wiki"){
+  function _normalizeAbstract($abstract, $format = "wiki"){  // Pb: 33397541
     $chapters = Array(
       "Aim:",
       "Aims:",
