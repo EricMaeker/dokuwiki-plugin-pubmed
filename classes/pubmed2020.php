@@ -384,7 +384,7 @@ class PubMed2020 {
     //"collectif" => $collectif,
     // Create first author for short output
     if (count($authors) > 1) {
-      $ret['first_author'] = $authors[0].$pluginObject->getConf('et_al_vancouver');
+      $ret['first_author'] = $authors[0].", ".$pluginObject->getConf('et_al_vancouver');
     } else {
       $ret['first_author'] = $authors[0];
     }
