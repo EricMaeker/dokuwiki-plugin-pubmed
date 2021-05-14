@@ -275,7 +275,11 @@ class PubMed2020 {
           // TODO: Keep case of title correctly -> How?
           $ret["title"] = $value; 
           break; // TI title english
-        case "PG": $ret["pages"] = trim($value); break;
+        case "PG":
+          $ret["pages"] = trim($value);
+          // Error with PMID 5042912 (remove last ending '-' char)
+          $ret["pages"] = rtrim($ret["pages"], "-");
+          break;
         case "AB": 
           $ret["abstract"] = $value; 
           $ret["abstract_wiki"] = $this->_normalizeAbstract($value);
@@ -337,7 +341,10 @@ class PubMed2020 {
             $ret["bookaccession"] = str_replace(" [bookaccession]", "", $value);
           break;
         //case "PST": $ret[""] = $value; break; // SB  - IM
-        case "SO": $ret["so"] = $value; break; //SO  - Rev Neurol (Paris). 2005 Apr;161(4):419-26. doi: 10.1016/s0035-3787(05)85071-4.
+        case "SO": 
+          // Error with 5042912 (pages) => replace "-." by "."
+          $ret["so"] = str_replace("-.", ".", $value);          
+          break;
         case "CI" : $ret["copyright"] = $value; break;
         case "CN" : $ret["corporate_author"] = $value; break;
         case "CTI" : $ret["collection_title"] = $value; break;
