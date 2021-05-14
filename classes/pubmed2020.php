@@ -579,8 +579,8 @@ class PubMed2020 {
    * Normalize case of the author's name
    */
   function _normalizeNameCase($name) {
-    // Only change fully uppered names
-    if (ctype_upper($name)) {
+    // Only change fully uppered names (take care to spaces)
+    if (ctype_upper(str_replace(" ", "", $name))) {
        return ucwords(mb_strtolower($name), " \t\r\n\f\v-'");
     }
     return $name;
