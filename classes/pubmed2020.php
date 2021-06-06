@@ -492,6 +492,7 @@ class PubMed2020 {
 
 
 
+  /** NPG: See https://www.em-consulte.com/revue/NPG/presentation/npg */
   function createNpgCitation($ret) {
     // Construct NPG ISO citation of this article
     //%npg_iso% %year% ; %vol% (%issue%) : %pages%
@@ -522,9 +523,9 @@ class PubMed2020 {
       if (!empty($ret["year"])) {
         $ret["npg_full"] .= ", ".$ret["year"].".";
       }
-      if (!empty($ret["bookaccession"])) {
-        $ret["npg_full"] .= " https://www.ncbi.nlm.nih.gov/books/".$ret["bookaccession"];
-      }      
+//       if (!empty($ret["bookaccession"])) {
+//         $ret["npg_full"] .= " https://www.ncbi.nlm.nih.gov/books/".$ret["bookaccession"];
+//       }      
       return $ret;
     }
     // JOURNALS
@@ -548,13 +549,13 @@ class PubMed2020 {
         }
       } else if (!empty($ret["doi"])) {
         $npg .= ", doi : ".$ret["doi"];
-      } else if (!empty($ret["bookaccession"])) {
-        $npg .= ", https://www.ncbi.nlm.nih.gov/books/".$ret["bookaccession"];
+//       } else if (!empty($ret["bookaccession"])) {
+//         $npg .= ", https://www.ncbi.nlm.nih.gov/books/".$ret["bookaccession"];
       }
     } else if (!empty($ret["doi"])) {
       $npg .= ", doi : ".$ret["doi"];
-    } else if (!empty($ret["bookaccession"])) {
-      $npg .= ", https://www.ncbi.nlm.nih.gov/books/".$ret["bookaccession"];
+//     } else if (!empty($ret["bookaccession"])) {
+//       $npg .= ", https://www.ncbi.nlm.nih.gov/books/".$ret["bookaccession"];
     }
     $npg = trim(str_replace("  ", " ", $npg));
     $ret["npg_iso"] = $npg;
