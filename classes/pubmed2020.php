@@ -716,15 +716,19 @@ class PubMed2020 {
       "Background and objectives:",
       "Background:",
       "Background\/objectives:",
+      "Background\/aims:", //
       "Clinical rehabilitation impact:",
       "Clinical relevance:",
       "Clinical significance:",
       "Clinical trial registration:",
       "Comparison:",
       "Conclusion:",
+      "Conclusions\/implications:",
       "Conclusions and implications:",
       "Conclusions and relevance:",
+      "Conclusions\/relevance:",
       "Conclusions:",
+      "Context:",
       "Data collection and analysis:",
       "Data extraction:",
       "Data sources and review methods:",
@@ -732,12 +736,18 @@ class PubMed2020 {
       "Design, study, and participants:",
       "Design:",
       "Diagnosis of interest:",
+      "Discussion:",
+      "Discussion and conclusions:", //
+      "Discussion and conclusion:", //
       "Eligibility criteria:",
       "Experimental design:",
       "Exposures:",
       "Findings:",
       "Funding:",
       "Implications:",
+      "Implications for nursing management:",
+      "Implications for clinical management:",
+      "Importance:", //
       "Inclusion criteria population:",
       "Index test:",
       "Information sources:",
@@ -752,6 +762,7 @@ class PubMed2020 {
       "Material and methods:",
       "Materials \& methods:",
       "Measurements:",
+      "Mesures:",
       "Methodological quality:",
       "Method:",
       "Methods:",
@@ -765,6 +776,7 @@ class PubMed2020 {
       "Primary and secondary outcome measures:",
       "Purpose and objective:",
       "Purpose:",
+      "Rationale:",
       "Reference test:",
       "Research question:",
       "Results:",
@@ -772,6 +784,7 @@ class PubMed2020 {
       "Search strategy:",
       "Selection criteria:",
       "Setting:",
+      "Setting and participants:",
       "Settings:",
       "Significance of results:",
       "Statistical analysis performed:",
@@ -801,6 +814,7 @@ class PubMed2020 {
     // Replace in abstract
     foreach($chapters as $c) {
       $pattern = "/\s*".$c."\s+/i";
+      $c = str_replace("\\", "", $c);
       $abstract = preg_replace($pattern, "$lf$boldS$c$boldE ", $abstract);
     }
 //     $info = array();
