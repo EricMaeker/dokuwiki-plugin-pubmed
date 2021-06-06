@@ -37,6 +37,7 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       "vancouver_links" => '%vancouver%<br/>%pmid_url% %pmcid_url%',
       "npg" => '%authorsLimit3% %title_tt%. %npg_iso%.',
       "npg_full" => '%npg_full%',
+      "gpnv_full" => '%gpnv_full%',
       // Add item one by one
       "authors" => '%authors%',
       "title" => '%title%',
@@ -131,8 +132,15 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
 
         // CITATION
         "vancouver"     => "",
+
         "npg_iso"       => $this->_span($refs, "iso", "npg_iso"),
         "npg_full"      => $this->_span($refs, "npg", "npg_full"),
+
+        "gpnv_full"      => $this->_span($refs, "gpnv_authors", "gpnv_full_authors").
+                            $this->_span($refs, "gpnv_title", "gpnv_full_title").
+                            $this->_span($refs, "gpnv_journal", "gpnv_full_journal").
+                            $this->_span($refs, "gpnv_iso", "gpnv_full_iso")
+                            ,
 
         // URLS
         "pmid_url"      => $this->_a($refs, "pmid", $refs["url"], 

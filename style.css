@@ -88,3 +88,24 @@ license     : Public-Domain
   margin-bottom:10px;
 }
 
+/* ListGroup */
+.pubmed .list-group-item-warning {
+    color: #fff;
+    background-color: #2c3e50;
+}
+.pubmed .list-group-item {
+    border: 1px solid #2c3e50;
+}
+
+.list-group-item-warning.pubmed {
+    color: #fff;
+    background-color: #2c3e50;
+}
+.list-group-item.pubmed {
+    border: 1px solid #2c3e50;
+}
+
+/* Specific journals citations formating */
+.gpnv_full span.gpnv_journal {
+  font-style: italic;
+}
