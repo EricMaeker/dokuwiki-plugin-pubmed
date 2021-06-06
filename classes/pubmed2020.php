@@ -412,9 +412,9 @@ class PubMed2020 {
     if (count($authorsToUse) > 0) {
       $vancouver = implode(', ',$authorsToUse);
       if ($addAndAl)
-        $vancouver .= " ".$pluginObject->getConf('et_al_vancouver');
+        $vancouver .= ", ".$pluginObject->getConf('et_al_vancouver');
       $vancouver .= ". ";
-    } 
+    }
 
     // Create 3 authors only
     $limit = 3;
@@ -436,6 +436,7 @@ class PubMed2020 {
       $authors3 = implode(', ',$authorsToUse).". ";
     }
     $ret["authorsLimit3"] = $authors3;
+    $ret["authorsVancouver"] = $vancouver;
 
     // no authors -> nothing to add  Eg: pmid 12142303
     
