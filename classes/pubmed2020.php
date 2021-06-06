@@ -454,6 +454,7 @@ class PubMed2020 {
     // Use SO from the raw medline content
     $ret["iso"] = $ret["so"];
     $ret = $this->createNpgCitation($ret);
+    $ret = $this->createGpnvCitation($ret);
 
 
     $ret["similarurl"] = sprintf($this->similarURL, $ret["pmid"]);
@@ -574,6 +575,92 @@ class PubMed2020 {
     $ret["npg_full"] .= $t." ";
     $ret["npg_full"] .= $ret["npg_iso"];
 
+    return $ret;
+  }
+  
+  /** 
+   * GPNV: See https://www.jle.com/fr/revues/gpn/espace_auteur
+   * vancouver with style mention & spaces 
+   */
+  function createGpnvCitation($ret) {
+    // Construct NPG ISO citation of this article
+    //%npg_iso% %year% ; %vol% (%issue%) : %pages%
+    // BOOKS
+    if (!empty($ret["book_title"])) {
+      // Trivalle C. Gérontologie préventive. Éléments de prévention du vieillissement pathologique. Paris : Masson, 2002.
+      // https://pubmed.ncbi.nlm.nih.gov/30475568/?format=pubmed
+      // Authors
+      $ret["gpnv_full_authors"] = $ret["authorsVancouver"];
+      // Title
+      if (!empty($ret["translated_title"])) {
+        $t = $ret["translated_title"];
+      } else if (!empty($ret["title"])) {
+        $t = $ret["title"];
+      } else if (!empty($ret["book_title"])) {
+        $t = $ret["book_title"];
+      }
+      $ret["gpnv_full"] .= $t.". ";
+      // Town
+      if (!empty($ret["country"])) {
+        $ret["gpnv_full"] .= $ret["country"];
+      }
+      // Editor
+      if (!empty($ret["publisher"])) {
+        $ret["gpnv_full"] .= " : ".$ret["publisher"];
+      }
+      // Year
+      if (!empty($ret["year"])) {
+        $ret["gpnv_full"] .= ", ".$ret["year"].".";
+      }
+      // TODO: this is wrong
+      $ret["gpnv_full_title"] = $ret["gpnv_full"];
+      return $ret;
+    }
+    // JOURNALS
+    // Journal
+    if (!empty($ret["journal_iso"])) {
+      $ret["gpnv_full_journal"] = str_replace(".", "", $ret["journal_iso"])." ";
+    }
+    // Year
+    if (!empty($ret["year"])) {
+      $npg .= $ret["year"];
+      // Vol
+      if (!empty($ret["vol"])) {
+          $npg .= " ; ".$ret["vol"];
+        // Issue
+        if (!empty($ret["issue"])) {
+          $npg .= " (".$ret["issue"].")";
+        }
+        // Pages
+        if (!empty($ret["pages"])) {
+          $npg .= " : ".$this->_normalizePages($ret["pages"]).".";
+        }
+      } else if (!empty($ret["doi"])) {
+        $npg .= ", doi : ".$ret["doi"];
+//       } else if (!empty($ret["bookaccession"])) {
+//         $npg .= ", https://www.ncbi.nlm.nih.gov/books/".$ret["bookaccession"];
+      }
+//     } else if (!empty($ret["doi"])) {
+//       $npg .= ", doi : ".$ret["doi"];
+//     } else if (!empty($ret["bookaccession"])) {
+//       $npg .= ", https://www.ncbi.nlm.nih.gov/books/".$ret["bookaccession"];
+    }
+    $npg = trim(str_replace("  ", " ", $npg));
+    $ret["gpnv_full_iso"] = $npg;
+    $ret["gpnv_full_authors"] = $ret["authorsVancouver"];
+    $t = "";
+    if (!empty($ret["translated_title"])) {
+      $t = $ret["translated_title"];
+    } else if (!empty($ret["title"])) {
+      $t = $ret["title"];
+    } else if (!empty($ret["book_title"])) {
+      $t = $ret["book_title"];
+    }
+    if (substr_compare(".", $t, -strlen($t)) === 0) {
+      mb_substr($t, 0, -1);
+    }
+    $ret["gpnv_full_title"] = $t." ";
+    //$ret["gpnv_full"] .= $ret["gpnv_iso"];
     return $ret;
   }
   
