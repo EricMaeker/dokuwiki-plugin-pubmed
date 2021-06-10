@@ -474,12 +474,12 @@ class PubMed2020 {
     } 
     $vancouver .= $ret["title"];
     $vancouver .= " ".$ret["so"];
-//     $vancouver .= " ".$ret["journal_iso"]."";
-//     $vancouver .= " ".$pubDate;
-//     $vancouver .= ";".$ret["vol"];
-//     if (!empty($ret["issue"]))
-//       $vancouver .= "(".$ret["issue"].")";
-//     $vancouver .= ":".$ret["pages"];
+    // $vancouver .= " ".$ret["journal_iso"]."";
+    // $vancouver .= " ".$pubDate;
+    // $vancouver .= ";".$ret["vol"];
+    // if (!empty($ret["issue"]))
+    //   $vancouver .= "(".$ret["issue"].")";
+    // $vancouver .= ":".$ret["pages"];
     $ret["vancouver"] = $vancouver;
 
     $gg  =  "https://translate.google.com/";
