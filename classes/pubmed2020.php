@@ -663,7 +663,127 @@ class PubMed2020 {
     //$ret["gpnv_full"] .= $ret["gpnv_iso"];
     return $ret;
   }
-  
+
+
+  /**
+   * Lowering title (with exceptions)
+   */
+  function _normalizeTitleCase($t) {
+    //$t = "Test A Fuck In TITLE To Lower";
+    $low_t = ucfirst(strtolower(ucwords($t)));
+    $words = preg_split('/[\s\-\[\]\(\)\/\'\.]+/', $t);
+    foreach ($words as $word) {
+      //echo $word.PHP_EOL;
+      if (strlen($word) > 1 && ctype_upper(str_replace("-", "", $word))) {
+        //echo $word."  ".strtolower($word)."\n";
+        //$low_t = str_replace(strtolower($word), $word, $low_t);
+        $low_t = preg_replace('/([\s\-\(\[\.\/\'])'.strtolower($word).'([\s\-\)\]\.\:\?\/\'])/i', "$1$word$2", $low_t);
+      }
+    }
+    // Case exceptions
+    $exceptions = Array(
+      // Countries
+      "Afghanistan", "Aland Islands", "Albania", "Algeria", "American Samoa", "Andorra", "Angola", "Anguilla", "Antarctica", "Antigua", "Argentina", "Armenia", "Aruba", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Barbuda", "Belarus", "Belgium", "Belize", "Benin", "Bermuda", "Bhutan", "Bolivia", "Bosnia", "Botswana", "Bouvet Island", "Brazil", "British Indian Ocean Trty.", "Brunei Darussalam", "Bulgaria", "Burkina Faso", "Burundi", "Caicos Islands", "Cambodia", "Cameroon", "Canada", "Cape Verde", "Cayman Islands", "Central African Republic", "Chad", "Chile", "China", "Christmas Island", "Cocos (Keeling) Islands", "Colombia", "Comoros", "Congo", "Congo, Democratic Republic of the", "Cook Islands", "Costa Rica", "Cote d'Ivoire", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Ethiopia", "Falkland Islands (Malvinas)", "Faroe Islands", "Fiji", "Finland", "France", "French Guiana", "French Polynesia", "French Southern Territories", "Futuna Islands", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Gibraltar", "Greece", "Greenland", "Grenada", "Guadeloupe", "Guam", "Guatemala", "Guernsey", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Heard", "Herzegovina", "Holy See", "Honduras", "Hong Kong", "Hungary", "Iceland", "India", "Indonesia", "Iran (Islamic Republic of)", "Iraq", "Ireland", "Isle of Man", "Israel", "Italy", "Jamaica", "Jan Mayen Islands", "Japan", "Jersey", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Korea", "Korea (Democratic)", "Kuwait", "Kyrgyzstan", "Lao", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libyan Arab Jamahiriya", "Liechtenstein", "Lithuania", "Luxembourg", "Macao", "Macedonia", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Martinique", "Mauritania", "Mauritius", "Mayotte", "McDonald Islands", "Mexico", "Micronesia", "Miquelon", "Moldova", "Monaco", "Mongolia", "Montenegro", "Montserrat", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "Netherlands Antilles", "Nevis", "New Caledonia", "New Zealand", "Nicaragua", "Niger", "Nigeria", "Niue", "Norfolk Island", "Northern Mariana Islands", "Norway", "Oman", "Pakistan", "Palau", "Palestinian Territory, Occupied", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Pitcairn", "Poland", "Portugal", "Principe", "Puerto Rico", "Qatar", "Reunion", "Romania", "Russian Federation", "Rwanda", "Saint Barthelemy", "Saint Helena", "Saint Kitts", "Saint Lucia", "Saint Martin (French part)", "Saint Pierre", "Saint Vincent", "Samoa", "San Marino", "Sao Tome", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Georgia", "South Sandwich Islands", "Spain", "Sri Lanka", "Sudan", "Suriname", "Svalbard", "Swaziland", "Sweden", "Switzerland", "Syrian Arab Republic", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "The Grenadines", "Timor-Leste", "Tobago", "Togo", "Tokelau", "Tonga", "Trinidad", "Tunisia", "Turkey", "Turkmenistan", "Turks Islands", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "US Minor Outlying Islands", "Uzbekistan", "Vanuatu", "Vatican City State", "Venezuela", "Vietnam", "Virgin Islands (British)", "Virgin Islands (US)", "Wallis", "Western Sahara", "Yemen", "Zambia", "Zimbabwe",
+      // Cities
+      "Jerusalem",
+      // Continent
+      "Europe", "Africa",
+      // Associations / Societies
+      "American Geriatrics Society",
+      "American Psychiatric Association",
+      "American College of Physicians",
+      "American Academy of Family Physicians",
+      "American College of Cardiology",
+      "American Heart Association Task Force",
+      "ACC/AHA/AAPA/ABC/ACPM/AGS/APhA/ASH/ASPC/NMA/PCNA",
+      "ESC/ESH",
+      "European Society of Hypertension",
+      "European Union Geriatric Medicine Society Working Group",
+      "European Society of Anaesthesiology",
+      "American Association for Emergency Psychiatry",
+      // Diseases
+      "Parkinson",
+      "Alzheimer",
+      "Sydenham",
+      // Others
+      "Syst-Eur",
+      "UKU-SERS-Pat",
+      "Largactil",
+      "ADRs",
+      "U.S.",
+      "Hg",
+      "SARS",
+      "CoV",
+      "COVID",
+    );
+    foreach ($exceptions as $word) {
+      //echo $word.PHP_EOL;
+      $p = strtolower($word);
+      $p = str_replace("/", "\/", $p);
+      $p = '/([\s\-\(\.\/\'\`])'.$p.'([\s\-\)\.\:\?\/\'\`])/';
+      // String exists in full lowercase
+      //echo $p." ".print_r(preg_match($p, $low_t, $matches)).PHP_EOL;
+      // Find exception in full lowercase
+      if (preg_match($p, $low_t, $matches, PREG_OFFSET_CAPTURE)) {
+        // String in full lowercase
+        //echo "*** low".PHP_EOL;
+        $low_t = preg_replace($p, "$1$word$2", $low_t);
+      } else {
+        // Find exception in full lowercase but first letter
+        $p = ucfirst(strtolower($word));
+        $p = str_replace("/", "\/", $p);
+        $p = '/([\s\-\(\.\/\'\`])'.$p.'([\s\-\)\.\:\?\/\'\`])/';
+        //echo "---> ".$low_t."  //  ".$p." ".print_r(preg_match($p, $low_t, $matches)).PHP_EOL;
+        if  (preg_match($p, $low_t, $matches)) {
+          //echo "*** Ucf".PHP_EOL;
+          $low_t = preg_replace($p, "$1$word$2", $low_t);
+        } else {
+          // Find exception in full lowercase but first letter at the start of the title
+          $p = ucfirst(strtolower($word));
+          $p = str_replace("/", "\/", $p);
+          $p = '/^'.$p.'([\s\-\)\.\:\?\/\'\`])/m';
+          //echo "---> ".$low_t."  //  ".$p." ".print_r(preg_match($p, $low_t, $matches)).PHP_EOL;
+          if  (preg_match($p, $low_t, $matches)) {
+            //echo "*** Ucf".PHP_EOL;
+            $low_t = preg_replace($p, "$word$1", $low_t);
+          }
+        }
+      }
+    } // End exception checking
+    
+    // Check all sentences -> Uppercase first letter of each sentence
+    if (strpos($low_t, ". ")) {
+      // Split each sentences
+      //echo "GOT A DOT".PHP_EOL;
+      $sentences = preg_split('/\. /', $low_t);
+      $low_t = "";
+      foreach ($sentences as $sentence) {
+        //echo $sentence.PHP_EOL;
+        $low_t .= rtrim(ucfirst($sentence), '.').". ";
+      }
+      $sentences = ucfirst(strtolower(ucwords($t)));
+    }
+
+    // Check all sentences -> Uppercase first letter of each sentence
+    if (strpos($low_t, "? ")) {
+      // Split each sentences
+      //echo "GOT A DOT".PHP_EOL;
+      $sentences = preg_split('/\? /', $low_t);
+      $low_t = "";
+      foreach ($sentences as $sentence) {
+        //echo $sentence.PHP_EOL;
+        $low_t .= ucfirst($sentence);
+        if (substr($sentence, -1) !== '.')
+          $low_t .= "? ";
+      }
+      $sentences = ucfirst(strtolower(ucwords($t)));
+    }
+
+    //echo $t.PHP_EOL.PHP_EOL;
+    $t = $low_t;
+    //echo $t.PHP_EOL.PHP_EOL;
+    return $t;
+  }
   /*
    * Normalize case of the author's name
    */
