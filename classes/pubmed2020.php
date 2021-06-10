@@ -679,7 +679,6 @@ class PubMed2020 {
    * Lowering title (with exceptions)
    */
   function _normalizeTitleCase($t) {
-    //$t = "Test A Fuck In TITLE To Lower";
     $low_t = ucfirst(strtolower(ucwords($t)));
     $words = preg_split('/[\s\-\[\]\(\)\/\'\.]+/', $t);
     foreach ($words as $word) {
