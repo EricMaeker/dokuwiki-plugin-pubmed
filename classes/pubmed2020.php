@@ -851,6 +851,7 @@ class PubMed2020 {
       "Clinical relevance:",
       "Clinical significance:",
       "Clinical trial registration:",
+      "Clinical trials registration:", //
       "Comparison:",
       "Conclusion:",
       "Conclusions\/implications:",
@@ -861,7 +862,9 @@ class PubMed2020 {
       "Context:",
       "Data collection and analysis:",
       "Data extraction:",
+      "Data extraction and synthesis:", //
       "Data sources and review methods:",
+      "Data sources and study selection:", //
       "Data synthesis:",
       "Design, study, and participants:",
       "Design:",
@@ -907,6 +910,8 @@ class PubMed2020 {
       "Purpose and objective:",
       "Purpose:",
       "Rationale:",
+      "Recommendations for screening and assessment:", //
+      "Recommendations for management:", //
       "Reference test:",
       "Research question:",
       "Results:",
