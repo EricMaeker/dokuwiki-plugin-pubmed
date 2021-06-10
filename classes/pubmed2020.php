@@ -511,7 +511,12 @@ class PubMed2020 {
       } else if (!empty($ret["book_title"])) {
         $t = $ret["book_title"];
       }
+
+      // Normalize title case
+      $t = $this->_normalizeTitleCase($t);
+
       $ret["npg_full"] .= $t.". ";
+
       // Town
       if (!empty($ret["country"])) {
         $ret["npg_full"] .= $ret["country"];
@@ -569,9 +574,14 @@ class PubMed2020 {
     } else if (!empty($ret["book_title"])) {
       $t = $ret["book_title"];
     }
+    
+    // Normalize title case
+    $t = $this->_normalizeTitleCase($t);
+
     if (substr_compare(".", $t, -strlen($t)) === 0) {
       mb_substr($t, 0, -1);
     }
+
     $ret["npg_full"] .= $t." ";
     $ret["npg_full"] .= $ret["npg_iso"];
 
