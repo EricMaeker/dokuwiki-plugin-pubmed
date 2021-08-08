@@ -357,7 +357,8 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
     // If command is empty (in this case, command is the numeric pmids)
     // Catch default command in plugin's preferences
     $regex = '/^[0-9,]+$/';
-    if (preg_match($regex, $cmd) === 1) {
+//     if (preg_match($regex, $cmd) === 1) {
+    if (empty($id)) {
       $id = $cmd;
       $cmd = $this->documentFormat;
     }
