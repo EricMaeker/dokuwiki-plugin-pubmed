@@ -182,7 +182,7 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
         "year"          => "",
         "month"         => "",
         "pages"         => "",
-        "abstract"      => '<br/>'.$this->_span($refs, "abstract", "abstract"),
+        "abstract"      => '<br/><span class="abstract">'.$refs["abstract_html"].'</span>',
         "abstract_wiki" => $refs["abstract_wiki"],
         "abstract_html" => $refs["abstract_html"],
         "type"          => "",
