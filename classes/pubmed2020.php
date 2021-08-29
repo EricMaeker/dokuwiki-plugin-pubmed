@@ -679,16 +679,20 @@ class PubMed2020 {
    * Lowering title (with exceptions)
    */
   function _normalizeTitleCase($t) {
+    // Is title is full uppercase?
     $low_t = ucfirst(strtolower(ucwords($t)));
-    $words = preg_split('/[\s\-\[\]\(\)\/\'\.]+/', $t);
-    foreach ($words as $word) {
-      //echo $word.PHP_EOL;
-      if (strlen($word) > 1 && ctype_upper(str_replace("-", "", $word))) {
-        //echo $word."  ".strtolower($word)."\n";
-        //$low_t = str_replace(strtolower($word), $word, $low_t);
-        $low_t = preg_replace('/([\s\-\(\[\.\/\'])'.strtolower($word).'([\s\-\)\]\.\:\?\/\'])/i', "$1$word$2", $low_t);
+    if (mb_strtoupper($t, 'utf-8') !== $t) {
+      $words = preg_split('/[\s\-\[\]\(\)\/\'\’\"\“\”\.]+/', $t);
+      foreach ($words as $word) {
+        //echo $word.PHP_EOL;
+        if (strlen($word) > 1 && ctype_upper(str_replace("-", "", $word))) {
+          //echo $word."  ".strtolower($word)."\n";
+          //$low_t = str_replace(strtolower($word), $word, $low_t);
+          $low_t = preg_replace('/([\s\-\(\[\.\/\'])'.strtolower($word).'([\s\-\)\]\.\:\?\/\'])/i', "$1$word$2", $low_t);
+        }
       }
     }
+
     // Case exceptions
     $exceptions = Array(
       // Countries
@@ -898,6 +902,7 @@ class PubMed2020 {
       "Methodological quality:",
       "Method:",
       "Methods:",
+      "Methods and results:", //
       "Objective:",
       "Objectives:",
       "Outcomes:",
