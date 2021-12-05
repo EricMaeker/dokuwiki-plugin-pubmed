@@ -89,6 +89,25 @@ class PubMed2020 {
     return NULL;
   }
 
+  /**
+   * Returns all PMIDs corresponding to the search query
+   * Do not query format, sort order or size
+   * These data are automatically added to the search query
+   * Returns the array of PMIDs
+   */
+  function getAllSearchResult($search) {
+    $url = sprintf($this->pubmedSearchURL, urlencode($search));
+    $url .= "&format=pmid&sort=date&size=200";
+
+    //<pre class="search-results-chunk">.*<\/pre>
+    $content = $this->HttpClient->get($url);
+    
+    $pattern = "/<pre class=\"search-results-chunk\">((?:.*?\r?\n?)*)<\/pre>/";
+    if (preg_match($pattern, $content, $m, PREG_UNMATCHED_AS_NULL)) {
+      $pmids = explode("\n", $m[1]);
+    }
+    return $pmids;
+  }
 
   /*
    * Get RIS, MEDLINE and CITATION from CTXP website
