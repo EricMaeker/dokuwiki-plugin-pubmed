@@ -862,6 +862,7 @@ class PubMed2020 {
     $chapters = Array(
       "Aim:",
       "Aims:",
+      "Aims and objectives:", //
       "Authors' conclusions:",
       "Authors conclusions:",
       "Background \& aims:",
@@ -882,9 +883,11 @@ class PubMed2020 {
       "Conclusions\/relevance:",
       "Conclusions:",
       "Context:",
+      "Data analysis:", //
       "Data collection and analysis:",
       "Data extraction:",
       "Data extraction and synthesis:", //
+      "Data sources:", //
       "Data sources and review methods:",
       "Data sources and study selection:", //
       "Data synthesis:",
@@ -936,12 +939,15 @@ class PubMed2020 {
       "Recommendations for screening and assessment:", //
       "Recommendations for management:", //
       "Reference test:",
+      "Relevance to clinical practice:", //
       "Research question:",
       "Results:",
+      "Scope:", //
       "Search methods:",
       "Search strategy:",
       "Selection criteria:",
       "Setting:",
+      "Setting and subjects:", //
       "Setting and participants:",
       "Settings:",
       "Significance of results:",
