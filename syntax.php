@@ -37,6 +37,7 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       "vancouver_links" => '%vancouver%<br/>%pmid_url% %pmcid_url%',
       "npg" => '%authorsLimit3% %title_tt%. %npg_iso%.',
       "npg_full" => '%npg_full%',
+      "npg_full_links" => '%npg_full% %pmid_url% %pmcid_url%',
       "gpnv_full" => '%gpnv_full%',
       // Add item one by one
       "authors" => '%authors%',
