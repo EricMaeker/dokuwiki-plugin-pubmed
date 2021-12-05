@@ -444,6 +444,14 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
             }
             $this->pubmedCache->saveRawMedlineContent($base, $raw);
             return true;
+        case 'convertid': // Ok PubMed2020
+            $r = $this->pubmed2020->convertId($id);
+            if ($r) {
+              $renderer->doc .= "PMID: ".$r->pmid." ; DOI: ".$r->doi." ; PMC: ".$r->pmcid;
+            } else {
+              $renderer->doc .= "Id not found: ".$id;
+            }
+            return true;
         case 'test': // Ok PubMed2020
             $this->runTests();
             return true;
