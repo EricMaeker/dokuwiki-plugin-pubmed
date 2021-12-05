@@ -751,7 +751,7 @@ class PubMed2020 {
     foreach ($exceptions as $word) {
       //echo $word.PHP_EOL;
       $p = strtolower($word);
-      $p = str_replace("/", "\/", $p);
+      $p = str_replace("/", "\/", $p); 
       $p = '/([\s\-\(\.\/\'\`])'.$p.'([\s\-\)\.\:\?\/\'\`])/';
       // String exists in full lowercase
       //echo $p." ".print_r(preg_match($p, $low_t, $matches)).PHP_EOL;
