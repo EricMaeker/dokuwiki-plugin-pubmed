@@ -51,6 +51,18 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       "abstract_html" => '%abstract_html%',
       "listgroup" => '%listgroup%'
       );
+  var $commands = Array(
+    'addtt',
+    'addhash_fr',
+    'convertid',
+    'test',
+    'raw_medline',
+    'clear_raw_medline',
+    'remove_dir',
+    'search',
+    'recreate_cross_refs',
+    'full_pdf_list',
+  );
 
   // Constructor
   public function __construct(){
@@ -358,7 +370,7 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
     // If command is empty (in this case, command is the numeric pmids)
     // Catch default command in plugin's preferences
     $regex = '/^[0-9,]+$/';
-//     if (preg_match($regex, $cmd) === 1) {
+    // if (preg_match($regex, $cmd) === 1) {
     if (empty($id)) {
       $id = $cmd;
       $cmd = $this->documentFormat;
@@ -374,7 +386,7 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       $this->documentFormat = $id;
       $this->useDocumentFormat = true;
       return true;
-    } else if ($this->useDocumentFormat) {
+    } else if ($this->useDocumentFormat && (!in_array($cmd, $this->commands))) {
        $cmd = $this->documentFormat;
     }
     
