@@ -494,11 +494,11 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
           return true;
         case 'search':
           $link = $this->pubmed2020->getPubmedSearchURL($id);
-          $renderer->doc .='<div class="pubmed">';
+          $renderer->doc .='<span class="pubmed">';
           $renderer->doc .= '<a class="pmid" rel="noopener" target="_blank" href="';
           $renderer->doc .= $link[1];
           $renderer->doc .= '">'.$link[0].'</a>';
-          $renderer->doc .='</div>';
+          $renderer->doc .='</span>';
           return true;
         case 'recreate_cross_refs':
           $this->pubmedCache->recreateCrossRefFile();
