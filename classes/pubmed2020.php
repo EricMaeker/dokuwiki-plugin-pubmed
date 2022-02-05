@@ -738,7 +738,9 @@ class PubMed2020 {
       "Parkinson",
       "Alzheimer",
       "Sydenham",
+      "Asperger",
       // Others
+      "AI",
       "Syst-Eur",
       "UKU-SERS-Pat",
       "Largactil",
@@ -936,7 +938,9 @@ class PubMed2020 {
       "Primary and secondary outcome measures:",
       "Purpose and objective:",
       "Purpose:",
+      "Purpose of the study:", //
       "Rationale:",
+      "Recent developments:", //
       "Recommendations for screening and assessment:", //
       "Recommendations for management:", //
       "Reference test:",
@@ -962,6 +966,7 @@ class PubMed2020 {
       "Subjects and methods:",
       "Trial registration:",
       "Types of studies:",
+      "Where next\?:", //
     );
     // Prepare output tags
     $lf = PHP_EOL.PHP_EOL;
