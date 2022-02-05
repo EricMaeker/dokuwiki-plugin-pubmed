@@ -561,17 +561,18 @@ class PubMed2020 {
     // Year
     if (!empty($ret["year"])) {
       $npg .= $ret["year"];
+      // Vol/Issue
+      if (!empty($ret["vol"]) || !empty($ret["issue"]))
+          $npg .= " ; ";
       // Vol
-      if (!empty($ret["vol"])) {
-          $npg .= " ; ".$ret["vol"];
-        // Issue
-        if (!empty($ret["issue"])) {
-          $npg .= " (".$ret["issue"].")";
-        }
-        // Pages
-        if (!empty($ret["pages"])) {
+      if (!empty($ret["vol"]))
+          $npg .= $ret["vol"];
+      // Issue
+      if (!empty($ret["issue"]))
+          $npg .= "(".$ret["issue"].")";
+      // Pages or DOI (no pages -> add DOI)
+      if (!empty($ret["pages"])) {
           $npg .= " : ".$this->_normalizePages($ret["pages"]).".";
-        }
       } else if (!empty($ret["doi"])) {
         $npg .= ", doi : ".$ret["doi"];
 //       } else if (!empty($ret["bookaccession"])) {
