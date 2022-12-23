@@ -396,6 +396,11 @@ class PubMed2020 {
         $ret["title_low"] = ucfirst(strtolower($ret["title"])); //mb_convert_case($ret["title"], MB_CASE_TITLE);
     }
 
+    // Manage unavailable title with a translated title
+    if (strpos($ret["title"], "[Not Available]") !== false) {
+        $ret["title"] = $ret["translated_title"];
+    }
+
     // Get authors
     if ($ret["corporate_author"]) {
       array_push($authors, $ret["corporate_author"]);
@@ -485,10 +490,12 @@ class PubMed2020 {
     if ($ret["book_title"]) {
       // Author. <i>BookTitle</i>. country:PB;year.
       $ret["vancouver"] = $vancouver;
-      $ret["vancouver"] .= "<i>".$ret["book_title"].".</i> ";
+      $ret["vancouver"] .= $ret["title"]." ";
+      $ret["vancouver"] .= $ret["book_title"].". ";
       $ret["iso"] = $ret["country"]." : ";
       $ret["iso"] .= $ret["year"].".";
       $ret["vancouver"] .= $ret["iso"];
+      $ret["sciencedirecturl"] = sprintf($this->scienceDirectURL, $ret["doi"]);
       return $ret;
     } 
     $vancouver .= $ret["title"];
@@ -507,6 +514,7 @@ class PubMed2020 {
     $gg .= "&op=translate";
     $ret["googletranslate_abstract"] = $gg;
     //echo print_r($ret);
+    $ret["sciencedirecturl"] = sprintf($this->scienceDirectURL, $ret["doi"]);
     return $ret;
   } // Ok pubmed2020
 
@@ -896,10 +904,12 @@ class PubMed2020 {
       "Data synthesis:",
       "Design, study, and participants:",
       "Design:",
+      "Development:", //
       "Diagnosis of interest:",
       "Discussion:",
       "Discussion and conclusions:", //
       "Discussion and conclusion:", //
+      "Discussion\/Conclusion:",  //
       "Eligibility criteria:",
       "Experimental design:",
       "Exposures:",
@@ -925,6 +935,7 @@ class PubMed2020 {
       "Measurements:",
       "Mesures:",
       "Methodological quality:",
+      "Methodology:", //
       "Method:",
       "Methods:",
       "Methods and results:", //
@@ -947,6 +958,7 @@ class PubMed2020 {
       "Relevance to clinical practice:", //
       "Research question:",
       "Results:",
+      "Result:", //
       "Scope:", //
       "Search methods:",
       "Search strategy:",
@@ -964,6 +976,7 @@ class PubMed2020 {
       "Subjects\/methods:",
       "Subjects \& methods:",
       "Subjects and methods:",
+      "Summary:", //
       "Trial registration:",
       "Types of studies:",
       "Where next\?:", //
@@ -981,11 +994,17 @@ class PubMed2020 {
     usort($chapters, function ($a, $b) {
        return (substr_count($a, " ") < substr_count($b, " ")); 
     });
+    // Correct some typos in abstract
+    $abstract = str_replace("ABSTRACTObjectives:", "Objectives: ", $abstract);
     // Replace in abstract
     foreach($chapters as $c) {
       $pattern = "/\s*".$c."\s+/i";
       $c = str_replace("\\", "", $c);
       $abstract = preg_replace($pattern, "$lf$boldS$c$boldE ", $abstract);
+    }
+    // Remove first $lf of abstract
+    if (substr($abstract, 0, strlen($lf)) === $lf) {
+      $abstract = substr($abstract, strlen($lf));
     }
 //     $info = array();
 //     $abstract = p_render('xhtml', p_get_instructions($abstract), $info);
