@@ -232,6 +232,7 @@ class PubMed2020 {
    *   "url"           -> URL to PubMed site
    *   "pmcurl"        -> if available URL to PMC site
    *   "googletranslate_abstract"   -> Link to google translate prepopulated with abstract
+   *   "sciencedirecturl" -> Link to ScienceDirect web site (using DOI)
    *
    * \note $pluginObject must be accessible for translations ($this->getLang())
    */
