@@ -30,6 +30,8 @@ class PubMed2020 {
   var $citedByURL      = 'https://pubmed.ncbi.nlm.nih.gov/?linkname=pubmed_pubmed_citedin&from_uid=%s';
   var $convertId       = 'https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?ids=%s&format=json&versions=no&showaiid=no';
   var $referencesURL   = 'https://pubmed.ncbi.nlm.nih.gov/%s/#references';
+  var $scienceDirectURL= "https://www.sciencedirect.com/search?qs=%s"; // %s = doi
+  var $scienceDirectPIIURL= "https://www.sciencedirect.com/science/article/pii/%s"; // %s = pii
   
   // Set this to true to get debugging page output
   //     when retrieving and processing pubmed URL
