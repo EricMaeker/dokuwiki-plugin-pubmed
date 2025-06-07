@@ -49,8 +49,6 @@ class PubMed2020 {
     return (substr($string, 0, $len) === $startString); 
   } // ok, V2020
 
-
-
   function convertId($id){
     if (empty($id))
       return NULL;
