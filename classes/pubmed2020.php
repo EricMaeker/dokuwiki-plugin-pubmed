@@ -38,7 +38,7 @@ class PubMed2020 {
   var $debugUsingEchoing = false; 
 
   public function __construct() {
-    $this->HttpClient   = new DokuHTTPClient();
+    $this->HttpClient   = new \dokuwiki\HTTP\DokuHTTPClient();
     $this->ctxpURLs["pmid"] = $this->ctxpBaseURL.$this->ctxpURLs["pmid"];
     $this->ctxpURLs["pmcid"] = $this->ctxpBaseURL.$this->ctxpURLs["pmcid"];
   } // Ok, V2020
@@ -268,6 +268,53 @@ class PubMed2020 {
     // Now process datas
     // TODO: Catch book references. Eg: 28876803
     $ret = array();
+    // Create all keys with empty values to avoid php warnings
+    $ret["pmid"] = null;
+    $ret["pmcid"] = null;
+    $ret["doi"] = null;
+    $ret["pii"] = null;
+    $ret["bookaccession"] = null;
+    $ret["authors"] = null;
+    $ret["first_author"] = null;
+    $ret["authorsLimit3"] = null;
+    $ret["authorsVancouver"] = null;
+    $ret["corporate_author"] = null;
+    $ret["collectif"] = null;
+    $ret["title"] = null;
+    $ret["title_low"] = null;
+    $ret["translated_title"] = null;
+    $ret["translated_title_low"] = null;
+    $ret["book_title"] = null;
+    $ret["journal_iso"] = null;
+    $ret["journal_title"] = null;
+    $ret["journal_id"] = null;
+    $ret["lang"] = null;
+    $ret["iso"] = null;
+    $ret["vol"] = null;
+    $ret["issue"] = null;
+    $ret["year"] = null;
+    $ret["month"] = null;
+    $ret["pages"] = null;
+    $ret["abstract"] = null;
+    $ret["abstract_wiki"] = null;
+    $ret["abstract_html"] = null;
+    $ret["type"] = null;
+    $ret["country"] = null;
+    $ret["copyright"] = null;
+    $ret["collection_title"] = null;
+    $ret["publisher"] = null;
+    $ret["keywords"] = null;
+    $ret["mesh"] = null;
+    $ret["hashtags"] = null;
+    $ret["so"] = null;
+    $ret["npg_full"] = null;
+    $ret["npg_iso"] = null;
+    $ret["url"] = null;
+    $ret["pmcurl"] = null;
+    $ret["googletranslate_abstract"] = null;
+    $ret["sciencedirecturl"] = null;
+    $ret["scihuburl"] = null;
+
     $mesh = array();
     $keywords = array();
     foreach($array as $key => $value) {
@@ -405,7 +452,7 @@ class PubMed2020 {
     }
 
     // Get authors
-    if ($ret["corporate_author"]) {
+    if (isset($ret["corporate_author"])) {
       array_push($authors, $ret["corporate_author"]);
     } 
 
@@ -490,7 +537,7 @@ class PubMed2020 {
 
     // Construct Vancouver citation of this article
     // See https://www.nlm.nih.gov/bsd/uniform_requirements.html
-    if ($ret["book_title"]) {
+    if (isset($ret["book_title"])) {
       // Author. <i>BookTitle</i>. country:PB;year.
       $ret["vancouver"] = $vancouver;
       $ret["vancouver"] .= $ret["title"]." ";
@@ -566,6 +613,7 @@ class PubMed2020 {
     }
     // JOURNALS
     // Journal
+    $npg = "";
     if (!empty($ret["journal_iso"])) {
        $npg = str_replace(".", "", $ret["journal_iso"])." ";
     }
@@ -624,7 +672,9 @@ class PubMed2020 {
    * vancouver with style mention & spaces 
    */
   function createGpnvCitation($ret) {
-    // Construct NPG ISO citation of this article
+    // Construct GPNV ISO citation of this article
+    $npg = "";
+    $ret["gpnv_full"] = "";
     //%npg_iso% %year% ; %vol% (%issue%) : %pages%
     // BOOKS
     if (!empty($ret["book_title"])) {
@@ -748,6 +798,7 @@ class PubMed2020 {
       // Diseases
       "Parkinson",
       "Alzheimer",
+      "Lewy",
       "Sydenham",
       "Asperger",
       // Others
@@ -761,6 +812,7 @@ class PubMed2020 {
       "SARS",
       "CoV",
       "COVID",
+      "I",
     );
     foreach ($exceptions as $word) {
       //echo $word.PHP_EOL;
@@ -876,19 +928,20 @@ class PubMed2020 {
     $chapters = Array(
       "Aim:",
       "Aims:",
-      "Aims and objectives:", //
+      "Aims and objectives:", 
       "Authors' conclusions:",
       "Authors conclusions:",
       "Background \& aims:",
       "Background and objectives:",
       "Background:",
       "Background\/objectives:",
-      "Background\/aims:", //
+      "Background\/aims:", 
+      "Clinical implications:", //
       "Clinical rehabilitation impact:",
       "Clinical relevance:",
       "Clinical significance:",
       "Clinical trial registration:",
-      "Clinical trials registration:", //
+      "Clinical trials registration:", 
       "Comparison:",
       "Conclusion:",
       "Conclusions\/implications:",
@@ -897,27 +950,29 @@ class PubMed2020 {
       "Conclusions\/relevance:",
       "Conclusions:",
       "Context:",
-      "Data analysis:", //
+      "Data analysis:", 
       "Data collection and analysis:",
       "Data extraction:",
-      "Data extraction and synthesis:", //
-      "Data sources:", //
+      "Data extraction and synthesis:", 
+      "Data sources:", 
       "Data sources and review methods:",
-      "Data sources and study selection:", //
+      "Data sources and study selection:", 
       "Data synthesis:",
       "Design, study, and participants:",
       "Design:",
-      "Development:", //
+      "Development:", 
       "Diagnosis of interest:",
       "Discussion:",
-      "Discussion and conclusions:", //
-      "Discussion and conclusion:", //
-      "Discussion\/Conclusion:",  //
+      "Discussion and conclusions:", 
+      "Discussion and conclusion:", 
+      "Discussion and implications:", 
+      "Discussion\/Conclusion:",  
       "Eligibility criteria:",
       "Experimental design:",
       "Exposures:",
       "Findings:",
       "Funding:",
+      "Impact:", //
       "Implications:",
       "Implications for nursing management:",
       "Implications for clinical management:",
@@ -929,6 +984,8 @@ class PubMed2020 {
       "Intervention:",
       "Introduction:",
       "Keywords:",
+      "Limitation:", //
+      "Limitations:", //
       "Main outcome measures:",
       "Main outcomes and measures:",
       "Main outcomes:",
@@ -938,36 +995,39 @@ class PubMed2020 {
       "Measurements:",
       "Mesures:",
       "Methodological quality:",
-      "Methodology:", //
+      "Methodology:", 
       "Method:",
       "Methods:",
-      "Methods and results:", //
+      "Methods and results:", 
       "Objective:",
       "Objectives:",
       "Outcomes:",
       "Participants:",
       "Participants\/setting:",
       "Patients and methods:",
+      "Patient or public contribution:", //
       "Population:",
       "Primary and secondary outcome measures:",
+      "Prospero registration:", //
       "Purpose and objective:",
       "Purpose:",
-      "Purpose of the study:", //
+      "Purpose of the study:", 
       "Rationale:",
-      "Recent developments:", //
-      "Recommendations for screening and assessment:", //
-      "Recommendations for management:", //
+      "Recent developments:", 
+      "Recommendations for screening and assessment:", 
+      "Recommendations for management:", 
       "Reference test:",
-      "Relevance to clinical practice:", //
+      "Relevance to clinical practice:", 
+      "Research design and methods:", 
       "Research question:",
       "Results:",
-      "Result:", //
-      "Scope:", //
+      "Result:", 
+      "Scope:", 
       "Search methods:",
       "Search strategy:",
       "Selection criteria:",
       "Setting:",
-      "Setting and subjects:", //
+      "Setting and subjects:", 
       "Setting and participants:",
       "Settings:",
       "Significance of results:",
@@ -980,9 +1040,11 @@ class PubMed2020 {
       "Subjects \& methods:",
       "Subjects and methods:",
       "Summary:", //
+      "Systematic review registration:", //
       "Trial registration:",
       "Types of studies:",
-      "Where next\?:", //
+      "Tweetable abstract:", //
+      "Where next\?:",
     );
     // Prepare output tags
     $lf = PHP_EOL.PHP_EOL;
@@ -995,10 +1057,20 @@ class PubMed2020 {
     }
     // Sort array
     usort($chapters, function ($a, $b) {
-       return (substr_count($a, " ") < substr_count($b, " ")); 
+        $countA = substr_count($a, " ");
+        $countB = substr_count($b, " ");
+
+        if ($countA < $countB) {
+            return 1;
+        } elseif ($countA > $countB) {
+            return -1;
+        } else {
+            return 0;
+        }
     });
     // Correct some typos in abstract
     $abstract = str_replace("ABSTRACTObjectives:", "Objectives: ", $abstract);
+    //echo print_r($chapters);
     // Replace in abstract
     foreach($chapters as $c) {
       $pattern = "/\s*".$c."\s+/i";

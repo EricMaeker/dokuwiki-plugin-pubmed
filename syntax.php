@@ -364,7 +364,12 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
     // Get the command and its arg(s) 
     list($state, $query) = $data;
     list($base, $req) = $query;
-    list($cmd, $id) = explode(':', $req, 2);
+    if (str_contains(":", $req)) {
+      list($cmd, $id) = explode(':', $req, 2);
+    } else {
+      $cmd = $req;
+      $id = "";
+    }
     $cmd = strtolower($cmd);
 
     // If command is empty (in this case, command is the numeric pmids)
