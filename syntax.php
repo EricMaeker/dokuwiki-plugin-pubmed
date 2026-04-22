@@ -16,6 +16,7 @@ if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
 require_once(DOKU_PLUGIN.'syntax.php');
 
 class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
+  var $isTailwind = false;
   var $documentFormat;
   var $useDocumentFormat;
   var $pubmed2020;
@@ -24,20 +25,21 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
   var $pmcUrl = 'https://www.ncbi.nlm.nih.gov/pmc/articles/%s/pdf'; //+pmc
   var $twitterUrl = 'https://twitter.com/intent/tweet?%s';
   var $outputTpl = array(
+      "ushort" => '%first_author%. (%year%)',
       "short" => '%first_author%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url%',
-      "long" => '%authors%. %title%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url%',
-      "long_tt" => '%authors%. %title_tt%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url%',
-      "long_pdf" => '%authors%. %title%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url% %localpdf% %tweet%',
-      "long_tt_pdf" => '%authors%. %title_tt%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url% %localpdf% %tweet%',
+      "long" => '%authors%. %title%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url%  %sciencedirect_url%',
+      "long_tt" => '%authors%. %title_tt%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url%  %sciencedirect_url%',
+      "long_pdf" => '%localpdf% %authors%. %title%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url% %scihub_url%  %sciencedirect_url% %tweet%',
+      "long_tt_pdf" => '%localpdf% %authors%. %title_tt%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url% %scihub_url%  %sciencedirect_url% %tweet%',
       "long_abstract" => '%authors%. %title%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url% %abstract% %abstractFr% %tweet%',
-      "long_tt_abstract" => '%authors%. %title_tt%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url% %abstract% %abstractFr% %tweet%',
-      "long_abstract_pdf" => '%authors%. %title%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url% %abstract% %abstractFr% %localpdf%',
-      "long_tt_abstract_pdf" => '%authors%. %title_tt%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url% %abstract% %abstractFr% %localpdf%',
+      "long_tt_abstract" => '%authors%. %title_tt%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url%  %sciencedirect_url% %abstract% %abstractFr% %tweet%',
+      "long_abstract_pdf" => '%authors%. %title%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url%  %sciencedirect_url% %abstract% %abstractFr% %scihub_url% %localpdf%',
+      "long_tt_abstract_pdf" => '%localpdf% %authors%. %title_tt%. %iso%.<br/>%pmid_url% %pmcid_url% %doi_url% %abstract% %abstractFr% %scihub_url%  %sciencedirect_url%',
       "vancouver" => '%vancouver%',
-      "vancouver_links" => '%vancouver%<br/>%pmid_url% %pmcid_url%',
+      "vancouver_links" => '%vancouver%<br/>%pmid_url% %pmcid_url% %sciencedirect_url%',
       "npg" => '%authorsLimit3% %title_tt%. %npg_iso%.',
       "npg_full" => '%npg_full%',
-      "npg_full_links" => '%npg_full% %pmid_url% %pmcid_url%',
+      "npg_full_links" => '%npg_full% %pmid_url% %pmcid_url% %sciencedirect_url% %localpdf%',
       "gpnv_full" => '%gpnv_full%',
       // Add item one by one
       "authors" => '%authors%',
@@ -74,6 +76,15 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
     $this->pubmedCache = new pubmed2020_cache("pubmed","pubmed","nbib");
     $this->documentFormat = $this->getConf('default_command');
     $this->useDocumentFormat = false;
+
+    global $conf;
+    $this->isTailwind = (isset($conf['template']) && 
+                        (
+                         $conf['template'] === 'tailwind' ||
+                         $conf['template'] === 'tailwind3' || 
+                         $conf['template'] === 'tailwind4'
+                        ) 
+                        );
   }
 
   function getType() { return 'substition'; }
@@ -97,27 +108,78 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
   }
 
 
-  function _span($refs, $class, $id) {
+// Ajouter après ligne 122
+/**
+ * Retourne les classes CSS selon le template
+ */
+private function getClasses($type) {
+    if ($this->isTailwind) {
+        $classes = array(
+            'pubmed' => 'tw-wrap tw-pubmed',
+            'abstract' => 'tw-abstract text-gray-700 dark:text-gray-300 leading-relaxed mt-4',
+            'tweetme' => 'tw-tweetme flex flex-col gap-2 mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg',
+            'linkedinshare' => 'tw-linkedin flex flex-col gap-2 mt-4 p-4 bg-blue-600/10 dark:bg-blue-900/20 rounded-lg',
+            'authors' => 'tw-authors font-medium text-gray-900 dark:text-white',
+            'title' => 'tw-title text-lg font-semibold text-gray-900 dark:text-white',
+            'iso' => 'tw-iso text-gray-600 dark:text-gray-400 italic',
+            'link' => 'tw-link text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline',
+            'npg' => 'tw-npg text-gray-700 dark:text-gray-300',
+            'gpnv_authors' => 'tw-gpnv-authors font-medium',
+            'gpnv_title' => 'tw-gpnv-title',
+            'gpnv_journal' => 'tw-gpnv-journal italic',
+            'gpnv_iso' => 'tw-gpnv-iso text-sm text-gray-600 dark:text-gray-400',
+        );
+    } else {
+        // Bootstrap 3
+        $classes = array(
+            'pubmed' => 'pubmed',
+            'abstract' => 'abstract',
+            'tweetme' => 'pubmed tweetme',
+            'authors' => 'authors',
+            'title' => 'title',
+            'iso' => 'iso',
+            'link' => '',
+            'npg' => 'npg',
+            'gpnv_authors' => 'gpnv_authors',
+            'gpnv_title' => 'gpnv_title',
+            'gpnv_journal' => 'gpnv_journal',
+            'gpnv_iso' => 'gpnv_iso',
+        );
+    }
+    return isset($classes[$type]) ? $classes[$type] : '';
+}
+
+function _span($refs, $class, $id) {
     // No data
     if (empty($refs[$id]))
       return "";
+    
+    // Obtenir les classes selon template
+    $cssClass = $this->getClasses($class);
+    
     // Data = array
     if (is_array($refs[$id]))
-      return "<span class=\"$class\">".hsc(implode(", ",$refs[$id]))."</span>";
+      return "<span class=\"$cssClass\">".hsc(implode(", ",$refs[$id]))."</span>";
     // Default
-    return "<span class=\"$class\">".hsc($refs[$id])."</span>";
-  }
+    return "<span class=\"$cssClass\">".hsc($refs[$id])."</span>";
+}
 
-  function _a($refs, $class, $href, $id, $text) {
+
+function _a($refs, $class, $href, $id, $text) {
     // No data
     if (empty($refs[$id]))
       return "";
+    
+    // Obtenir les classes pour les liens
+    $cssClass = $this->getClasses('link');
+    
     // Default
-    return "[<a class=\"$class\" href=\"$href\" ".
+    return "[<a class=\"$cssClass\" href=\"$href\" ".
            "rel=\"noopener\" target=\"_blank\" ".
            "title=\"$text\" ".
            ">$text</a>]";
-  }
+}
+
 
   /**
    * Replace tokens in the string \e $outputString using the array $refs.
@@ -173,6 +235,9 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
         "tweet_pmid"    => "<a href='".$this->_createTwitterUrl($refs).
                              "' rel='noopener' target='_blank''>".
                              "Twitter cet article (lien vers l'article)</a>",
+
+        "linkedin_current" => "", // Sera rempli après
+        "linkedin_pmid"    => "", // Sera rempli après
         
         // TITLE
         "title"         => "",
@@ -195,7 +260,7 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
         "year"          => "",
         "month"         => "",
         "pages"         => "",
-        "abstract"      => '<br/><span class="abstract">'.$refs["abstract_html"].'</span>',
+        "abstract" => '<span class="'.$this->getClasses('abstract').'">'.$refs["abstract_html"].'</span>',
         "abstract_wiki" => $refs["abstract_wiki"],
         "abstract_html" => $refs["abstract_html"],
         "type"          => "",
@@ -204,16 +269,47 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
         "collection_title" => "",
         "publisher"     => "",
     );
-    $r["tweet"] = "<div class='pubmed tweetme'>".
-                  $r["tweet_pmid"]."<br/>".
-                  $r["tweet_current"].
-                  "</div>";
+
+    $r["tweet"] = "<div class='".$this->getClasses('tweetme')."'>".
+              $r["tweet_pmid"]."<br/>".
+              $r["tweet_current"].
+              "</div>";
+
+// LinkedIn bloc - VERSION CORRIGÉE
+$linkedInDataCurrent = $this->_createLinkedInUrl($refs, true);
+$linkedInDataPmid = $this->_createLinkedInUrl($refs, false);
+
+// ✅ Utiliser htmlspecialchars pour encoder correctement
+$textCurrent = htmlspecialchars($linkedInDataCurrent['text'], ENT_QUOTES, 'UTF-8');
+$textPmid = htmlspecialchars($linkedInDataPmid['text'], ENT_QUOTES, 'UTF-8');
+$urlCurrent = htmlspecialchars($linkedInDataCurrent['url'], ENT_QUOTES, 'UTF-8');
+$urlPmid = htmlspecialchars($linkedInDataPmid['url'], ENT_QUOTES, 'UTF-8');
+
+$r["linkedin_current"] = 
+    "<button onclick=\"copyLinkedInText(this.dataset.text); window.open(this.dataset.url, '_blank');\" 
+     data-text=\"{$textCurrent}\" 
+     data-url=\"{$urlCurrent}\"
+     class=\"".($this->isTailwind ? 'flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition' : 'btn btn-primary')."\">
+        <i class=\"fab fa-linkedin\"></i>
+        <span>Partager sur LinkedIn (texte copié)</span>
+    </button>";
+
+$r["linkedin_pmid"] = 
+    "<button onclick=\"copyLinkedInText(this.dataset.text); window.open(this.dataset.url, '_blank');\" 
+     data-text=\"{$textPmid}\" 
+     data-url=\"{$urlPmid}\"
+     class=\"".($this->isTailwind ? 'flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition' : 'btn btn-primary')."\">
+        <i class=\"fab fa-linkedin\"></i>
+        <span>Partager sur LinkedIn (lien article)</span>
+    </button>";
+    
+              
     // Check if we have the local PDF of the paper
     $localPdf = $this->pubmedCache->GetLocalPdfPath($refs["pmid"], $refs["doi"]);
     if (empty($localPdf)) {
       $r["localpdf"] = $this->_span($refs, "nopdf", "No PDF");
     } else {
-      $r["localpdf"] = $this->_a($refs, "localPdf", $localPdf, "pmid", "PDF");
+      $r["localpdf"] = "<b>".str_replace("</a>", "<i class='fa fa-file-pdf-o' aria-hidden='true'></i></a>", $this->_a($refs, "localPdf larger", $localPdf, "pmid", ""))."</b>";
     }
 
     foreach($r as $key => $value) {
@@ -236,118 +332,14 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
           $outputString = str_replace("%abstractFr%", '<span class="abstract">'.$refs["abstractFr"].'</span>', $outputString);
       }
 
-    // Bootstrap listgroup
+    // Listgroup
     if (strpos($outputString, "%listgroup%") !== false) {
-      if (empty($refs["translated_title"])) {
-      $lg = "<div class='bs-wrap bs-wrap-list-group list-group pubmed'>";
-      $lg .= "<ul class='list-group pubmed'>";
-      $lg .= "<li class='level1 list-group-item list-group-item-warning pubmed'>";
-      $lg .=   "<strong>".$refs["title"]."</strong></li>";
-      } else {
-      $lg = "<div class='bs-wrap bs-wrap-list-group list-group'>";
-      $lg .= "<ul class='list-group'>";
-      $lg .= "<li class='level1 list-group-item list-group-item-warning pubmed'>";
-      $lg .=   "<strong>".$refs["translated_title"]."</strong></li>";
-
-      $lg .= "<li class='level1 list-group-item pubmed'>";
-      $lg .=   " <i class='dw-icons fa fa-file-o fa-fw' style='font-size:16px'></i> ";
-      $lg .=   $refs["title"]."</li>";
-      }
-
-      $lg .= "<li class='level1 list-group-item pubmed'>";
-      $lg .=   " <i class='dw-icons fa fa-users fa-fw' style='font-size:16px'></i>";
-      $lg .=   " <span class='pubmed'><span class='authors'>";
-      $lg .=   implode(', ',$refs["authors"]);
-      $lg .=   "</span></span></li>";
-
-      $lg .= "<li class='level1 list-group-item pubmed'>";
-      $lg .=   " <i class='dw-icons fa fa-newspaper-o fa-fw' style='font-size:16px'></i>";
-      $lg .=   " <span class='pubmed'><span class='journal'><span class='journal_title'>".$refs["journal_title"]."</span></span></span></li>";
-
-      $lg .= "<li class='level1 list-group-item pubmed'>";
-      $lg .=   " <i class='dw-icons fa fa-calendar-check-o fa-fw' style='font-size:16px'></i> ";
-      $lg .=   "<span class='pubmed'><span class='date'>".$refs["year"]." ".$refs["month"]."</span></li>";
-
-      $lg .= "<li class='level1 list-group-item pubmed'>";
-      $lg .=   " <i class='dw-icons fa fa-code fa-fw' style='font-size:16px'></i> ";
-      $lg .=   "<span class='pubmed'><span class='iso'>".$refs["iso"]."</span></li>";
-
-      // Keywords
-      $lg .= "<li class='level1 list-group-item pubmed'>";
-      $lg .=   " <i class='dw-icons fa fa-tags fa-fw' style='font-size:16px'></i> ";
-      if (!empty($refs["mesh"])) {
-        $lg .=   "<span class='mesh'>".implode(', ',$refs["mesh"])."</span> ";
-      } else if (!empty($refs["keywords"])) {
-        $lg .=   "<span class='keywords'>".implode(', ',$refs["keywords"])."</span>";
-      } else {
-        $lg .=   "<span class='keywords'>Aucun mots clés</span>";
-      }
-      $lg .=   "</li>";
-
-      // User added HASHTAGS
-      if (!empty($refs["hashtags"])) {
-      $lg .= "<li class='level1 list-group-item pubmed'>";
-      $lg .=   " <i class='dw-icons fa fa-hashtag fa-fw' style='font-size:16px'></i> ";
-      $lg .=   "<span class='pubmed'><span class='hashtags'>".$refs["hashtags"]."</span></li>";
-      }
-
-      // Links
-      $lg .= "<li class='level1 list-group-item list-group-item-warning pubmed'>";
-      $lg .=   "<strong>Liens</strong></li>";
-
-      $lg .= "<li class='level1 list-group-item pubmed'>";
-      $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
-      $lg .=  " <a href='".$refs["googletranslate_abstract"]."' class='list-group-item pubmed' rel='noopener' target='_blank'>Traduction automatique en Français sur Google Translate</a></li>";
-
-      $lg .= "<li class='level1 list-group-item pubmed'>";
-      $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
-      $lg .=  " <a href='http://dx.doi.org/".$refs["doi"]."' class='list-group-item pubmed' rel='noopener' target='_blank' title='".$refs["doi"]."'>DOI: ".$refs["doi"]."</a></li>";
-      $lg .= "<li class='level1 list-group-item pubmed'>";
-      $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
-      $lg .=  " <a href='".$refs["url"]."' class='list-group-item pubmed' rel='noopener' target='_blank' title='PMID: ".$refs["pmid"]."'>PMID: ".$refs["pmid"]."</a></li>";
-
-      if (!empty($refs["similarurl"])) { 
-      $lg .= "<li class='level1 list-group-item pubmed'>";
-      $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
-      $lg .=  " <a href='".$refs["similarurl"]."' class='list-group-item pubmed' rel='noopener' target='_blank''>Articles similaires</a></li>";
-      }
-
-      if (!empty($refs["citedbyurl"])) { 
-      $lg .= "<li class='level1 list-group-item pubmed'>";
-      $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
-      $lg .=  " <a href='".$refs["citedbyurl"]."' class='list-group-item pubmed' rel='noopener' target='_blank''>Cité par</a></li>";
-      }
-
-      if (!empty($refs["referencesurl"])) { 
-      $lg .= "<li class='level1 list-group-item pubmed'>";
-      $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
-      $lg .=  " <a href='".$refs["referencesurl"]."' class='list-group-item pubmed' rel='noopener' target='_blank''>Références</a></li>";
-      }
-
-      if (!empty($refs["pmcid"])) { 
-      $lg .= "<li class='level1 list-group-item pubmed'>";
-      $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
-      $lg .=  " <a href='".$refs["pmcurl"]."' class='list-group-item pubmed' rel='noopener' target='_blank''>Texte complet gratuit</a></li>";
-      }
-
-      // Twitter
-      $lg .= "<li class='level1 list-group-item list-group-item-warning pubmed'>";
-      $lg .=   "<strong>Twitter</strong></li>";
-
-      $lg .= "<li class='level1 list-group-item pubmed'>";
-      $lg .=  " <i class='dw-icons fa fa-twitter fa-fw' style='font-size:16px'></i>";
-      $lg .=  " <a href='".$this->_createTwitterUrl($refs)."' class='list-group-item pubmed' rel='noopener' target='_blank''>Twitter cet article (lien vers l'article)</a></li>";
-      $lg .= "<li class='level1 list-group-item pubmed'>";
-      $lg .=  " <i class='dw-icons fa fa-twitter fa-fw' style='font-size:16px'></i>";
-      $lg .=  " <a href='".$this->_createTwitterUrl($refs, true)."' class='list-group-item pubmed' rel='noopener' target='_blank''>Twitter cet article (lien vers cette page)</a></li>";
-
-      $lg .= "</ul>";
-      $lg .= "</div>";
-      $outputString = str_replace("%listgroup%", $lg, hsc($outputString));
+        $lg = $this->getListGroup($refs);
+        $outputString = str_replace("%listgroup%", $lg, $outputString);
     }
 
     // Remove double points separated with a span tag
-    $outputString = str_replace(".</span>.",  '.</span>', $outputString);    
+    $outputString = str_replace(".</span>.",  '.</span>', $outputString);
 
     return $outputString;
   }
@@ -364,12 +356,14 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
     // Get the command and its arg(s) 
     list($state, $query) = $data;
     list($base, $req) = $query;
-    if (str_contains(":", $req)) {
+
+    if (str_contains($req, ":")) {
       list($cmd, $id) = explode(':', $req, 2);
     } else {
       $cmd = $req;
       $id = "";
     }
+
     $cmd = strtolower($cmd);
 
     // If command is empty (in this case, command is the numeric pmids)
@@ -385,7 +379,7 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
     //   short, long, long_abstract, vancouver,
     //   or user
     $this->outputTpl["user"] = $this->getConf('user_defined_output');
-    
+
     // Allow user to define a document format
     if ($cmd === "doc_format") {
       $this->documentFormat = $id;
@@ -406,6 +400,7 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       $id = explode(",", $id);
       
       // With multiple PMIDs, the first one can be a word
+
       if ($id[0] === "sort") {
         // Remove [0]
         array_shift($id);
@@ -416,7 +411,7 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
       
       // Remove duplicates
       $id = array_unique($id, SORT_REGULAR);
-      
+
       // Add each PMID to the renderer
       foreach ($id as $curId) {
         $renderer->doc .= $this->getIdOutput($cmd, $base, $curId, $multipleIds);
@@ -627,10 +622,14 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
         $block = "div";
       }
 
-      $output .= "<{$block} class=\"pubmed\"><{$block} class=\"{$cmd}\"";
-      if ($multipleIds)
-        $output .= ' style="margin-bottom:1em"';
-      $output .= ">";
+$output .= "<{$block} class=\"".$this->getClasses('pubmed')."\"><{$block} class=\"{$cmd}\"";
+if ($multipleIds && !$this->isTailwind) {
+    $output .= ' style="margin-bottom:1em"';
+} else if ($multipleIds && $this->isTailwind) {
+    $output .= ' class="mb-4"';
+}
+$output .= ">";
+
 
       $output .= $this->replaceTokens($this->outputTpl[$cmd], $refs);
       $output .= "</{$block}></{$block}>";
@@ -698,8 +697,9 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
     $url = "&url=".rawurlencode($url);
 
     // VIA
+    $via = "";
     if (!empty($this->getConf('twitter_via_user_name'))) {
-      $via  = "&via=".$this->getConf('twitter_via_user_name');
+      $via = "&via=".$this->getConf('twitter_via_user_name');
     }
     //$related = "&related=";
 
@@ -714,6 +714,395 @@ class syntax_plugin_pubmed2020 extends DokuWiki_Syntax_Plugin {
 
     return $tweet;
   }
+
+function _createLinkedInUrl($refs, $currentUrl = false) {
+    // URL de base
+    if ($currentUrl) {
+        global $ID;
+        $url = wl($ID,'',true);
+    } else {
+        $url = $refs["url"];
+    }
+    
+    // Texte pré-formaté pour LinkedIn
+    $title = !empty($refs["translated_title"]) ? $refs["translated_title"] : $refs["title"];
+    $authors = implode(', ', array_slice($refs["authors"], 0, 3));
+    $year = $refs["year"];
+    $journal = $refs["journal_iso"];
+    
+    $linkedInText = "📄 {$title}\n\n";
+    $linkedInText .= "👥 {$authors}\n";
+    $linkedInText .= "📰 {$journal} ({$year})\n\n";
+    $linkedInText .= "🔗 Lire l'article : {$url}\n\n";
+    
+    if (!empty($refs["hashtags"])) {
+        $hashtags = str_replace(",", " #", $refs["hashtags"]);
+        $linkedInText .= "#{$hashtags}";
+    }
+    
+    // Encode pour data attribute
+    $encodedText = htmlspecialchars($linkedInText, ENT_QUOTES);
+    
+    return [
+        'url' => "https://www.linkedin.com/sharing/share-offsite/?url=" . rawurlencode($url),
+        'text' => $encodedText
+    ];
+}
+/**
+ * Génère un listgroup Bootstrap3 ou Tailwind selon le template
+ */
+private function getListGroup($refs) {
+    if ($this->isTailwind) {
+        return $this->getListGroupTailwind($refs);
+    } else {
+        return $this->getListGroupBootstrap($refs);
+    }
+}
+
+/**
+ * Version Tailwind du listgroup
+ */
+private function getListGroupTailwind($refs) {
+    $lg = "<div class='tw-wrap tw-listgroup bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-4'>";
+    
+    // Titre principal
+    $title = !empty($refs["translated_title"]) ? $refs["translated_title"] : $refs["title"];
+    $lg .= "<div class='px-4 py-3 bg-yellow-50 dark:bg-yellow-900/20 border-b border-gray-200 dark:border-gray-700'>";
+    $lg .= "<strong class='text-lg font-semibold text-gray-900 dark:text-white'>".$title."</strong></div>";
+    
+    // Titre original (si traduit)
+    if (!empty($refs["translated_title"])) {
+        $lg .= "<div class='px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-start gap-3'>";
+        $lg .= "<i class='dw-icons fa fa-file-o text-gray-400 mt-1'></i>";
+        $lg .= "<span class='text-gray-700 dark:text-gray-300'>".$refs["title"]."</span></div>";
+    }
+    
+    // Auteurs
+    $lg .= "<div class='px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-start gap-3'>";
+    $lg .= "<i class='dw-icons fa fa-users text-gray-400 mt-1'></i>";
+    $lg .= "<span class='text-gray-900 dark:text-white font-medium'>".implode(', ',$refs["authors"])."</span></div>";
+    
+    // Journal
+    $lg .= "<div class='px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-start gap-3'>";
+    $lg .= "<i class='dw-icons fa fa-newspaper-o text-gray-400 mt-1'></i>";
+    $lg .= "<span class='text-gray-700 dark:text-gray-300'>".$refs["journal_title"]."</span></div>";
+    
+    // Date
+    $lg .= "<div class='px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-start gap-3'>";
+    $lg .= "<i class='dw-icons fa fa-calendar-check-o text-gray-400 mt-1'></i>";
+    $lg .= "<span class='text-gray-700 dark:text-gray-300'>".$refs["year"]." ".$refs["month"]."</span></div>";
+    
+    // ISO
+    $lg .= "<div class='px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-start gap-3'>";
+    $lg .= "<i class='dw-icons fa fa-code text-gray-400 mt-1'></i>";
+    $lg .= "<span class='text-gray-600 dark:text-gray-400 italic'>".$refs["iso"]."</span></div>";
+    
+    // Mots-clés / MeSH
+    $lg .= "<div class='px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-start gap-3'>";
+    $lg .= "<i class='dw-icons fa fa-tags text-gray-400 mt-1'></i>";
+    if (!empty($refs["mesh"])) {
+        $lg .= "<span class='text-gray-700 dark:text-gray-300'>".implode(', ',$refs["mesh"])."</span>";
+    } else if (!empty($refs["keywords"])) {
+        $lg .= "<span class='text-gray-700 dark:text-gray-300'>".implode(', ',$refs["keywords"])."</span>";
+    } else {
+        $lg .= "<span class='text-gray-500 dark:text-gray-400'>Aucun mots clés</span>";
+    }
+    $lg .= "</div>";
+    
+    // Hashtags
+    if (!empty($refs["hashtags"])) {
+        $lg .= "<div class='px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-start gap-3'>";
+        $lg .= "<i class='dw-icons fa fa-hashtag text-gray-400 mt-1'></i>";
+        $lg .= "<span class='text-gray-700 dark:text-gray-300'>".$refs["hashtags"]."</span></div>";
+    }
+    
+    // Section Liens
+    $lg .= "<div class='px-4 py-3 bg-yellow-50 dark:bg-yellow-900/20 border-b border-gray-200 dark:border-gray-700'>";
+    $lg .= "<strong class='font-semibold text-gray-900 dark:text-white'>Liens</strong></div>";
+    
+    // Google Translate
+    $lg .= "<div class='px-4 py-3 border-b border-gray-200 dark:border-gray-700'>";
+    $lg .= "<a href='".$refs["googletranslate_abstract"]."' class='flex items-center gap-3 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors' rel='noopener' target='_blank'>";
+    $lg .= "<i class='dw-icons fa fa-external-link'></i>";
+    $lg .= "<span>Traduction automatique en Français sur Google Translate</span></a></div>";
+    
+    // DOI
+    $lg .= "<div class='px-4 py-3 border-b border-gray-200 dark:border-gray-700'>";
+    $lg .= "<a href='http://dx.doi.org/".$refs["doi"]."' class='flex items-center gap-3 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors' rel='noopener' target='_blank'>";
+    $lg .= "<i class='dw-icons fa fa-external-link'></i>";
+    $lg .= "<span>DOI: ".$refs["doi"]."</span></a></div>";
+    
+    // PMID
+    $lg .= "<div class='px-4 py-3 border-b border-gray-200 dark:border-gray-700'>";
+    $lg .= "<a href='".$refs["url"]."' class='flex items-center gap-3 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors' rel='noopener' target='_blank'>";
+    $lg .= "<i class='dw-icons fa fa-external-link'></i>";
+    $lg .= "<span>PMID: ".$refs["pmid"]."</span></a></div>";
+    
+    // Articles similaires
+    if (!empty($refs["similarurl"])) {
+        $lg .= "<div class='px-4 py-3 border-b border-gray-200 dark:border-gray-700'>";
+        $lg .= "<a href='".$refs["similarurl"]."' class='flex items-center gap-3 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors' rel='noopener' target='_blank'>";
+        $lg .= "<i class='dw-icons fa fa-external-link'></i>";
+        $lg .= "<span>Articles similaires</span></a></div>";
+    }
+    
+    // Cité par
+    if (!empty($refs["citedbyurl"])) {
+        $lg .= "<div class='px-4 py-3 border-b border-gray-200 dark:border-gray-700'>";
+        $lg .= "<a href='".$refs["citedbyurl"]."' class='flex items-center gap-3 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors' rel='noopener' target='_blank'>";
+        $lg .= "<i class='dw-icons fa fa-external-link'></i>";
+        $lg .= "<span>Cité par</span></a></div>";
+    }
+    
+    // Références
+    if (!empty($refs["referencesurl"])) {
+        $lg .= "<div class='px-4 py-3 border-b border-gray-200 dark:border-gray-700'>";
+        $lg .= "<a href='".$refs["referencesurl"]."' class='flex items-center gap-3 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors' rel='noopener' target='_blank'>";
+        $lg .= "<i class='dw-icons fa fa-external-link'></i>";
+        $lg .= "<span>Références</span></a></div>";
+    }
+    
+    // PMC (texte gratuit)
+    if (!empty($refs["pmcid"])) {
+        $lg .= "<div class='px-4 py-3 border-b border-gray-200 dark:border-gray-700'>";
+        $lg .= "<a href='".$refs["pmcurl"]."' class='flex items-center gap-3 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors' rel='noopener' target='_blank'>";
+        $lg .= "<i class='dw-icons fa fa-external-link'></i>";
+        $lg .= "<span>Texte complet gratuit</span></a></div>";
+    }
+    
+// Section LinkedIn
+$lg .= "<div class='px-4 py-3 bg-blue-50 dark:bg-blue-900/20 border-b border-gray-200 dark:border-gray-700'>";
+$lg .= "<strong class='font-semibold text-gray-900 dark:text-white'>LinkedIn</strong></div>";
+
+$linkedInDataArticle = $this->_createLinkedInUrl($refs, false);
+$textArticle = htmlspecialchars($linkedInDataArticle['text'], ENT_QUOTES, 'UTF-8');
+$urlArticle = htmlspecialchars($linkedInDataArticle['url'], ENT_QUOTES, 'UTF-8');
+
+$lg .= "<div class='px-4 py-3 border-b border-gray-200 dark:border-gray-700'>";
+$lg .= "<button onclick=\"copyLinkedInText(this.dataset.text); window.open(this.dataset.url, '_blank');\" 
+        data-text=\"{$textArticle}\" 
+        data-url=\"{$urlArticle}\"
+        class='flex items-center gap-3 w-full text-left text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors bg-transparent border-0 cursor-pointer p-0'>";
+$lg .= "<i class='dw-icons fab fa-linkedin'></i>";
+$lg .= "<span>Partager sur LinkedIn (lien vers l'article)</span></button></div>";
+
+$linkedInDataPage = $this->_createLinkedInUrl($refs, true);
+$textPage = htmlspecialchars($linkedInDataPage['text'], ENT_QUOTES, 'UTF-8');
+$urlPage = htmlspecialchars($linkedInDataPage['url'], ENT_QUOTES, 'UTF-8');
+
+$lg .= "<div class='px-4 py-3'>";
+$lg .= "<button onclick=\"copyLinkedInText(this.dataset.text); window.open(this.dataset.url, '_blank');\" 
+        data-text=\"{$textPage}\" 
+        data-url=\"{$urlPage}\"
+        class='flex items-center gap-3 w-full text-left text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors bg-transparent border-0 cursor-pointer p-0'>";
+$lg .= "<i class='dw-icons fab fa-linkedin'></i>";
+$lg .= "<span>Partager sur LinkedIn (lien vers cette page)</span></button></div>";
+    // Section Twitter
+    $lg .= "<div class='px-4 py-3 bg-yellow-50 dark:bg-yellow-900/20 border-b border-gray-200 dark:border-gray-700'>";
+    $lg .= "<strong class='font-semibold text-gray-900 dark:text-white'>Twitter</strong></div>";
+    
+    // Twitter article
+    $lg .= "<div class='px-4 py-3 border-b border-gray-200 dark:border-gray-700'>";
+    $lg .= "<a href='".$this->_createTwitterUrl($refs)."' class='flex items-center gap-3 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors' rel='noopener' target='_blank'>";
+    $lg .= "<i class='dw-icons fab fa-x-twitter'></i>";
+    $lg .= "<span>Twitter cet article (lien vers l'article)</span></a></div>";
+    
+    // Twitter page
+    $lg .= "<div class='px-4 py-3'>";
+    $lg .= "<a href='".$this->_createTwitterUrl($refs, true)."' class='flex items-center gap-3 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors' rel='noopener' target='_blank'>";
+    $lg .= "<i class='dw-icons fab fa-x-twitter'></i>";
+    $lg .= "<span>Twitter cet article (lien vers cette page)</span></a></div>";
+    
+    $lg .= "</div>";
+
+    return $lg;
+}
+
+
+/**
+ * Version Bootstrap3 du listgroup (code original)
+ */
+private function getListGroupBootstrap($refs) {
+  if (empty($refs["translated_title"])) {
+      $lg = "<div class='bs-wrap bs-wrap-list-group list-group pubmed'>";
+      $lg .= "<ul class='list-group pubmed'>";
+      $lg .= "<li class='level1 list-group-item list-group-item-warning pubmed'>";
+      $lg .=   "<strong>".$refs["title"]."</strong></li>";
+  } else {
+      $lg = "<div class='bs-wrap bs-wrap-list-group list-group'>";
+      $lg .= "<ul class='list-group'>";
+      $lg .= "<li class='level1 list-group-item list-group-item-warning pubmed'>";
+      $lg .=   "<strong>".$refs["translated_title"]."</strong></li>";
+
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=   " <i class='dw-icons fa fa-file-o fa-fw' style='font-size:16px'></i> ";
+      $lg .=   $refs["title"]."</li>";
+  }
+
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=   " <i class='dw-icons fa fa-users fa-fw' style='font-size:16px'></i>";
+      $lg .=   " <span class='pubmed'><span class='authors'>";
+      $lg .=   implode(', ',$refs["authors"]);
+      $lg .=   "</span></span></li>";
+
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=   " <i class='dw-icons fa fa-newspaper-o fa-fw' style='font-size:16px'></i>";
+      $lg .=   " <span class='pubmed'><span class='journal'><span class='journal_title'>".$refs["journal_title"]."</span></span></span></li>";
+
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=   " <i class='dw-icons fa fa-calendar-check-o fa-fw' style='font-size:16px'></i> ";
+      $lg .=   "<span class='pubmed'><span class='date'>".$refs["year"]." ".$refs["month"]."</span></li>";
+
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=   " <i class='dw-icons fa fa-code fa-fw' style='font-size:16px'></i> ";
+      $lg .=   "<span class='pubmed'><span class='iso'>".$refs["iso"]."</span></li>";
+
+      // Keywords
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=   " <i class='dw-icons fa fa-tags fa-fw' style='font-size:16px'></i> ";
+      if (!empty($refs["mesh"])) {
+        $lg .=   "<span class='mesh'>".implode(', ',$refs["mesh"])."</span> ";
+      } else if (!empty($refs["keywords"])) {
+        $lg .=   "<span class='keywords'>".implode(', ',$refs["keywords"])."</span>";
+      } else {
+        $lg .=   "<span class='keywords'>Aucun mots clés</span>";
+      }
+      $lg .=   "</li>";
+
+      // User added HASHTAGS
+      if (!empty($refs["hashtags"])) {
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=   " <i class='dw-icons fa fa-hashtag fa-fw' style='font-size:16px'></i> ";
+      $lg .=   "<span class='pubmed'><span class='hashtags'>".$refs["hashtags"]."</span></li>";
+      }
+
+      // Links
+      $lg .= "<li class='level1 list-group-item list-group-item-warning pubmed'>";
+      $lg .=   "<strong>Liens</strong></li>";
+
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
+      $lg .=  " <a href='".$refs["googletranslate_abstract"]."' class='list-group-item pubmed' rel='noopener' target='_blank'>Traduction automatique en Français sur Google Translate</a></li>";
+
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
+      $lg .=  " <a href='http://dx.doi.org/".$refs["doi"]."' class='list-group-item pubmed' rel='noopener' target='_blank' title='".$refs["doi"]."'>DOI: ".$refs["doi"]."</a></li>";
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
+      $lg .=  " <a href='".$refs["url"]."' class='list-group-item pubmed' rel='noopener' target='_blank' title='PMID: ".$refs["pmid"]."'>PMID: ".$refs["pmid"]."</a></li>";
+
+      if (!empty($refs["similarurl"])) { 
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
+      $lg .=  " <a href='".$refs["similarurl"]."' class='list-group-item pubmed' rel='noopener' target='_blank''>Articles similaires</a></li>";
+      }
+
+      if (!empty($refs["citedbyurl"])) { 
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
+      $lg .=  " <a href='".$refs["citedbyurl"]."' class='list-group-item pubmed' rel='noopener' target='_blank''>Cité par</a></li>";
+      }
+
+      if (!empty($refs["referencesurl"])) { 
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
+      $lg .=  " <a href='".$refs["referencesurl"]."' class='list-group-item pubmed' rel='noopener' target='_blank''>Références</a></li>";
+      }
+
+      if (!empty($refs["pmcid"])) { 
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=  " <i class='dw-icons fa fa-external-link fa-fw' style='font-size:16px'></i>";
+      $lg .=  " <a href='".$refs["pmcurl"]."' class='list-group-item pubmed' rel='noopener' target='_blank''>Texte complet gratuit</a></li>";
+      }
+
+// LinkedIn
+$lg .= "<li class='level1 list-group-item list-group-item-warning pubmed'>";
+$lg .= "<strong>LinkedIn</strong></li>";
+
+$linkedInDataArticle = $this->_createLinkedInUrl($refs, false);
+$lg .= "<li class='level1 list-group-item pubmed'>";
+$lg .= "<button onclick='copyLinkedInText(this.dataset.text); window.open(\"{$linkedInDataArticle['url']}\", \"_blank\");' 
+        data-text='{$linkedInDataArticle['text']}' 
+        class='btn btn-link' style='text-align:left; width:100%;'>";
+$lg .= "<i class='dw-icons fa fa-linkedin fa-fw' style='font-size:16px'></i> ";
+$lg .= "Partager sur LinkedIn (lien vers l'article)</button></li>";
+
+$linkedInDataPage = $this->_createLinkedInUrl($refs, true);
+$lg .= "<li class='level1 list-group-item pubmed'>";
+$lg .= "<button onclick='copyLinkedInText(this.dataset.text); window.open(\"{$linkedInDataPage['url']}\", \"_blank\");' 
+        data-text='{$linkedInDataPage['text']}' 
+        class='btn btn-link' style='text-align:left; width:100%;'>";
+$lg .= "<i class='dw-icons fa fa-linkedin fa-fw' style='font-size:16px'></i> ";
+$lg .= "Partager sur LinkedIn (lien vers cette page)</button></li>";
+
+      // Twitter
+      $lg .= "<li class='level1 list-group-item list-group-item-warning pubmed'>";
+      $lg .=   "<strong>Twitter</strong></li>";
+
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=  " <i class='dw-icons fa fa-twitter fa-fw' style='font-size:16px'></i>";
+      $lg .=  " <a href='".$this->_createTwitterUrl($refs)."' class='list-group-item pubmed' rel='noopener' target='_blank''>Twitter cet article (lien vers l'article)</a></li>";
+      $lg .= "<li class='level1 list-group-item pubmed'>";
+      $lg .=  " <i class='dw-icons fa fa-twitter fa-fw' style='font-size:16px'></i>";
+      $lg .=  " <a href='".$this->_createTwitterUrl($refs, true)."' class='list-group-item pubmed' rel='noopener' target='_blank''>Twitter cet article (lien vers cette page)</a></li>";
+
+      $lg .= "</ul>";
+      $lg .= "</div>";
+
+    return $lg;
+}
+
+  /**
+   * \see https://www.dokuwiki.org/fr:plugin:bureaucracy#influencer_le_mode_modele
+   * $data = array(
+   *   'patterns' => &array(), // list of PREG patterns to be replaced
+   *   'values' => &array(), // values for the above patterns
+   *   'id' => string, // ID of the page being written
+   *   'template' => &string, // the loaded template text
+   *   'form' => string, // the page the bureaucracy form was on
+   *   'fields' => helper_plugin_bureaucracy_field[], // all the fields of the form
+   * );
+  function processBureaucracyTemplateBefore(Doku_Event $data, $param = null, $advise = null) {
+    //
+    echo "<!--- _processBureaucracyTemplate ".PHP_EOL;
+    echo print_r($data);
+    echo "--->";
+    $data['template'] = $data['template']."TESTSTSTSTST";
+    
+    $filename = DOKU_PLUGIN . 'pubmed/tests/eventcheck.txt';
+        if (!$handle = fopen($filename, 'a')) {
+            return;    
+        }
+ 
+        $somecontent = "\n --- EVENT $advise ---\n";
+        $somecontent .=  "\$_REQUEST: " . print_r($_REQUEST, true) . "\n";
+        $somecontent .= print_r($event, true) . "\n";
+ 
+        fwrite($handle, $somecontent);
+        fclose($handle);
+  }
+
+  function processBureaucracyTemplateAfter(Doku_Event $data, $param = null, $advise = null) {
+    //
+    echo "<!--- _processBureaucracyTemplate ".PHP_EOL;
+    echo print_r($data);
+    echo "--->";
+    $data['template'] = $data['template']."TESTSTSTSTST";
+    
+    $filename = DOKU_PLUGIN . 'pubmed/tests/eventcheck.txt';
+        if (!$handle = fopen($filename, 'a')) {
+            return;    
+        }
+ 
+        $somecontent = "\n --- EVENT $advise ---\n";
+        $somecontent .=  "\$_REQUEST: " . print_r($_REQUEST, true) . "\n";
+        $somecontent .= print_r($event, true) . "\n";
+ 
+        fwrite($handle, $somecontent);
+        fclose($handle);
+  }
+   */
+
 
   /**
    * Only for dev usage

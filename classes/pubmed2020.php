@@ -43,7 +43,6 @@ class PubMed2020 {
     $this->ctxpURLs["pmcid"] = $this->ctxpBaseURL.$this->ctxpURLs["pmcid"];
   } // Ok, V2020
 
-
   function startsWith($string, $startString) { 
     $len = strlen($startString); 
     return (substr($string, 0, $len) === $startString); 
@@ -528,7 +527,6 @@ class PubMed2020 {
     $ret = $this->createNpgCitation($ret);
     $ret = $this->createGpnvCitation($ret);
 
-
     $ret["similarurl"] = sprintf($this->similarURL, $ret["pmid"]);
     $ret["citedbyurl"] = sprintf($this->citedByURL, $ret["pmid"]);
     $ret["referencesurl"] = sprintf($this->referencesURL, $ret["pmid"]);
@@ -561,11 +559,12 @@ class PubMed2020 {
     $gg .= rawurlencode($ret["abstract"]);
     $gg .= "&op=translate";
     $ret["googletranslate_abstract"] = $gg;
-    //echo print_r($ret);
+
     $ret["sciencedirecturl"] = sprintf($this->scienceDirectURL, $ret["doi"]);
+    $ret["scihuburl"] = sprintf($this->scihubURL, $ret["doi"]);
+    // echo print_r($ret);
     return $ret;
   } // Ok pubmed2020
-
 
 
   /** NPG: See https://www.em-consulte.com/revue/NPG/presentation/npg */
