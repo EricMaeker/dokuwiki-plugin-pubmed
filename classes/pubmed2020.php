@@ -30,8 +30,13 @@ class PubMed2020 {
   var $citedByURL      = 'https://pubmed.ncbi.nlm.nih.gov/?linkname=pubmed_pubmed_citedin&from_uid=%s';
   var $convertId       = 'https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?ids=%s&format=json&versions=no&showaiid=no';
   var $referencesURL   = 'https://pubmed.ncbi.nlm.nih.gov/%s/#references';
+
+
   var $scienceDirectURL= "https://www.sciencedirect.com/search?qs=%s"; // %s = doi
   var $scienceDirectPIIURL= "https://www.sciencedirect.com/science/article/pii/%s"; // %s = pii
+
+
+  var $scihubURL       = "https://pismin.com/%s";// "https://sci-hub.mksa.top/%s";
   
   // Set this to true to get debugging page output
   //     when retrieving and processing pubmed URL
@@ -230,6 +235,7 @@ class PubMed2020 {
    *   "pmcurl"        -> if available URL to PMC site
    *   "googletranslate_abstract"   -> Link to google translate prepopulated with abstract
    *   "sciencedirecturl" -> Link to ScienceDirect web site (using DOI)
+   *   "scihuburl"     -> URL to sci-hub site
    *
    * \note $pluginObject must be accessible for translations ($this->getLang())
    */
@@ -542,6 +548,7 @@ class PubMed2020 {
       $ret["iso"] .= $ret["year"].".";
       $ret["vancouver"] .= $ret["iso"];
       $ret["sciencedirecturl"] = sprintf($this->scienceDirectURL, $ret["doi"]);
+      $ret["scihuburl"] = sprintf($this->scihubURL, $ret["doi"]);
       return $ret;
     } 
     $vancouver .= $ret["title"];

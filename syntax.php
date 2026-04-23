@@ -307,8 +307,11 @@ $r["linkedin_pmid"] =
     // Check if we have the local PDF of the paper
     $localPdf = $this->pubmedCache->GetLocalPdfPath($refs["pmid"], $refs["doi"]);
     if (empty($localPdf)) {
+      $r["sciencedirect_url"] = $this->_a($refs, "sciencedirect_url", $refs["sciencedirecturl"], 
+                                   "sciencedirecturl", "ScienceDirect");
       $r["localpdf"] = $this->_span($refs, "nopdf", "No PDF");
     } else {
+      $r["sciencedirect_url"] = "";
       $r["localpdf"] = "<b>".str_replace("</a>", "<i class='fa fa-file-pdf-o' aria-hidden='true'></i></a>", $this->_a($refs, "localPdf larger", $localPdf, "pmid", ""))."</b>";
     }
 
