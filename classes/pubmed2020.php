@@ -371,25 +371,26 @@ class PubMed2020 {
           //array_push($authors, $value);
           break;
 */
-        case "FAU": 
-          $sn = "";
-          $surname = "";
-          if (strpos($value, ',') !== false) {
-            $n = explode(",", trim($value));
-            $sn = $n[1];
-            $name = $this->_normalizeNameCase($n[0]);
-          } else {
-            $n = explode(" ", trim($value));
-            $name = $this->_normalizeNameCase($n[0]);
-            $sn = $n[1];
-          }
-          // Keep only first letter of each surname
-          foreach (explode(' ', $sn) as $w) {
-            $surname .=  mb_substr($w,0,1,'UTF-8');
-          }
-          $value = $name." ".$surname;
-          array_push($authors, $value);
-          break;
+        case "FAU":
+            $sn = "";
+            $surname = "";
+            if (strpos($value, ',') !== false) {
+                $n = explode(",", trim($value), 2);
+                $name = $this->_normalizeNameCase($n[0]);
+                $sn = trim($n[1] ?? '');
+            } else {
+                $n = explode(" ", trim($value), 2);
+                $name = $this->_normalizeNameCase($n[0]);
+                $sn = trim($n[1] ?? '');
+            }
+            foreach (explode(' ', $sn) as $w) {
+                if ($w !== '') {
+                    $surname .= mb_substr($w, 0, 1, 'UTF-8');
+                }
+            }
+            $value = $name . " " . $surname;
+            array_push($authors, $value);
+            break;
         case "LA": $ret["lang"] = $value; break; //LA  - fre
         case "PT": $ret["type"] = $value; break; //PT  - English Abstract  //PT  - Journal Article
         case "TT": $ret["translated_title"] = $value; break;

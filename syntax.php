@@ -172,6 +172,8 @@ function _a($refs, $class, $href, $id, $text) {
     
     // Obtenir les classes pour les liens
     $cssClass = $this->getClasses('link');
+    if( !empty($class))
+      $cssClass .= ' ' . $class;
     
     // Default
     return "[<a class=\"$cssClass\" href=\"$href\" ".
