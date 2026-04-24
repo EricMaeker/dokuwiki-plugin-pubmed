@@ -226,9 +226,9 @@ function _a($refs, $class, $href, $id, $text) {
                                      "pmcid", "PMCID: ".$refs["pmcid"]),
         "pmc_url"       => $this->_a($refs, "pmcid", $refs["pmcurl"], 
                                      "pmcid", "PMCID: ".$refs["pmcid"]),
-        "doi_url"       => $this->_a($refs, "pmcid", $this->doiUrl.$refs["doi"],
+        "doi_url"       => $this->_a($refs, "doi", $this->doiUrl.$refs["doi"],
                                       "doi", "DOI: ".$refs["doi"]),
-        "journal_url"   => $this->_a($refs, "pmid", $this->doiUrl.$refs["doi"], 
+        "journal_url"   => $this->_a($refs, "journal", $this->doiUrl.$refs["doi"], 
                                       "pmid", $refs["iso"]),
 
         "tweet_current" => "<a href='".$this->_createTwitterUrl($refs, true).
